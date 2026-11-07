@@ -1,0 +1,23 @@
+# Environments and secrets
+.env
+venv/
+ENV/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Database & local data
+data/*.db
+data/*.sqlite3
+data/*.png
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel

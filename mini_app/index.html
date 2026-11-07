@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Janafit App — Онлайн-тренировки</title>
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              400: '#f472b6',
+              500: '#ec4899',
+              600: '#db2777',
+              700: '#be185d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+    .active-day {
+      background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%) !important;
+      color: #fff !important;
+      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* LIGHT THEME STYLES */
+    body.light-theme {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+    }
+    body.light-theme .bg-slate-950 {
+      background-color: #f8fafc !important;
+    }
+    body.light-theme header,
+    body.light-theme nav {
+      background-color: rgba(255, 255, 255, 0.92) !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme .bg-slate-900,
+    body.light-theme .bg-slate-900\/90,
+    body.light-theme .bg-slate-900\/80,
+    body.light-theme .bg-slate-900\/60,
+    body.light-theme .bg-slate-900\/40 {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+    body.light-theme .bg-slate-800,
+    body.light-theme .bg-slate-800\/80,
+    body.light-theme .bg-slate-800\/60,
+    body.light-theme .bg-slate-800\/50,
+    body.light-theme .bg-slate-800\/40 {
+      background-color: #f1f5f9 !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme .text-white {
+      color: #0f172a !important;
+    }
+    body.light-theme .text-slate-100 {
+      color: #0f172a !important;
+    }
+    body.light-theme .text-slate-200 {
+      color: #1e293b !important;
+    }
+    body.light-theme .text-slate-300 {
+      color: #334155 !important;
+    }
+    body.light-theme .text-slate-400 {
+      color: #64748b !important;
+    }
+    body.light-theme .border-slate-800,
+    body.light-theme .border-slate-800\/80,
+    body.light-theme .border-slate-800\/60,
+    body.light-theme .border-slate-700,
+    body.light-theme .border-slate-700\/60,
+    body.light-theme .border-slate-700\/50,
+    body.light-theme .border-slate-700\/40,
+    body.light-theme .border-slate-700\/30 {
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme input {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    body.light-theme #theme-toggle-btn {
+      background-color: #e2e8f0 !important;
+      color: #475569 !important;
+      border-color: #cbd5e1 !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-24 select-none bg-slate-950 text-slate-100">
+  
+  <!-- Top Navigation Header -->
+  <header class="p-4 bg-slate-900/90 backdrop-blur sticky top-0 z-30 border-b border-slate-800/80 flex justify-between items-center max-w-lg mx-auto">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center font-black text-white text-sm shadow-md">
+        JF
+      </div>
+      <div>
+        <div class="text-[10px] uppercase tracking-wider text-pink-400 font-bold">Janafit • VIP</div>
+        <h1 class="text-base font-bold text-white leading-tight" id="header-title">Тренировки</h1>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <!-- Theme Toggle Button -->
+      <button id="theme-toggle-btn" class="w-8 h-8 rounded-full bg-slate-800 hover:scale-105 active:scale-95 flex items-center justify-center text-xs text-amber-300 transition-all border border-slate-700/60" title="Сменить тему">
+        <span id="theme-icon">🌙</span>
+      </button>
+      <!-- Streak Badge -->
+      <div class="flex items-center space-x-1 px-2.5 py-1 bg-amber-500/15 border border-amber-500/30 rounded-full text-amber-400 text-xs font-bold">
+        <span>🔥</span>
+        <span id="streak-count">1 дн.</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- TAB 1: WORKOUTS -->
+  <div id="tab-workouts" class="tab-content active max-w-lg mx-auto">
+    <!-- Horizontal Days Scroll -->
+    <div class="px-4 py-3 bg-slate-900/40 border-b border-slate-800/60">
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-xs text-slate-400 font-medium">Календарь 21 дня:</span>
+        <span id="progress-text" class="text-xs text-pink-400 font-bold">0 из 21 пройдено</span>
+      </div>
+      <div class="overflow-x-auto no-scrollbar py-1">
+        <div id="days-container" class="flex space-x-2.5">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Workout Card -->
+    <main class="p-4 space-y-4">
+      <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 shadow-xl space-y-3">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span id="lesson-week" class="text-[11px] font-semibold text-pink-400 uppercase tracking-wider">Неделя 1</span>
+              <span class="text-slate-600">•</span>
+              <span id="lesson-tag" class="text-[11px] font-semibold text-purple-400 uppercase tracking-wider">День 1</span>
+            </div>
+            <h2 id="lesson-title" class="text-lg font-bold text-white mt-0.5 leading-snug">Лимфодренаж и пробуждение</h2>
+          </div>
+          <span id="lesson-duration" class="text-xs bg-slate-800 text-pink-300 font-semibold px-2.5 py-1 rounded-lg border border-pink-500/20">20 мин</span>
+        </div>
+
+        <!-- Video Player -->
+        <div class="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-slate-800 shadow-inner">
+          <iframe 
+            id="yt-player"
+            class="w-full h-full"
+            src="https://www.youtube-nocookie.com/embed/gC_L9qAHVJ8?rel=0&modestbranding=1" 
+            title="Janafit Workout" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button id="complete-btn" class="py-3 px-3 rounded-xl bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-semibold text-xs transition-all flex items-center justify-center space-x-2 shadow-lg shadow-pink-600/30">
+            <i class="fa-solid fa-check"></i>
+            <span id="complete-btn-text">Отметить выполненным</span>
+          </button>
+          <button onclick="switchTab('ai')" class="py-3 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-semibold text-xs transition-all flex items-center justify-center space-x-2 border border-slate-700">
+            <i class="fa-solid fa-robot text-pink-400"></i>
+            <span>Спросить AI-тренера</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Exercise Breakdown -->
+      <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800/80 space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+          <i class="fa-solid fa-list-check text-pink-400"></i>
+          <span>План и упражнения занятия:</span>
+        </h3>
+        <div id="exercise-list" class="space-y-2 text-xs">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Audio-Synthesized Interval Timer (40/20) -->
+      <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800/80 space-y-3">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-pink-500 animate-pulse"></div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Интервальный таймер со звуком</h3>
+          </div>
+          <span id="timer-status" class="text-xs text-pink-400 uppercase font-black tracking-widest px-2 py-0.5 bg-pink-500/10 rounded border border-pink-500/20">Готов</span>
+        </div>
+        
+        <div class="flex items-center justify-center py-2 space-x-4">
+          <div id="timer-display" class="text-5xl font-black text-white font-mono tracking-wider drop-shadow-md">
+            00:40
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="timer-start-btn" class="py-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 active:scale-95 text-white text-xs font-bold transition-all shadow-md">
+            Старт / Пауза
+          </button>
+          <button id="timer-reset-btn" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs font-semibold border border-slate-700 transition-all">
+            Сброс (40/20)
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- TAB 2: PROGRESS & MEASUREMENTS -->
+  <div id="tab-progress" class="tab-content max-w-lg mx-auto p-4 space-y-4">
+    <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-white">Дневник замеров</h2>
+          <p class="text-xs text-slate-400">Фиксируйте вес и объемы раз в неделю</p>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-base">
+          ⚖️
+        </div>
+      </div>
+
+      <!-- Add measurement form -->
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label class="text-[10px] text-slate-400 uppercase font-bold">Вес (кг)</label>
+          <input type="number" step="0.1" id="input-weight" placeholder="58.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-center text-sm font-bold text-white focus:outline-none focus:border-pink-500">
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-400 uppercase font-bold">Талия (см)</label>
+          <input type="number" step="0.5" id="input-waist" placeholder="68.0" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-center text-sm font-bold text-white focus:outline-none focus:border-pink-500">
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-400 uppercase font-bold">Бедра (см)</label>
+          <input type="number" step="0.5" id="input-hips" placeholder="95.0" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-center text-sm font-bold text-white focus:outline-none focus:border-pink-500">
+        </div>
+      </div>
+
+      <button id="save-measure-btn" class="w-full py-3 rounded-xl bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-bold text-xs shadow-lg transition-all">
+        Записать замер
+      </button>
+    </div>
+
+    <!-- Measurements History List -->
+    <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 space-y-3">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">История динамики:</h3>
+      <div id="measurements-list" class="space-y-2 text-xs">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Achievements / Badges -->
+    <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 space-y-3">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Награды за дисциплину:</h3>
+      <div class="grid grid-cols-3 gap-2 text-center text-xs">
+        <div class="p-3 bg-slate-800/40 rounded-xl border border-slate-700/40 space-y-1">
+          <div class="text-2xl">🌱</div>
+          <div class="font-bold text-slate-200">Первый шаг</div>
+          <div class="text-[10px] text-slate-400">1 день пройден</div>
+        </div>
+        <div class="p-3 bg-slate-800/40 rounded-xl border border-slate-700/40 space-y-1">
+          <div class="text-2xl">⚡️</div>
+          <div class="font-bold text-slate-200">Тонус</div>
+          <div class="text-[10px] text-slate-400">7 дней курса</div>
+        </div>
+        <div class="p-3 bg-slate-800/40 rounded-xl border border-slate-700/40 space-y-1">
+          <div class="text-2xl">👑</div>
+          <div class="font-bold text-slate-200">Финал 21</div>
+          <div class="text-[10px] text-slate-400">Новое тело</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: NUTRITION & WATER -->
+  <div id="tab-nutrition" class="tab-content max-w-lg mx-auto p-4 space-y-4">
+    
+    <!-- AI Food Scanner Card -->
+    <div class="bg-gradient-to-br from-slate-900 to-slate-900/90 rounded-2xl p-4 border border-pink-500/30 shadow-xl space-y-3 relative overflow-hidden">
+      <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-xl pointer-events-none"></div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-pink-500/20 text-pink-400 border border-pink-500/30 flex items-center justify-center text-base">
+            📸
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white flex items-center space-x-1.5">
+              <span>AI-Сканер тарелки</span>
+              <span class="px-1.5 py-0.2 bg-gradient-to-r from-pink-500 to-purple-600 text-[9px] text-white font-bold rounded-full">NEW</span>
+            </div>
+            <div class="text-[10px] text-slate-400">Сфоткай еду — нейросеть посчитает КБЖУ</div>
+          </div>
+        </div>
+        <label for="food-photo-input" class="cursor-pointer py-2 px-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 active:scale-95 text-white font-bold text-xs shadow-md transition-all flex items-center space-x-1.5">
+          <i class="fa-solid fa-camera"></i>
+          <span>Снять еду</span>
+        </label>
+        <input type="file" id="food-photo-input" accept="image/*" capture="environment" class="hidden">
+      </div>
+
+      <!-- Scanning Loading State (Hidden by default) -->
+      <div id="food-scanning-state" class="hidden py-6 text-center space-y-3">
+        <div class="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <div class="text-xs font-semibold text-pink-300 animate-pulse">Анализирую порцию и калории через ИИ...</div>
+      </div>
+
+      <!-- Food Result Card (Hidden by default) -->
+      <div id="food-result-card" class="hidden bg-slate-800/80 rounded-xl p-3 border border-slate-700/60 space-y-2.5 text-xs">
+        <div class="flex justify-between items-start">
+          <div>
+            <div id="food-dish-name" class="font-bold text-white text-sm">Боул с индейкой и киноа</div>
+            <div id="food-dish-weight" class="text-[10px] text-slate-400">Порция: ~340 г</div>
+          </div>
+          <div class="text-right">
+            <div id="food-calories" class="text-base font-black text-pink-400">385 ккал</div>
+            <div id="food-score" class="text-[10px] text-emerald-400 font-bold">Оценка: 9.5/10</div>
+          </div>
+        </div>
+
+        <!-- Macros Grid -->
+        <div class="grid grid-cols-3 gap-1.5 text-center">
+          <div class="p-1.5 bg-slate-900/60 rounded-lg border border-slate-700/40">
+            <div class="text-[9px] text-slate-400 uppercase font-bold">Белки</div>
+            <div id="food-protein" class="font-extrabold text-pink-300">31 г</div>
+          </div>
+          <div class="p-1.5 bg-slate-900/60 rounded-lg border border-slate-700/40">
+            <div class="text-[9px] text-slate-400 uppercase font-bold">Жиры</div>
+            <div id="food-fats" class="font-extrabold text-amber-300">11 г</div>
+          </div>
+          <div class="p-1.5 bg-slate-900/60 rounded-lg border border-slate-700/40">
+            <div class="text-[9px] text-slate-400 uppercase font-bold">Углеводы</div>
+            <div id="food-carbs" class="font-extrabold text-cyan-300">42 г</div>
+          </div>
+        </div>
+
+        <!-- Coach Tip -->
+        <div class="p-2 rounded-lg bg-pink-500/10 border border-pink-500/20 text-[11px] text-slate-200">
+          <span class="font-bold text-pink-400">💡 Совет Janafit: </span>
+          <span id="food-advice">Идеальный баланс чистого белка и сложных углеводов.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Nutrition Summary -->
+    <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 space-y-2.5">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Итого за сегодня:</h3>
+        <span id="daily-calories-total" class="text-xs font-extrabold text-pink-400">385 / 1600 ккал</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 text-center text-xs">
+        <div class="p-2 bg-slate-800/40 rounded-xl border border-slate-700/30">
+          <span class="text-[10px] text-slate-400">Белок</span>
+          <div id="daily-protein-total" class="font-bold text-slate-200">31 г</div>
+        </div>
+        <div class="p-2 bg-slate-800/40 rounded-xl border border-slate-700/30">
+          <span class="text-[10px] text-slate-400">Жиры</span>
+          <div id="daily-fats-total" class="font-bold text-slate-200">11 г</div>
+        </div>
+        <div class="p-2 bg-slate-800/40 rounded-xl border border-slate-700/30">
+          <span class="text-[10px] text-slate-400">Углеводы</span>
+          <div id="daily-carbs-total" class="font-bold text-slate-200">42 г</div>
+        </div>
+      </div>
+    </div>
+    <!-- Water Tracker -->
+    <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 text-lg">
+            💧
+          </div>
+          <div>
+            <div class="text-sm font-bold text-white">Дневная норма воды</div>
+            <div class="text-xs text-slate-400" id="water-text">Выпито: 4 из 8 стаканов (1.0 л)</div>
+          </div>
+        </div>
+        <button id="add-water-btn" class="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold active:scale-95 transition-all shadow-md">
+          + Стакан
+        </button>
+      </div>
+
+      <!-- Water progress bars -->
+      <div class="grid grid-cols-8 gap-1 pt-1" id="water-glasses">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Nutrition Golden Rules -->
+    <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 space-y-3">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-pink-400 flex items-center space-x-2">
+        <i class="fa-solid fa-utensils"></i>
+        <span>Формула «Идеальная тарелка Janafit»</span>
+      </h3>
+      <div class="space-y-2 text-xs text-slate-300">
+        <div class="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50 flex space-x-3">
+          <span class="text-base">🥗</span>
+          <div>
+            <div class="font-bold text-white">50% — Клетчатка и зелень</div>
+            <div class="text-[11px] text-slate-400">Огурцы, руккола, шпинат, брокколи, томаты, перец.</div>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50 flex space-x-3">
+          <span class="text-base">🍗</span>
+          <div>
+            <div class="font-bold text-white">25% — Чистый белок</div>
+            <div class="text-[11px] text-slate-400">Индейка, яйца, творог, рыба (лосось/минтай), тофу.</div>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50 flex space-x-3">
+          <span class="text-base">🍚</span>
+          <div>
+            <div class="font-bold text-white">25% — Сложные углеводы</div>
+            <div class="text-[11px] text-slate-400">Гречка, бурый рис, киноа, овсянка долгой варки.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: AI COACH CHAT -->
+  <div id="tab-ai" class="tab-content max-w-lg mx-auto p-4 space-y-4">
+    <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 space-y-3 flex flex-col h-[70vh]">
+      <div class="flex items-center space-x-3 border-b border-slate-800 pb-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white text-lg">
+          🤖
+        </div>
+        <div>
+          <div class="text-sm font-bold text-white">AI-Тренер Janafit 24/7</div>
+          <div class="text-[10px] text-emerald-400 font-semibold flex items-center space-x-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>Онлайн • ответит мгновенно</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages Stream -->
+      <div id="chat-messages" class="flex-1 overflow-y-auto space-y-3 p-1 text-xs">
+        <div class="flex items-start space-x-2">
+          <div class="w-6 h-6 rounded-full bg-pink-600 flex items-center justify-center text-[10px] text-white">AI</div>
+          <div class="bg-slate-800 p-3 rounded-2xl rounded-tl-none text-slate-200 max-w-[85%] leading-relaxed border border-slate-700/50">
+            Привет! Я твой персональный AI-тренер Janafit. 🧘‍♀️<br><br>
+            Спроси меня о замене упражнения при боли в коленях, расчете калорий или что съесть перед тренировкой!
+          </div>
+        </div>
+      </div>
+
+      <!-- Input box -->
+      <div class="pt-2 flex space-x-2">
+        <input type="text" id="ai-input" placeholder="Напишите вопрос..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-pink-500">
+        <button id="ai-send-btn" class="px-4 py-2.5 bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-bold text-xs rounded-xl transition-all">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar (4 TABS) -->
+  <nav class="fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 p-2 flex justify-around items-center z-40 max-w-lg mx-auto">
+    <button onclick="switchTab('workouts')" id="nav-workouts" class="flex flex-col items-center text-pink-400 text-[11px] font-semibold space-y-1">
+      <i class="fa-solid fa-dumbbell text-base"></i>
+      <span>Тренировки</span>
+    </button>
+    <button onclick="switchTab('progress')" id="nav-progress" class="flex flex-col items-center text-slate-400 hover:text-white text-[11px] font-semibold space-y-1">
+      <i class="fa-solid fa-chart-line text-base"></i>
+      <span>Замеры</span>
+    </button>
+    <button onclick="switchTab('nutrition')" id="nav-nutrition" class="flex flex-col items-center text-slate-400 hover:text-white text-[11px] font-semibold space-y-1">
+      <i class="fa-solid fa-apple-whole text-base"></i>
+      <span>Питание</span>
+    </button>
+    <button onclick="switchTab('ai')" id="nav-ai" class="flex flex-col items-center text-slate-400 hover:text-white text-[11px] font-semibold space-y-1">
+      <i class="fa-solid fa-headset text-base"></i>
+      <span>AI-Тренер</span>
+    </button>
+  </nav>
+
+  <script>
+    // Init Telegram WebApp
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    const initDataRaw = tg?.initData || "";
+    const tgUserId = tg?.initDataUnsafe?.user?.id || 123456789;
+
+    // THEME MANAGEMENT (System Default + Manual Switcher)
+    const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const tgColorScheme = tg?.colorScheme; // 'dark' | 'light'
+    const savedTheme = localStorage.getItem('janafit_theme');
+
+    // Default is phone's system theme unless user previously toggled
+    let activeTheme = savedTheme || tgColorScheme || (systemPrefersDark ? 'dark' : 'light');
+
+    function applyTheme(theme) {
+      activeTheme = theme;
+      const icon = document.getElementById('theme-icon');
+      if (theme === 'light') {
+        document.body.classList.add('light-theme');
+        if (icon) icon.innerText = '☀️';
+        if (tg?.setHeaderColor) tg.setHeaderColor('#ffffff');
+        if (tg?.setBackgroundColor) tg.setBackgroundColor('#f8fafc');
+      } else {
+        document.body.classList.remove('light-theme');
+        if (icon) icon.innerText = '🌙';
+        if (tg?.setHeaderColor) tg.setHeaderColor('#0f172a');
+        if (tg?.setBackgroundColor) tg.setBackgroundColor('#090d16');
+      }
+    }
+
+    // Apply initial theme
+    applyTheme(activeTheme);
+
+    // Toggle button handler
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) {
+      themeBtn.onclick = () => {
+        const nextTheme = activeTheme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('janafit_theme', nextTheme);
+        applyTheme(nextTheme);
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+      };
+    }
+
+    // Listen to OS system theme changes if user hasn't explicitly set a preference
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem('janafit_theme')) {
+          applyTheme(e.matches ? 'dark' : 'light');
+        }
+      });
+    }
+
+    // Web Audio API Synthesizer for Timer Beeps (No mp3 files needed)
+    let audioCtx = null;
+    function playBeep(freq = 600, duration = 0.15, type = "sine") {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    // Tab Switching Logic
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => {
+        b.classList.remove('text-pink-400');
+        b.classList.add('text-slate-400');
+      });
+
+      document.getElementById(`tab-${tab}`).classList.add('active');
+      document.getElementById(`nav-${tab}`).classList.add('text-pink-400');
+      document.getElementById(`nav-${tab}`).classList.remove('text-slate-400');
+
+      const titles = {
+        workouts: "Тренировки",
+        progress: "Мой прогресс & Замеры",
+        nutrition: "Питание & Вода",
+        ai: "AI-Тренер Janafit"
+      };
+      document.getElementById('header-title').innerText = titles[tab] || "Janafit";
+
+      if (tg?.HapticFeedback) {
+        tg.HapticFeedback.selectionChanged();
+      }
+    }
+
+    // 21-day curriculum with YouTube IDs
+    const curriculum = [
+      { day: 1, week: 1, title: "Пробуждение и лимфодренаж Full Body", duration: "20 мин", ytId: "gC_L9qAHVJ8",
+        exercises: [
+          { time: "00:00", name: "Суставная разминка и дыхание", note: "Мягкие круговые вращения" },
+          { time: "03:15", name: "Лимфодренажные похлопывания", note: "Снизу вверх по ходу лимфы" },
+          { time: "07:30", name: "Кошка-корова и вытяжение спины", note: "Без прогиба в пояснице" },
+          { time: "12:40", name: "Активация ягодичного мостика", note: "Задержка в верхней точке на 2 сек" },
+          { time: "17:10", name: "Заминка и расслабление", note: "Глубокое дыхание животом" }
+        ]
+      },
+      { day: 2, week: 1, title: "Красивая осанка и здоровая спина", duration: "22 мин", ytId: "2MoGxae-zyo",
+        exercises: [
+          { time: "00:00", name: "Разминка шейного отдела", note: "Плавные полукруги" },
+          { time: "04:20", name: "W- и Y-разведения лежа", note: "Сводим лопатки" },
+          { time: "09:50", name: "«Птица-собака» (Bird Dog)", note: "Удержание нейтрали" },
+          { time: "15:10", name: "Стретчинг грудных мышц", note: "Раскрытие плеч" }
+        ]
+      },
+      { day: 3, week: 1, title: "Упругие ягодицы без нагрузки на колени", duration: "25 мин", ytId: "I94V6qBfF0Y",
+        exercises: [
+          { time: "00:00", name: "Разминка стоп и ТБС", note: "Подготовка связок" },
+          { time: "03:40", name: "Ягодичный мостик на 1 ноге", note: "Давим пяткой в пол" },
+          { time: "08:20", name: "Махи назад на четвереньках", note: "Корпус зафиксирован" },
+          { time: "14:15", name: "Ракушка (Clamshell) на боку", note: "Средняя ягодичная" }
+        ]
+      },
+      { day: 4, week: 1, title: "Плоский живот и глубокие мышцы кора", duration: "18 мин", ytId: "ml6cT4AZdqI",
+        exercises: [
+          { time: "00:00", name: "Диафрагмальное дыхание", note: "Контроль надувания живота" },
+          { time: "03:10", name: "«Мертвый жук» (Deadbug)", note: "Поясница прижата к полу" },
+          { time: "07:45", name: "Статическая планка с колен", note: "Копчик подкручен" },
+          { time: "12:00", name: "Подъемы таза лежа", note: "Без рывков" }
+        ]
+      },
+      { day: 5, week: 1, title: "Стройные ноги и подтянутые бедра", duration: "24 мин", ytId: "IT94xC35u6k",
+        exercises: [
+          { time: "00:00", name: "Динамическая растяжка ног", note: "Разогрев связок" },
+          { time: "04:10", name: "Широкое плие с паузой внизу", note: "Колени в стороны" },
+          { time: "09:30", name: "Подъемы ноги на боку", note: "Приводящие мышцы" },
+          { time: "15:00", name: "Статика у стены (Wall Sit)", note: "Тонус бедер" }
+        ]
+      },
+      { day: 6, week: 1, title: "Мягкое кардио-жиросжигание (No Jumps)", duration: "25 мин", ytId: "UBMk30rjy0o",
+        exercises: [
+          { time: "00:00", name: "Шаги на месте и разогрев", note: "Плавный вход" },
+          { time: "03:30", name: "Step Jack (шаг + руки)", note: "Без ударной нагрузки" },
+          { time: "08:45", name: "Приставные шаги с наклоном", note: "Сжигание калорий" },
+          { time: "14:20", name: "Колено к локтю", note: "Работа пресса и кардио" }
+        ]
+      },
+      { day: 7, week: 1, title: "Глубокая растяжка, гибкость и релакс", duration: "25 мин", ytId: "enYITYwv8c4",
+        exercises: [
+          { time: "00:00", name: "Плавное дыхание", note: "Замедление пульса" },
+          { time: "04:30", name: "Поза голубя", note: "Раскрытие таза" },
+          { time: "10:15", name: "Мягкие скручивания", note: "Расслабление позвоночника" },
+          { time: "18:00", name: "Шавасана", note: "Полная перезагрузка" }
+        ]
+      }
+    ];
+
+    let currentDay = 1;
+    let completedDays = JSON.parse(localStorage.getItem('janafit_completed_days') || '[]');
+    let measurements = JSON.parse(localStorage.getItem('janafit_measurements') || '[]');
+    let waterCups = parseInt(localStorage.getItem('janafit_water_cups') || '4');
+
+    // Fetch initial state from server
+    async function syncWithServer() {
+      try {
+        const resp = await fetch(`/api/user/data?user_id=${tgUserId}&init_data=${encodeURIComponent(initDataRaw)}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.completed_days && data.completed_days.length > 0) {
+            completedDays = data.completed_days;
+            localStorage.setItem('janafit_completed_days', JSON.stringify(completedDays));
+          }
+          if (data.measurements && data.measurements.length > 0) {
+            measurements = data.measurements;
+            localStorage.setItem('janafit_measurements', JSON.stringify(measurements));
+          }
+          renderDays();
+          renderMeasurements();
+        }
+      } catch (e) {}
+    }
+
+    function renderDays() {
+      const container = document.getElementById('days-container');
+      container.innerHTML = '';
+      for (let i = 1; i <= 21; i++) {
+        const isDone = completedDays.includes(i);
+        const isActive = i === currentDay;
+        const btn = document.createElement('button');
+        btn.className = `flex-shrink-0 w-12 h-14 rounded-xl flex flex-col items-center justify-center font-bold transition-all ${
+          isActive ? 'active-day scale-105' : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+        }`;
+        btn.innerHTML = `
+          <span class="text-[9px] uppercase tracking-wider font-semibold ${isActive ? 'text-white' : 'text-slate-400'}">День</span>
+          <span class="text-base font-extrabold">${i}</span>
+          ${isDone ? '<span class="text-[10px] text-green-300 font-black">✓</span>' : ''}
+        `;
+        btn.onclick = () => selectDay(i);
+        container.appendChild(btn);
+      }
+      updateStats();
+    }
+
+    function selectDay(day) {
+      currentDay = day;
+      const lessonIdx = (day - 1) % curriculum.length;
+      const lesson = curriculum[lessonIdx];
+      const weekNum = Math.ceil(day / 7);
+
+      document.getElementById('lesson-week').innerText = `Неделя ${weekNum}`;
+      document.getElementById('lesson-tag').innerText = `День ${day}`;
+      document.getElementById('lesson-title').innerText = lesson.title;
+      document.getElementById('lesson-duration').innerText = lesson.duration;
+
+      const player = document.getElementById('yt-player');
+      player.src = `https://www.youtube-nocookie.com/embed/${lesson.ytId}?rel=0&modestbranding=1`;
+
+      const exList = document.getElementById('exercise-list');
+      exList.innerHTML = '';
+      lesson.exercises.forEach(ex => {
+        const item = document.createElement('div');
+        item.className = "flex items-start space-x-2.5 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30";
+        item.innerHTML = `
+          <span class="px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-300 font-mono font-bold text-[10px]">${ex.time}</span>
+          <div class="flex-1">
+            <div class="font-semibold text-slate-200">${ex.name}</div>
+            <div class="text-[10px] text-slate-400">${ex.note}</div>
+          </div>
+        `;
+        exList.appendChild(item);
+      });
+
+      const isDone = completedDays.includes(day);
+      const compBtn = document.getElementById('complete-btn');
+      const compText = document.getElementById('complete-btn-text');
+      if (isDone) {
+        compBtn.className = "py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition-all flex items-center justify-center space-x-2 shadow-lg shadow-emerald-600/30";
+        compText.innerText = "Пройдено ✓";
+      } else {
+        compBtn.className = "py-3 px-3 rounded-xl bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-semibold text-xs transition-all flex items-center justify-center space-x-2 shadow-lg shadow-pink-600/30";
+        compText.innerText = "Отметить выполненным";
+      }
+
+      renderDays();
+    }
+
+    function updateStats() {
+      document.getElementById('progress-text').innerText = `${completedDays.length} из 21 пройдено`;
+      document.getElementById('streak-count').innerText = `${Math.max(1, completedDays.length)} дн.`;
+    }
+
+    document.getElementById('complete-btn').onclick = async () => {
+      const willComplete = !completedDays.includes(currentDay);
+      if (willComplete) {
+        completedDays.push(currentDay);
+        playBeep(880, 0.2, "triangle");
+        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      } else {
+        completedDays = completedDays.filter(d => d !== currentDay);
+      }
+      localStorage.setItem('janafit_completed_days', JSON.stringify(completedDays));
+      selectDay(currentDay);
+
+      // Async sync with server
+      try {
+        await fetch('/api/progress/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            day: currentDay,
+            completed: willComplete,
+            user_id: tgUserId,
+            init_data: initDataRaw
+          })
+        });
+      } catch (e) {}
+    };
+
+    // Measurements Logic
+    function renderMeasurements() {
+      const list = document.getElementById('measurements-list');
+      list.innerHTML = '';
+      if (measurements.length === 0) {
+        list.innerHTML = '<div class="text-slate-500 text-center py-2">Пока нет записей. Внесите первый замер выше!</div>';
+        return;
+      }
+      measurements.slice(-5).reverse().forEach(m => {
+        const item = document.createElement('div');
+        item.className = "flex justify-between items-center p-2.5 bg-slate-800/40 rounded-xl border border-slate-700/30";
+        const dateStr = m.created_at ? new Date(m.created_at).toLocaleDateString() : "Сегодня";
+        item.innerHTML = `
+          <div class="text-slate-400 font-mono text-[11px]">${dateStr}</div>
+          <div class="flex space-x-3 font-semibold">
+            <span class="text-pink-300">${m.weight} кг</span>
+            <span class="text-purple-300">Т: ${m.waist} см</span>
+            <span class="text-blue-300">Б: ${m.hips} см</span>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    document.getElementById('save-measure-btn').onclick = async () => {
+      const w = parseFloat(document.getElementById('input-weight').value);
+      const waist = parseFloat(document.getElementById('input-waist').value);
+      const h = parseFloat(document.getElementById('input-hips').value);
+
+      if (!w || !waist || !h) {
+        alert("Пожалуйста, заполните вес, талию и бедра.");
+        return;
+      }
+
+      const newM = { weight: w, waist: waist, hips: h, created_at: new Date().toISOString() };
+      measurements.push(newM);
+      localStorage.setItem('janafit_measurements', JSON.stringify(measurements));
+      renderMeasurements();
+
+      document.getElementById('input-weight').value = '';
+      document.getElementById('input-waist').value = '';
+      document.getElementById('input-hips').value = '';
+
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+
+      try {
+        await fetch('/api/measurements/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weight: w,
+            waist: waist,
+            hips: h,
+            user_id: tgUserId,
+            init_data: initDataRaw
+          })
+        });
+      } catch (e) {}
+    };
+
+    // Water Tracker
+    function renderWater() {
+      const container = document.getElementById('water-glasses');
+      container.innerHTML = '';
+      for (let i = 1; i <= 8; i++) {
+        const filled = i <= waterCups;
+        const bar = document.createElement('div');
+        bar.className = `h-3 rounded-full transition-all ${filled ? 'bg-blue-500 shadow-sm shadow-blue-500/50' : 'bg-slate-800'}`;
+        container.appendChild(bar);
+      }
+      document.getElementById('water-text').innerText = `Выпито: ${waterCups} из 8 стаканов (${(waterCups * 0.25).toFixed(1)} л)`;
+    }
+
+    document.getElementById('add-water-btn').onclick = () => {
+      waterCups = (waterCups >= 8) ? 1 : waterCups + 1;
+      localStorage.setItem('janafit_water_cups', waterCups);
+      renderWater();
+      playBeep(520, 0.1, "sine");
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    };
+
+    // Interval Timer (40s work / 20s rest) with Audio Synthesizer
+    let timerInterval = null;
+    let timerSeconds = 40;
+    let isWorking = true;
+
+    const timerDisplay = document.getElementById('timer-display');
+    const timerStatus = document.getElementById('timer-status');
+    const timerStartBtn = document.getElementById('timer-start-btn');
+    const timerResetBtn = document.getElementById('timer-reset-btn');
+
+    function updateTimerUI() {
+      const mins = Math.floor(timerSeconds / 60);
+      const secs = timerSeconds % 60;
+      timerDisplay.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    timerStartBtn.onclick = () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerStartBtn.innerText = "Продолжить";
+      } else {
+        timerStartBtn.innerText = "Пауза";
+        timerStatus.innerText = isWorking ? "РАБОТА 🔥" : "ОТДЫХ 💧";
+        timerInterval = setInterval(() => {
+          if (timerSeconds > 0) {
+            timerSeconds--;
+            // Beep at 3, 2, 1
+            if (timerSeconds === 3 || timerSeconds === 2 || timerSeconds === 1) {
+              playBeep(440, 0.1, "sine");
+            }
+            updateTimerUI();
+          } else {
+            // Gong on switch
+            isWorking = !isWorking;
+            timerSeconds = isWorking ? 40 : 20;
+            timerStatus.innerText = isWorking ? "РАБОТА 🔥" : "ОТДЫХ 💧";
+            playBeep(880, 0.35, "triangle");
+            if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+            updateTimerUI();
+          }
+        }, 1000);
+      }
+    };
+
+    timerResetBtn.onclick = () => {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      isWorking = true;
+      timerSeconds = 40;
+      timerStatus.innerText = "Готов";
+      timerStartBtn.innerText = "Старт / Пауза";
+      updateTimerUI();
+    };
+
+    // In-App AI Chat
+    document.getElementById('ai-send-btn').onclick = sendAIMessage;
+    document.getElementById('ai-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendAIMessage();
+    });
+
+    async function sendAIMessage() {
+      const input = document.getElementById('ai-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chat = document.getElementById('chat-messages');
+
+      // Add user message
+      const userBubble = document.createElement('div');
+      userBubble.className = "flex justify-end";
+      userBubble.innerHTML = `<div class="bg-pink-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] leading-relaxed">${text}</div>`;
+      chat.appendChild(userBubble);
+      input.value = '';
+      chat.scrollTop = chat.scrollHeight;
+
+      // Add typing indicator
+      const typing = document.createElement('div');
+      typing.className = "text-slate-500 text-[10px] pl-8";
+      typing.innerText = "Тренер печатает ответ...";
+      chat.appendChild(typing);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const resp = await fetch('/api/ai/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question: text,
+            user_id: tgUserId,
+            init_data: initDataRaw
+          })
+        });
+        typing.remove();
+        if (resp.ok) {
+          const data = await resp.json();
+          const aiBubble = document.createElement('div');
+          aiBubble.className = "flex items-start space-x-2";
+          aiBubble.innerHTML = `
+            <div class="w-6 h-6 rounded-full bg-pink-600 flex items-center justify-center text-[10px] text-white">AI</div>
+            <div class="bg-slate-800 p-3 rounded-2xl rounded-tl-none text-slate-200 max-w-[85%] leading-relaxed border border-slate-700/50">${data.reply.replace(/\\n/g, '<br>')}</div>
+          `;
+          chat.appendChild(aiBubble);
+          chat.scrollTop = chat.scrollHeight;
+        }
+      } catch (e) {
+        typing.remove();
+      }
+    }
+
+    // AI Food Photo Scanner Logic
+    const foodInput = document.getElementById('food-photo-input');
+    if (foodInput) {
+      foodInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const scanState = document.getElementById('food-scanning-state');
+        const resCard = document.getElementById('food-result-card');
+
+        scanState.classList.remove('hidden');
+        resCard.classList.add('hidden');
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('user_id', tgUserId);
+        formData.append('init_data', initDataRaw);
+
+        try {
+          const resp = await fetch('/api/nutrition/analyze-photo', {
+            method: 'POST',
+            body: formData
+          });
+
+          scanState.classList.add('hidden');
+
+          if (resp.ok) {
+            const data = await resp.json();
+            const a = data.analysis;
+
+            document.getElementById('food-dish-name').innerText = a.dish_name || "Блюдо";
+            document.getElementById('food-dish-weight').innerText = `Порция: ~${a.weight_g || 300} г`;
+            document.getElementById('food-calories').innerText = `${a.calories || 400} ккал`;
+            document.getElementById('food-score').innerText = `Оценка: ${a.health_score || 9}/10`;
+            document.getElementById('food-protein').innerText = `${a.protein || 25} г`;
+            document.getElementById('food-fats').innerText = `${a.fats || 12} г`;
+            document.getElementById('food-carbs').innerText = `${a.carbs || 40} г`;
+            document.getElementById('food-advice').innerText = a.advice || a.verdict || "Отличный выбор!";
+
+            resCard.classList.remove('hidden');
+            playBeep(784, 0.25, "triangle");
+            if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+
+            loadMealsSummary();
+          } else {
+            alert("Не удалось распознать фото. Попробуйте еще раз.");
+          }
+        } catch (err) {
+          scanState.classList.add('hidden');
+          alert("Ошибка при анализе фото. Проверьте интернет-соединение.");
+        }
+      });
+    }
+
+    async function loadMealsSummary() {
+      try {
+        const resp = await fetch(`/api/nutrition/meals?user_id=${tgUserId}&init_data=${encodeURIComponent(initDataRaw)}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.summary) {
+            document.getElementById('daily-calories-total').innerText = `${data.summary.total_calories} / 1600 ккал`;
+            document.getElementById('daily-protein-total').innerText = `${data.summary.total_protein} г`;
+            document.getElementById('daily-fats-total').innerText = `${data.summary.total_fats} г`;
+            document.getElementById('daily-carbs-total').innerText = `${data.summary.total_carbs} г`;
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Init App
+    renderDays();
+    selectDay(1);
+    renderMeasurements();
+    renderWater();
+    syncWithServer();
+    loadMealsSummary();
+  </script>
+</body>
+</html>
