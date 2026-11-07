@@ -26,21 +26,35 @@ const SHEET_USERS = "Пользователи";
 const SHEET_PAYMENTS = "Оплаты";
 const SHEET_LESSONS = "Уроки";
 const SHEET_MEALS = "Дневник питания";
+const SPREADSHEET_ID = "1SZcSpC5n59SI5Ei7TMy2KPpAHo4Y_xuQQ4lhU941_BA";
+
+function getSS() {
+  if (SPREADSHEET_ID && SPREADSHEET_ID.trim()) {
+    try {
+      return SpreadsheetApp.openById(SPREADSHEET_ID.trim());
+    } catch (e) {
+      console.warn("Could not open by ID, falling back to active: " + e);
+    }
+  }
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
 
 // Добавляем удобное меню при открытии таблицы
 function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu("🌸 Janafit Управление")
-    .addItem("✨ Инициализировать все листы и структуру", "setupJanafitSheets")
-    .addItem("🎬 Заполнить список 21 урока (базовый шаблон)", "seedLessons")
-    .addToUi();
+  try {
+    SpreadsheetApp.getUi()
+      .createMenu("🌸 Janafit Управление")
+      .addItem("✨ Инициализировать все листы и структуру", "setupJanafitSheets")
+      .addItem("🎬 Заполнить список 21 урока (базовый шаблон)", "seedLessons")
+      .addToUi();
+  } catch (e) {}
 }
 
 /**
  * Инициализация всех 4 листов со стилизованными заголовками и авто-шириной
  */
 function setupJanafitSheets() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSS();
 
   // 1. Лист Пользователи
   let usersSheet = ss.getSheetByName(SHEET_USERS) || ss.insertSheet(SHEET_USERS);
@@ -82,7 +96,9 @@ function setupJanafitSheets() {
     formatHeaderRow(mealsSheet, 10, "#10b981");
   }
 
-  SpreadsheetApp.getActiveSpreadsheet().toast("Все листы Janafit успешно настроены!", "Успех ✅", 5);
+  try {
+    ss.toast("Все листы Janafit успешно настроены!", "Успех ✅", 5);
+  } catch (e) {}
 }
 
 function formatHeaderRow(sheet, numCols, bgColor) {
@@ -101,7 +117,7 @@ function formatHeaderRow(sheet, numCols, bgColor) {
  * Заполняет 21 тренировку видеоуроками и описаниями
  */
 function seedLessons() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSS();
   const sheet = ss.getSheetByName(SHEET_LESSONS);
   if (!sheet) return;
 
@@ -142,7 +158,7 @@ function doGet(e) {
   try {
     const params = e ? e.parameter : {};
     const action = params.action || "ping";
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = getSS();
 
     if (action === "ping") {
       return jsonResponse({ status: "ok", app: "Janafit GAS CRM Engine", time: new Date() });
@@ -249,7 +265,7 @@ function doPost(e) {
     }
 
     const action = payload.action;
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = getSS();
 
     // 1. Синхронизация / создание пользователя
     if (action === "syncUser") {

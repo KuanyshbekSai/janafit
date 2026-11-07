@@ -60,7 +60,8 @@ class Settings(BaseSettings):
     BASE_WEB_URL: str = os.getenv("BASE_WEB_URL", "http://localhost:8000")
 
     # Google Apps Script & Sheets Integration
-    GAS_WEBAPP_URL: str = os.getenv("GAS_WEBAPP_URL", "")
+    GAS_WEBAPP_URL: str = os.getenv("GAS_WEBAPP_URL", "https://script.google.com/macros/s/AKfycbxPwf1KbjcMRfjnsAz987-SnnUJjBNJFb7g43ID-OLi3xRqsWw2hZbjOWQVsWkO8A0F/exec")
+    SPREADSHEET_ID: str = os.getenv("SPREADSHEET_ID", "1SZcSpC5n59SI5Ei7TMy2KPpAHo4Y_xuQQ4lhU941_BA")
 
     # Database (на Vercel файловая система read-only, доступна только /tmp)
     DB_PATH: str = _resolve_db_path()
