@@ -1554,11 +1554,16 @@
         typing.remove();
         if (resp.ok) {
           const data = await resp.json();
+          const formattedReply = (data.reply || '')
+            .replace(/\*\*(.*?)\*\*/g, '<b class="text-white">$1</b>')
+            .replace(/\n\n/g, '<div class="h-2"></div>')
+            .replace(/\n/g, '<br>');
+
           const aiBubble = document.createElement('div');
           aiBubble.className = "flex items-start space-x-2";
           aiBubble.innerHTML = `
-            <div class="w-6 h-6 rounded-full bg-pink-600 flex items-center justify-center text-[10px] text-white">AI</div>
-            <div class="bg-slate-800 p-3 rounded-2xl rounded-tl-none text-slate-200 max-w-[85%] leading-relaxed border border-slate-700/50">${data.reply.replace(/\\n/g, '<br>')}</div>
+            <div class="w-6 h-6 rounded-full bg-pink-600 flex items-center justify-center text-[10px] text-white font-bold flex-shrink-0">AI</div>
+            <div class="bg-slate-800 p-3 rounded-2xl rounded-tl-none text-slate-200 max-w-[85%] leading-relaxed border border-slate-700/50 text-xs">${formattedReply}</div>
           `;
           chat.appendChild(aiBubble);
           chat.scrollTop = chat.scrollHeight;

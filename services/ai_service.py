@@ -7,16 +7,15 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-JANAFIT_COACH_SYSTEM_PROMPT = """Ты — персональный AI-тренер и нутрициолог онлайн-проекта Janafit.
-Твоя цель: поддерживать участниц курса, помогать им безопасно тренироваться, отвечать на вопросы по упражнениям, питанию, технике и восстановлению.
+JANAFIT_COACH_SYSTEM_PROMPT = """Ты — персональный заботливый AI-тренер и нутрициолог онлайн-проекта Janafit.
+Твоя цель: поддерживать участниц курса, помогать им безопасно тренироваться и правильно питаться.
 
-Правила общения:
-1. Тон: дружелюбный, поддерживающий, вдохновляющий и тактичный (обращайся тепло и с заботой).
-2. Безопасность превыше всего: если у пользователя болят колени, спина или шея — всегда давай безопасную альтернативу (например, замена прыжков на шаги, замена глубоких приседаний на ягодичный мостик).
-3. Питание: пропагандируй адекватный баланс (белки, полезные жиры, сложные углеводы, 1.5-2л воды в день), никаких жестких голодовок.
-4. Знание программы: курс Janafit длится 21 день, уроки по 25-35 минут, без сложного инвентаря (достаточно коврика и бутылочек/резинок).
-5. Если вопрос касается серьезных травм, болезней или острой боли — мягко порекомендуй проконсультироваться с врачом и нажать кнопку «Связаться с куратором».
-6. Отвечай кратко, емко и по делу, форматируя текст с эмодзи и списками для удобного чтения с телефона.
+ПРАВИЛА ЭКОНОМИИ ТОКЕНОВ И ФОРМАТА (ОБЯЗАТЕЛЬНО):
+1. Отвечай кратко, емко и по делу: максимум 2-3 коротких абзаца или список из 3-4 четких пунктов (не более 120-150 слов).
+2. Никаких длинных приветствий, рассуждений и 'воды'. Сразу давай конкретный практический совет или альтернативу упражнения.
+3. Тон: теплый, заботливый, поддерживающий, на 'ты', с 2-3 дружелюбными эмодзи.
+4. Безопасность: если болят колени/спина/стопы — сразу подскажи причину и безопасную замену (например: прыжки заменить на мягкие шаги, приседания на мостик).
+5. Заканчивай ответ одним коротким вдохновляющим предложением.
 """
 
 async def ask_ai_coach(user_message: str, history: List[Dict[str, str]] = None) -> str:
@@ -40,17 +39,8 @@ async def ask_ai_coach(user_message: str, history: List[Dict[str, str]] = None) 
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={settings.GEMINI_API_KEY}"
         
         contents = []
-        contents.append({
-            "role": "user",
-            "parts": [{"text": f"Инструкция: {JANAFIT_COACH_SYSTEM_PROMPT}"}]
-        })
-        contents.append({
-            "role": "model",
-            "parts": [{"text": "Поняла! Я персональный AI-тренер Janafit. Готова помогать ученицам."}]
-        })
-
         if history:
-            for item in history[-6:]:
+            for item in history[-4:]:
                 role = "user" if item["role"] == "user" else "model"
                 contents.append({
                     "role": role,
@@ -63,10 +53,14 @@ async def ask_ai_coach(user_message: str, history: List[Dict[str, str]] = None) 
         })
 
         payload = {
+            "system_instruction": {
+                "parts": [{"text": JANAFIT_COACH_SYSTEM_PROMPT}]
+            },
             "contents": contents,
             "generationConfig": {
-                "temperature": 0.7,
-                "maxOutputTokens": 800
+                "temperature": 0.6,
+                "maxOutputTokens": 500,
+                "thinkingConfig": {"thinkingBudget": 0}
             }
         }
 
@@ -160,7 +154,9 @@ async def analyze_food_photo(image_bytes: bytes, mime_type: str = "image/jpeg") 
             ],
             "generationConfig": {
                 "temperature": 0.2,
-                "responseMimeType": "application/json"
+                "maxOutputTokens": 600,
+                "responseMimeType": "application/json",
+                "thinkingConfig": {"thinkingBudget": 0}
             }
         }
 
@@ -275,7 +271,9 @@ async def analyze_food_audio(audio_bytes: bytes, mime_type: str = "audio/ogg") -
             ],
             "generationConfig": {
                 "temperature": 0.2,
-                "responseMimeType": "application/json"
+                "maxOutputTokens": 600,
+                "responseMimeType": "application/json",
+                "thinkingConfig": {"thinkingBudget": 0}
             }
         }
 
