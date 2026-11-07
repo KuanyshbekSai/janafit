@@ -5,6 +5,19 @@ from typing import List
 
 BASE_DIR = Path(__file__).resolve().parent
 
+def _resolve_db_path() -> str:
+    env_path = os.getenv("DB_PATH")
+    if env_path:
+        return env_path
+    if os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
+        return "/tmp/janafit.db"
+    try:
+        data_dir = BASE_DIR / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        return str(data_dir / "janafit.db")
+    except Exception:
+        return "/tmp/janafit.db"
+
 class Settings(BaseSettings):
     # Telegram
     BOT_TOKEN: str = os.getenv("BOT_TOKEN", "")
@@ -37,7 +50,7 @@ class Settings(BaseSettings):
     BASE_WEB_URL: str = os.getenv("BASE_WEB_URL", "http://localhost:8000")
 
     # Database (на Vercel файловая система read-only, доступна только /tmp)
-    DB_PATH: str = os.getenv("DB_PATH", "/tmp/janafit.db" if os.getenv("VERCEL") else str(BASE_DIR / "data" / "janafit.db"))
+    DB_PATH: str = _resolve_db_path()
 
     @property
     def admin_id_list(self) -> List[int]:

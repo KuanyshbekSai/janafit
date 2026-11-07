@@ -45,8 +45,30 @@ candidates = [
     "mini_app",
     "api/mini_app"
 ]
-templates_dir = next((d for d in candidates if os.path.isdir(d)), candidates[0])
-templates = Jinja2Templates(directory=templates_dir)
+valid_dirs = [d for d in candidates if os.path.isdir(d)]
+if not valid_dirs:
+    valid_dirs = [candidates[0]]
+    try:
+        os.makedirs(candidates[0], exist_ok=True)
+    except Exception:
+        pass
+
+templates = Jinja2Templates(directory=valid_dirs)
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    import traceback
+    tb = traceback.format_exc()
+    print(f"Server exception on {request.url.path}: {tb}")
+    return HTMLResponse(
+        f"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'></head>"
+        f"<body style='font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#0f172a;color:#f87171;'>"
+        f"<h2 style='color:#ef4444;margin-bottom:8px;'>⚠️ Janafit Server Error (500)</h2>"
+        f"<p style='color:#94a3b8;margin-top:0;'>Route: <code>{request.url.path}</code></p>"
+        f"<pre style='background:#1e293b;padding:16px;border-radius:8px;color:#e2e8f0;overflow:auto;font-size:12px;line-height:1.5;'>{tb}</pre>"
+        f"</body></html>",
+        status_code=500
+    )
 
 class ProgressToggleRequest(BaseModel):
     day: int

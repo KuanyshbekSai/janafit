@@ -12,7 +12,16 @@ def ensure_db_dir():
     except Exception:
         pass
 
+_db_initialized = False
+
+async def ensure_db_ready():
+    global _db_initialized
+    if not _db_initialized:
+        await init_db()
+        _db_initialized = True
+
 async def init_db():
+    global _db_initialized
     ensure_db_dir()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         await db.execute("""
@@ -106,8 +115,10 @@ async def init_db():
                 pass
 
         await db.commit()
+    _db_initialized = True
 
 async def get_or_create_user(user_id: int, username: str = None, first_name: str = None, last_name: str = None) -> Dict[str, Any]:
+    await ensure_db_ready()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         async with db.execute("SELECT * FROM users WHERE user_id = ?", (user_id,)) as cursor:
@@ -126,6 +137,7 @@ async def get_or_create_user(user_id: int, username: str = None, first_name: str
             return dict(row)
 
 async def check_user_access(user_id: int) -> bool:
+    await ensure_db_ready()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         async with db.execute("SELECT has_access FROM users WHERE user_id = ?", (user_id,)) as cursor:
             row = await cursor.fetchone()
@@ -134,6 +146,7 @@ async def check_user_access(user_id: int) -> bool:
             return False
 
 async def grant_user_access(user_id: int):
+    await ensure_db_ready()
     now = datetime.utcnow().isoformat()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         await db.execute(
@@ -143,6 +156,7 @@ async def grant_user_access(user_id: int):
         await db.commit()
 
 async def create_payment(invoice_id: str, user_id: int, amount: int, provider: str, receipt_file_id: Optional[str] = None) -> int:
+    await ensure_db_ready()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         cursor = await db.execute(
             """INSERT INTO payments (invoice_id, user_id, amount, provider, status, receipt_file_id)
@@ -153,6 +167,7 @@ async def create_payment(invoice_id: str, user_id: int, amount: int, provider: s
         return cursor.lastrowid
 
 async def mark_payment_success(invoice_id: str) -> Optional[int]:
+    await ensure_db_ready()
     now = datetime.utcnow().isoformat()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         db.row_factory = aiosqlite.Row
@@ -219,6 +234,7 @@ async def get_sales_stats() -> Dict[str, Any]:
         }
 
 async def save_user_progress(user_id: int, day: int, completed: bool):
+    await ensure_db_ready()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         if completed:
             await db.execute(
@@ -233,12 +249,14 @@ async def save_user_progress(user_id: int, day: int, completed: bool):
         await db.commit()
 
 async def get_user_progress(user_id: int) -> List[int]:
+    await ensure_db_ready()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         async with db.execute("SELECT day FROM user_progress WHERE user_id = ? AND completed = 1", (user_id,)) as cursor:
             rows = await cursor.fetchall()
             return [r[0] for r in rows]
 
 async def save_user_measurement(user_id: int, weight: float, waist: float, hips: float):
+    await ensure_db_ready()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         await db.execute(
             "INSERT INTO user_measurements (user_id, weight, waist, hips) VALUES (?, ?, ?, ?)",
@@ -247,6 +265,7 @@ async def save_user_measurement(user_id: int, weight: float, waist: float, hips:
         await db.commit()
 
 async def get_user_measurements(user_id: int) -> List[Dict[str, Any]]:
+    await ensure_db_ready()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         async with db.execute(
@@ -269,6 +288,7 @@ async def save_user_meal(
     vitamins_score: int = 50,
     recommendation_json: str = None
 ) -> int:
+    await ensure_db_ready()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         cursor = await db.execute(
             """INSERT INTO user_meals (
@@ -281,6 +301,7 @@ async def save_user_meal(
         return cursor.lastrowid
 
 async def get_user_meals(user_id: int) -> List[Dict[str, Any]]:
+    await ensure_db_ready()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         async with db.execute(
