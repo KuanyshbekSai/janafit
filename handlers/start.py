@@ -1,16 +1,34 @@
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    Message,
+    CallbackQuery,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+    WebAppInfo
+)
 from database import get_or_create_user, check_user_access
 from config import settings
 from services.gas_sync import fire_and_forget, sync_user_to_gas
 
 router = Router()
 
+def get_persistent_reply_keyboard() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="🌸 Открыть Janafit (Mini App)", web_app=WebAppInfo(url=f"{settings.BASE_WEB_URL}/app"))],
+            [KeyboardButton(text="🤖 AI-Тренер 24/7"), KeyboardButton(text="📚 Мои тренировки")]
+        ],
+        resize_keyboard=True,
+        is_persistent=True
+    )
+
 def get_main_menu(has_access: bool) -> InlineKeyboardMarkup:
     if has_access:
         buttons = [
-            [InlineKeyboardButton(text="▶️ Перейти к тренировкам", callback_data="open_course")],
-            [InlineKeyboardButton(text="📱 Открыть Web-приложение (Mini App)", web_app={"url": f"{settings.BASE_WEB_URL}/app"})],
+            [InlineKeyboardButton(text="📱 Открыть Mini App (Плеер + Дневник)", web_app={"url": f"{settings.BASE_WEB_URL}/app"})],
+            [InlineKeyboardButton(text="▶️ Список уроков в чате", callback_data="open_course")],
             [InlineKeyboardButton(text="🤖 Чат с AI-тренером 24/7", callback_data="ai_coach_start")],
             [InlineKeyboardButton(text="💬 Написать живому куратору", callback_data="call_live_coach")]
         ]
@@ -61,7 +79,56 @@ async def cmd_start(message: Message):
             f"• Круглосуточный AI-тренер и поддержка живых кураторов"
         )
 
-    await message.answer(text, reply_markup=get_main_menu(has_access), parse_mode="HTML")
+    await message.answer(
+        text,
+        reply_markup=get_persistent_reply_keyboard(),
+        parse_mode="HTML"
+    )
+    await message.answer(
+        "👇 <b>Нажмите для запуска программы:</b>",
+        reply_markup=get_main_menu(has_access),
+        parse_mode="HTML"
+    )
+
+@router.message(F.text.in_({"/app", "🌸 Открыть Janafit (Mini App)"}))
+async def cmd_app(message: Message):
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🌸 Запустить Janafit App", web_app={"url": f"{settings.BASE_WEB_URL}/app"})]
+    ])
+    await message.answer(
+        "🌸 <b>Janafit Mini App готов к запуску!</b>\n\n"
+        "Нажмите кнопку ниже или синюю кнопку <b>«Меню»</b> в нижнем левом углу для запуска плеера тренировок и дневника питания.",
+        reply_markup=keyboard,
+        parse_mode="HTML"
+    )
+
+@router.message(F.text == "🤖 AI-Тренер 24/7")
+async def cmd_reply_coach(message: Message):
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💬 Открыть диалог с тренером", callback_data="ai_coach_start")]
+    ])
+    await message.answer(
+        "🤖 <b>AI-тренер Janafit на связи!</b> 🌸\n\n"
+        "Задайте любой вопрос по тренировкам или надиктуйте голосом/пришлите фото еды прямо в этот чат!",
+        reply_markup=keyboard,
+        parse_mode="HTML"
+    )
+
+@router.message(F.text == "📚 Мои тренировки")
+async def cmd_reply_lessons(message: Message):
+    has_access = await check_user_access(message.from_user.id)
+    if has_access:
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="📱 Открыть Web-плеер", web_app={"url": f"{settings.BASE_WEB_URL}/app"})],
+            [InlineKeyboardButton(text="📚 Список уроков в чате", callback_data="open_course")]
+        ])
+        await message.answer("Выберите удобный формат тренировок:", reply_markup=keyboard)
+    else:
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text=f"🔥 Забрать курс за {settings.COURSE_PRICE:,} ₸", callback_data="buy_course")],
+            [InlineKeyboardButton(text="🎬 Демо-уроки (Mini App)", web_app={"url": f"{settings.BASE_WEB_URL}/app"})]
+        ])
+        await message.answer("Вам доступен демо-режим. Открыть тренировки:", reply_markup=keyboard)
 
 @router.callback_query(F.data == "about_course")
 async def cb_about_course(callback: CallbackQuery):

@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     # Web & Webhook Server
     WEB_HOST: str = os.getenv("WEB_HOST", "0.0.0.0")
     WEB_PORT: int = _int_env("WEB_PORT", 8000)
-    BASE_WEB_URL: str = os.getenv("BASE_WEB_URL", "http://localhost:8000")
+    BASE_WEB_URL: str = os.getenv("BASE_WEB_URL", "https://janafit.vercel.app")
 
     # Google Apps Script & Sheets Integration
     GAS_WEBAPP_URL: str = os.getenv("GAS_WEBAPP_URL", "https://script.google.com/macros/s/AKfycbxPwf1KbjcMRfjnsAz987-SnnUJjBNJFb7g43ID-OLi3xRqsWw2hZbjOWQVsWkO8A0F/exec")
@@ -124,7 +124,7 @@ class Settings(BaseSettings):
     @classmethod
     def parse_base_web_url(cls, v):
         if not v or not str(v).strip():
-            return "http://localhost:8000"
+            return "https://janafit.vercel.app"
         return str(v).strip().rstrip("/")
 
     @property
