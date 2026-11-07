@@ -16,8 +16,9 @@ except Exception as e:
     app = FastAPI(title="Vercel Error Fallback")
     err_tb = traceback.format_exc()
 
+    @app.api_route("/", methods=["GET", "POST", "HEAD", "OPTIONS"])
     @app.api_route("/{full_path:path}", methods=["GET", "POST", "HEAD", "OPTIONS"])
-    async def catch_all(full_path: str):
+    async def catch_all(full_path: str = ""):
         return HTMLResponse(
             f"<html><body style='font-family:sans-serif;padding:20px;background:#1e1e2e;color:#f38ba8;'>"
             f"<h2>Vercel Python Lambda Error:</h2>"

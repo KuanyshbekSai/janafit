@@ -24,7 +24,7 @@ from services.robokassa import verify_robokassa_webhook
 from services.security import validate_telegram_init_data
 from services.ai_service import ask_ai_coach, analyze_food_photo
 
-app = FastAPI(title="Janafit Web & Webhook Server")
+app = FastAPI(title="Janafit Web & Webhook Server", redirect_slashes=False)
 
 @app.on_event("startup")
 async def on_startup():
