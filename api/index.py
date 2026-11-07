@@ -1,5 +1,6 @@
 import sys
 import os
+from urllib.parse import parse_qs, urlencode
 
 # Add root directory to sys.path so modules like web, services, config can be imported
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -15,40 +16,22 @@ try:
 
         async def __call__(self, scope, receive, send):
             if scope["type"] == "http":
-                raw_headers = dict(scope.get("headers", []))
-                headers_str = {k.decode("latin1"): v.decode("latin1") for k, v in raw_headers.items()}
-                
-                # Check for debug endpoint
-                path = scope.get("path", "")
-                if "/debug" in path or "/debug" in headers_str.get("x-matched-path", "") or "/debug" in headers_str.get("x-forwarded-uri", ""):
-                    response_body = str({
-                        "scope_path": scope.get("path"),
-                        "headers": headers_str
-                    }).encode("utf-8")
-                    await send({
-                        "type": "http.response.start",
-                        "status": 200,
-                        "headers": [
-                            [b"content-type", b"application/json"],
-                            [b"content-length", str(len(response_body)).encode("utf-8")]
-                        ]
-                    })
-                    await send({
-                        "type": "http.response.body",
-                        "body": response_body
-                    })
-                    return
+                # Check query string for __path injected by vercel.json rewrite
+                qs_bytes = scope.get("query_string", b"")
+                if qs_bytes:
+                    try:
+                        params = parse_qs(qs_bytes.decode("utf-8"))
+                        if "__path" in params:
+                            extracted = params.pop("__path")[0]
+                            clean_path = extracted if extracted.startswith("/") else "/" + extracted
+                            scope["path"] = clean_path
+                            scope["query_string"] = urlencode(params, doseq=True).encode("utf-8")
+                    except Exception:
+                        pass
 
-                # Normal resolution: check headers that actually contain the requested route
-                real_path = (
-                    headers_str.get("x-invoke-path") or
-                    headers_str.get("x-forwarded-uri") or
-                    headers_str.get("x-original-url") or
-                    headers_str.get("x-rewrite-url")
-                )
-                if real_path and real_path.startswith("/"):
-                    scope["path"] = real_path.split("?")[0]
-                elif path.startswith("/api/index.py"):
+                # Fallback for paths starting with /api/index.py
+                path = scope.get("path", "")
+                if path.startswith("/api/index.py"):
                     trimmed = path[len("/api/index.py"):]
                     scope["path"] = trimmed if trimmed else "/"
 
