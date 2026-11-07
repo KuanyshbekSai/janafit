@@ -197,6 +197,10 @@ async def analyze_photo_endpoint(
 
     analysis = await analyze_food_photo(image_bytes, mime_type)
 
+    import json
+    rec_obj = analysis.get("recommendation", {})
+    rec_str = json.dumps(rec_obj, ensure_ascii=False) if rec_obj else None
+
     # Сохраняем в дневник питания
     await save_user_meal(
         user_id=verified_id,
@@ -205,7 +209,11 @@ async def analyze_photo_endpoint(
         protein=float(analysis.get("protein", 0)),
         fats=float(analysis.get("fats", 0)),
         carbs=float(analysis.get("carbs", 0)),
-        advice=analysis.get("advice", "")
+        advice=analysis.get("advice", ""),
+        omega3_score=int(analysis.get("omega3_score", 25)),
+        aojiru_score=int(analysis.get("aojiru_greens_score", 30)),
+        vitamins_score=int(analysis.get("vitamins_score", 50)),
+        recommendation_json=rec_str
     )
 
     return {"status": "ok", "analysis": analysis}
@@ -220,6 +228,19 @@ async def get_meals_endpoint(user_id: int = 123456789, init_data: Optional[str] 
     total_f = sum(m.get("fats", 0) for m in meals)
     total_c = sum(m.get("carbs", 0) for m in meals)
 
+    count = len(meals) or 1
+    avg_omega3 = int(sum(m.get("omega3_score", 25) for m in meals) / count)
+    avg_aojiru = int(sum(m.get("aojiru_score", 30) for m in meals) / count)
+    avg_vitamins = int(sum(m.get("vitamins_score", 50) for m in meals) / count)
+
+    latest_rec = None
+    if meals and meals[0].get("recommendation_json"):
+        try:
+            import json
+            latest_rec = json.loads(meals[0]["recommendation_json"])
+        except Exception:
+            pass
+
     return {
         "status": "ok",
         "meals": meals,
@@ -227,7 +248,11 @@ async def get_meals_endpoint(user_id: int = 123456789, init_data: Optional[str] 
             "total_calories": total_cal,
             "total_protein": round(total_p, 1),
             "total_fats": round(total_f, 1),
-            "total_carbs": round(total_c, 1)
+            "total_carbs": round(total_c, 1),
+            "omega3_score": avg_omega3,
+            "aojiru_score": avg_aojiru,
+            "vitamins_score": avg_vitamins,
+            "recommendation": latest_rec
         }
     }
 

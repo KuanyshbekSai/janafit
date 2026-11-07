@@ -75,9 +75,25 @@ async def init_db():
                 fats REAL,
                 carbs REAL,
                 advice TEXT,
+                omega3_score INTEGER DEFAULT 25,
+                aojiru_score INTEGER DEFAULT 30,
+                vitamins_score INTEGER DEFAULT 50,
+                recommendation_json TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+
+        # Попытка добавить колонки, если таблица уже существовала
+        for col in [
+            "ALTER TABLE user_meals ADD COLUMN omega3_score INTEGER DEFAULT 25",
+            "ALTER TABLE user_meals ADD COLUMN aojiru_score INTEGER DEFAULT 30",
+            "ALTER TABLE user_meals ADD COLUMN vitamins_score INTEGER DEFAULT 50",
+            "ALTER TABLE user_meals ADD COLUMN recommendation_json TEXT"
+        ]:
+            try:
+                await db.execute(col)
+            except Exception:
+                pass
 
         await db.commit()
 
@@ -230,12 +246,26 @@ async def get_user_measurements(user_id: int) -> List[Dict[str, Any]]:
             rows = await cursor.fetchall()
             return [dict(r) for r in rows]
 
-async def save_user_meal(user_id: int, dish_name: str, calories: int, protein: float, fats: float, carbs: float, advice: str) -> int:
+async def save_user_meal(
+    user_id: int,
+    dish_name: str,
+    calories: int,
+    protein: float,
+    fats: float,
+    carbs: float,
+    advice: str,
+    omega3_score: int = 25,
+    aojiru_score: int = 30,
+    vitamins_score: int = 50,
+    recommendation_json: str = None
+) -> int:
     async with aiosqlite.connect(settings.DB_PATH) as db:
         cursor = await db.execute(
-            """INSERT INTO user_meals (user_id, dish_name, calories, protein, fats, carbs, advice)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (user_id, dish_name, calories, protein, fats, carbs, advice)
+            """INSERT INTO user_meals (
+                user_id, dish_name, calories, protein, fats, carbs, advice,
+                omega3_score, aojiru_score, vitamins_score, recommendation_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (user_id, dish_name, calories, protein, fats, carbs, advice, omega3_score, aojiru_score, vitamins_score, recommendation_json)
         )
         await db.commit()
         return cursor.lastrowid
@@ -244,7 +274,9 @@ async def get_user_meals(user_id: int) -> List[Dict[str, Any]]:
     async with aiosqlite.connect(settings.DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         async with db.execute(
-            "SELECT id, dish_name, calories, protein, fats, carbs, advice, created_at FROM user_meals WHERE user_id = ? ORDER BY id DESC LIMIT 10",
+            """SELECT id, dish_name, calories, protein, fats, carbs, advice,
+                      omega3_score, aojiru_score, vitamins_score, recommendation_json, created_at
+               FROM user_meals WHERE user_id = ? ORDER BY id DESC LIMIT 10""",
             (user_id,)
         ) as cursor:
             rows = await cursor.fetchall()

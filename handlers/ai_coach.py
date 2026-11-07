@@ -127,6 +127,13 @@ async def process_food_photo(message: Message, bot: Bot, state: FSMContext):
         score = analysis.get("health_score", 8.5)
         verdict = analysis.get("verdict", "Сбалансированное блюдо")
         advice = analysis.get("advice", "")
+        omega3 = analysis.get("omega3_score", 25)
+        aojiru = analysis.get("aojiru_greens_score", 30)
+        vitamins = analysis.get("vitamins_score", 50)
+        rec = analysis.get("recommendation", {})
+
+        import json
+        rec_json = json.dumps(rec, ensure_ascii=False) if rec else None
 
         # Сохраняем в дневник
         await save_user_meal(
@@ -136,23 +143,37 @@ async def process_food_photo(message: Message, bot: Bot, state: FSMContext):
             protein=p,
             fats=f,
             carbs=c,
-            advice=advice
+            advice=advice,
+            omega3_score=omega3,
+            aojiru_score=aojiru,
+            vitamins_score=vitamins,
+            recommendation_json=rec_json
         )
 
         reply_text = (
             f"🍽 <b>{dish}</b> (~{weight} г)\n\n"
             f"🔥 <b>Калорийность:</b> {cal} ккал\n"
-            f"🍗 Белки: <b>{p} г</b> | 🥑 Жиры: <b>{f} г</b> | 🍚 Углеводы: <b>{c} г</b>\n"
-            f"⭐️ <b>Оценка Janafit:</b> {score} / 10\n\n"
-            f"🎯 <i>{verdict}</i>\n\n"
-            f"💡 <b>Совет нутрициолога:</b>\n{advice}\n\n"
-            f"<i>Запись автоматически добавлена в ваш дневник питания в приложении!</i>"
+            f"🍗 Белки: <b>{p} г</b> | 🥑 Жиры: <b>{f} г</b> | 🍚 Углеводы: <b>{c} г</b>\n\n"
+            f"💊 <b>Баланс микронутриентов:</b>\n"
+            f"• Омега-3 (ПНЖК): <b>{omega3}%</b> нормы\n"
+            f"• Зеленые энзимы / Аодзиру: <b>{aojiru}%</b> нормы\n"
+            f"• Витаминный индекс (D3, B, Mg, Zn): <b>{vitamins}%</b>\n\n"
+            f"💡 <b>Совет нутрициолога:</b>\n{advice}\n"
         )
 
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📱 Открыть дневник в Mini App", web_app={"url": f"{settings.BASE_WEB_URL}/app"})],
-            [InlineKeyboardButton(text="💬 Спросить тренера", callback_data="ai_coach_start")]
-        ])
+        buttons = []
+        if rec and rec.get("product_name"):
+            reply_text += (
+                f"\n🎁 <b>Персональная рекомендация:</b>\n"
+                f"<i>{rec.get('short_reason')}</i>\n"
+                f"👉 <b>{rec.get('product_name')}</b> по спеццене: <b>{rec.get('discount_price')}</b>"
+            )
+            buttons.append([InlineKeyboardButton(text=f"🛒 Заказать {rec.get('product_name')[:25]}...", url=rec.get("action_url", "https://t.me/janafit_bot"))])
+
+        buttons.append([InlineKeyboardButton(text="📱 Открыть дневник в Mini App", web_app={"url": f"{settings.BASE_WEB_URL}/app"})])
+        buttons.append([InlineKeyboardButton(text="💬 Спросить тренера", callback_data="ai_coach_start")])
+
+        keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
 
         await wait_msg.delete()
         await message.answer(reply_text, reply_markup=keyboard, parse_mode="HTML")
