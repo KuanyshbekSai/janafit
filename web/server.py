@@ -102,10 +102,14 @@ def get_verified_user_id(init_data: Optional[str], fallback_user_id: Optional[in
     return fallback_user_id or 123456789
 
 @app.get("/")
+@app.get("/api")
+@app.get("/api/")
+@app.get("/api/index.py")
 async def root():
     return RedirectResponse(url="/app")
 
 @app.get("/health")
+@app.get("/api/health")
 async def health_check():
     return {"status": "ok", "app": "Janafit Engine"}
 
@@ -174,6 +178,7 @@ async def payment_fail_page(request: Request):
     })
 
 @app.get("/app", response_class=HTMLResponse)
+@app.get("/api/app", response_class=HTMLResponse)
 async def mini_app_view(request: Request, day: int = 1):
     return templates.TemplateResponse("index.html", {
         "request": request,
