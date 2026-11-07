@@ -158,17 +158,14 @@ async def robokassa_result(
 
 @app.get("/payment/success", response_class=HTMLResponse)
 async def payment_success_page(request: Request, InvId: str = "JF-ORDER", OutSum: str = "4990"):
-    return templates.TemplateResponse("success.html", {
-        "request": request,
+    return templates.TemplateResponse(request=request, name="success.html", context={
         "inv_id": InvId,
         "out_sum": OutSum
     })
 
 @app.get("/payment/fail", response_class=HTMLResponse)
 async def payment_fail_page(request: Request):
-    return templates.TemplateResponse("fail.html", {
-        "request": request
-    })
+    return templates.TemplateResponse(request=request, name="fail.html", context={})
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/app", response_class=HTMLResponse)
@@ -176,8 +173,7 @@ async def payment_fail_page(request: Request):
 @app.get("/api/app", response_class=HTMLResponse)
 @app.get("/api/index.py", response_class=HTMLResponse)
 async def mini_app_view(request: Request, day: int = 1):
-    return templates.TemplateResponse("index.html", {
-        "request": request,
+    return templates.TemplateResponse(request=request, name="index.html", context={
         "default_day": day,
         "course_title": settings.COURSE_TITLE
     })
