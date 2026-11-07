@@ -109,6 +109,13 @@ class Settings(BaseSettings):
             return "+7 (777) 000-00-00"
         return str(v).strip()
 
+    @field_validator("GEMINI_API_KEY", mode="before")
+    @classmethod
+    def parse_gemini_key(cls, v):
+        if not v or not str(v).strip():
+            return ""
+        return str(v).strip()
+
     @field_validator("BASE_WEB_URL", mode="before")
     @classmethod
     def parse_base_web_url(cls, v):

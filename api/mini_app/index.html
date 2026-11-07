@@ -132,6 +132,11 @@
       </div>
     </div>
     <div class="flex items-center space-x-2">
+      <!-- User Profile / Goal Button -->
+      <button id="profile-open-btn" onclick="openProfileModal(false)" class="flex items-center space-x-1 px-2.5 py-1 bg-pink-500/15 border border-pink-500/30 rounded-full text-pink-300 text-xs font-bold hover:scale-105 active:scale-95 transition-all">
+        <span>🎯</span>
+        <span id="profile-chip-text">Моя цель</span>
+      </button>
       <!-- Theme Toggle Button -->
       <button id="theme-toggle-btn" class="w-8 h-8 rounded-full bg-slate-800 hover:scale-105 active:scale-95 flex items-center justify-center text-xs text-amber-300 transition-all border border-slate-700/60" title="Сменить тему">
         <span id="theme-icon">🌙</span>
@@ -200,40 +205,89 @@
         </div>
       </div>
 
-      <!-- Exercise Breakdown -->
-      <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800/80 space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
-          <i class="fa-solid fa-list-check text-pink-400"></i>
-          <span>План и упражнения занятия:</span>
-        </h3>
-        <div id="exercise-list" class="space-y-2 text-xs">
-          <!-- Rendered by JS -->
+      <!-- UNIFIED WORKOUT & INTERACTIVE TIMER HUD -->
+      <div id="workout-hud" class="bg-gradient-to-b from-slate-900 to-slate-900/90 rounded-2xl p-4 border border-slate-800 shadow-2xl space-y-3.5 relative overflow-hidden transition-all">
+        <!-- Ambient background glow during active workout -->
+        <div id="timer-ambient-glow" class="absolute -right-8 -top-8 w-36 h-36 bg-pink-500/10 rounded-full blur-2xl pointer-events-none transition-all"></div>
+
+        <!-- HUD Header: Step and Phase -->
+        <div class="flex justify-between items-center relative z-10">
+          <div class="flex items-center space-x-2">
+            <span id="active-step-badge" class="px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-extrabold text-[10px] border border-pink-500/30">
+              Упражнение 1 из 5
+            </span>
+            <div id="timer-live-dot" class="w-2 h-2 rounded-full bg-pink-500 animate-pulse hidden"></div>
+          </div>
+          <span id="timer-phase-badge" class="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+            Готов к старту
+          </span>
+        </div>
+
+        <!-- Current Exercise Name & Instruction -->
+        <div class="text-center space-y-1 relative z-10 py-1">
+          <div id="active-exercise-title" class="text-base sm:text-lg font-black text-white leading-tight">
+            1. Суставная разминка и дыхание
+          </div>
+          <div id="active-exercise-sub" class="text-xs text-slate-400">
+            Плавные круговые движения плечами и тазом
+          </div>
+        </div>
+
+        <!-- Circular Visual Countdown Display -->
+        <div class="flex items-center justify-center py-2 relative z-10">
+          <div class="relative flex items-center justify-center">
+            <svg class="w-36 h-36 transform -rotate-90">
+              <circle cx="72" cy="72" r="60" stroke="currentColor" stroke-width="7" class="text-slate-800/80" fill="transparent" />
+              <circle id="timer-progress-ring" cx="72" cy="72" r="60" stroke="currentColor" stroke-width="7" class="text-pink-500 transition-all duration-300" fill="transparent" stroke-dasharray="377" stroke-dashoffset="0" stroke-linecap="round" />
+            </svg>
+            <div class="absolute flex flex-col items-center justify-center">
+              <span id="timer-display" class="text-4xl sm:text-5xl font-black text-white font-mono tracking-wider">00:40</span>
+              <span id="timer-subtext" class="text-[10px] text-pink-400 font-bold uppercase tracking-widest mt-0.5">РАБОТА</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Exercise Hint (Previews upcoming exercise during 20s rest) -->
+        <div id="next-exercise-hint" class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-between text-xs relative z-10">
+          <span class="text-slate-400 flex items-center space-x-1.5 overflow-hidden text-ellipsis whitespace-nowrap">
+            <span>⏭ Далее:</span>
+            <strong id="next-exercise-name" class="text-slate-200 truncate">2. Лимфодренажные прыжки</strong>
+          </span>
+          <span id="next-exercise-duration" class="text-[10px] text-purple-400 font-bold px-1.5 py-0.5 bg-purple-500/10 rounded flex-shrink-0">40 сек</span>
+        </div>
+
+        <!-- Unified Controls: Prev, Start/Pause, Next -->
+        <div class="grid grid-cols-5 gap-2 relative z-10 pt-1">
+          <button id="ex-prev-btn" onclick="prevExercise()" title="Предыдущее упражнение" class="col-span-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs font-bold border border-slate-700 transition-all flex items-center justify-center">
+            <i class="fa-solid fa-backward-step"></i>
+          </button>
+          <button id="timer-start-btn" class="col-span-3 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-95 active:scale-95 text-white text-xs font-bold transition-all shadow-lg shadow-pink-600/30 flex items-center justify-center space-x-2">
+            <i id="timer-btn-icon" class="fa-solid fa-play"></i>
+            <span id="timer-btn-text">Запустить тренировку (40/20)</span>
+          </button>
+          <button id="ex-next-btn" onclick="nextExercise()" title="Следующее упражнение" class="col-span-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs font-bold border border-slate-700 transition-all flex items-center justify-center">
+            <i class="fa-solid fa-forward-step"></i>
+          </button>
+        </div>
+
+        <div class="flex justify-center pt-0.5">
+          <button id="timer-reset-btn" class="text-[11px] text-slate-400 hover:text-slate-200 transition-colors py-1 px-3">
+            <i class="fa-solid fa-rotate-left mr-1"></i> Сбросить сначала
+          </button>
         </div>
       </div>
 
-      <!-- Audio-Synthesized Interval Timer (40/20) -->
+      <!-- Plan Checklist Linked Dynamically to Active Timer HUD -->
       <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800/80 space-y-3">
         <div class="flex justify-between items-center">
-          <div class="flex items-center space-x-2">
-            <div class="w-2.5 h-2.5 rounded-full bg-pink-500 animate-pulse"></div>
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Интервальный таймер со звуком</h3>
-          </div>
-          <span id="timer-status" class="text-xs text-pink-400 uppercase font-black tracking-widest px-2 py-0.5 bg-pink-500/10 rounded border border-pink-500/20">Готов</span>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+            <i class="fa-solid fa-list-check text-pink-400"></i>
+            <span>План упражнений:</span>
+          </h3>
+          <span id="exercises-progress-badge" class="text-[10px] text-pink-400 font-bold">0 / 5 завершено</span>
         </div>
-        
-        <div class="flex items-center justify-center py-2 space-x-4">
-          <div id="timer-display" class="text-5xl font-black text-white font-mono tracking-wider drop-shadow-md">
-            00:40
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <button id="timer-start-btn" class="py-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 active:scale-95 text-white text-xs font-bold transition-all shadow-md">
-            Старт / Пауза
-          </button>
-          <button id="timer-reset-btn" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs font-semibold border border-slate-700 transition-all">
-            Сброс (40/20)
-          </button>
+        <div id="exercise-list" class="space-y-2 text-xs">
+          <!-- Rendered by JS, active one highlighted with glowing border -->
         </div>
       </div>
     </main>
@@ -271,6 +325,46 @@
       <button id="save-measure-btn" class="w-full py-3 rounded-xl bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-bold text-xs shadow-lg transition-all">
         Записать замер
       </button>
+    </div>
+
+    <!-- User Profile & Target Goal Card -->
+    <div class="bg-gradient-to-br from-slate-900 to-slate-900/90 rounded-2xl p-4 border border-purple-500/30 shadow-lg space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center text-base">
+            🎯
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white flex items-center space-x-1.5">
+              <span id="profile-card-goal-title">Цель: Похудение и рельеф</span>
+            </div>
+            <div id="profile-card-target-text" class="text-[10px] text-slate-400">Целевой вес: 58 кг (минус 7 кг)</div>
+          </div>
+        </div>
+        <button onclick="openProfileModal(true)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] border border-slate-700 transition-all flex items-center space-x-1">
+          <i class="fa-solid fa-pen text-[10px]"></i>
+          <span>Изменить</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-4 gap-1.5 text-center text-xs">
+        <div class="p-2 bg-slate-800/40 rounded-xl border border-slate-700/30">
+          <div class="text-[9px] text-slate-400">Рост</div>
+          <div id="prof-height-val" class="font-extrabold text-white">168 см</div>
+        </div>
+        <div class="p-2 bg-slate-800/40 rounded-xl border border-slate-700/30">
+          <div class="text-[9px] text-slate-400">Старт</div>
+          <div id="prof-weight-val" class="font-extrabold text-pink-300">65 кг</div>
+        </div>
+        <div class="p-2 bg-slate-800/40 rounded-xl border border-slate-700/30">
+          <div class="text-[9px] text-slate-400">Цель</div>
+          <div id="prof-target-val" class="font-extrabold text-purple-300">58 кг</div>
+        </div>
+        <div class="p-2 bg-slate-800/40 rounded-xl border border-slate-700/30">
+          <div class="text-[9px] text-slate-400">ИМТ</div>
+          <div id="prof-bmi-val" class="font-extrabold text-emerald-400">23.0</div>
+        </div>
+      </div>
     </div>
 
     <!-- Measurements History List -->
@@ -474,6 +568,27 @@
       </div>
     </div>
 
+    <!-- Food History / Дневник питания -->
+    <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 space-y-3">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 border border-pink-500/30 flex items-center justify-center text-sm">
+            📋
+          </div>
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white">История питания</h3>
+            <div class="text-[10px] text-slate-400">Сохранённые приёмы пищи за сегодня</div>
+          </div>
+        </div>
+        <span id="meals-count-badge" class="px-2.5 py-0.5 rounded-full bg-pink-500/10 text-pink-400 font-extrabold text-[10px] border border-pink-500/20">0 блюд</span>
+      </div>
+
+      <!-- Meals List Container -->
+      <div id="meals-history-list" class="space-y-2.5 text-xs">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
     <!-- Nutrition Golden Rules -->
     <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 space-y-3">
       <h3 class="text-xs font-bold uppercase tracking-wider text-pink-400 flex items-center space-x-2">
@@ -562,6 +677,220 @@
       <span>AI-Тренер</span>
     </button>
   </nav>
+
+  <!-- ONBOARDING & BODY MEASUREMENTS WIZARD MODAL -->
+  <div id="onboarding-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden transition-all">
+    <div class="bg-slate-900 border border-slate-700/80 rounded-3xl p-5 max-w-sm w-full shadow-2xl relative space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar">
+      
+      <!-- Modal Close Button (Only if editing existing profile) -->
+      <button id="onboarding-close-btn" onclick="closeProfileModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs hidden">
+        ✕
+      </button>
+
+      <!-- Progress bar of wizard -->
+      <div class="space-y-1">
+        <div class="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <span id="wizard-step-label">Шаг 1 из 3: О вас</span>
+          <span id="wizard-step-pct" class="text-pink-400">33%</span>
+        </div>
+        <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div id="wizard-progress-bar" class="h-full bg-gradient-to-r from-pink-500 to-purple-600 rounded-full transition-all duration-300" style="width: 33%"></div>
+        </div>
+      </div>
+
+      <!-- STEP 1: GENDER, AGE & FITNESS LEVEL -->
+      <div id="wizard-step-1" class="space-y-4">
+        <div class="text-center space-y-1">
+          <div class="w-12 h-12 mx-auto rounded-2xl bg-pink-500/20 text-pink-400 border border-pink-500/30 flex items-center justify-center text-2xl shadow-lg">
+            🌸
+          </div>
+          <h2 class="text-lg font-black text-white">Добро пожаловать в Janafit!</h2>
+          <p class="text-xs text-slate-400">Давайте персонализируем программу под ваше тело и цели</p>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1.5">Ваш пол:</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="selectGender('female')" id="gender-btn-female" class="p-3 rounded-2xl border-2 border-pink-500 bg-pink-500/10 text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all">
+                <span class="text-lg">👩</span>
+                <span>Женский</span>
+              </button>
+              <button type="button" onclick="selectGender('male')" id="gender-btn-male" class="p-3 rounded-2xl border border-slate-700 bg-slate-800/60 text-slate-300 font-bold text-xs flex items-center justify-center space-x-2 transition-all">
+                <span class="text-lg">👨</span>
+                <span>Мужской</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1.5">Возраст (лет):</label>
+              <input type="number" id="wiz-age" value="26" min="14" max="80" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-center text-base font-bold text-white focus:outline-none focus:border-pink-500">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1.5">Рост (см):</label>
+              <input type="number" id="wiz-height" value="168" min="120" max="220" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-center text-base font-bold text-white focus:outline-none focus:border-pink-500">
+            </div>
+          </div>
+        </div>
+
+        <button onclick="goToWizardStep(2)" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-95 active:scale-95 text-white font-extrabold text-xs shadow-lg shadow-pink-600/30 transition-all flex items-center justify-center space-x-2">
+          <span>Далее: Цель и Вес</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <!-- STEP 2: CURRENT WEIGHT, TARGET WEIGHT & MAIN GOAL -->
+      <div id="wizard-step-2" class="space-y-4 hidden">
+        <div class="text-center space-y-1">
+          <div class="w-12 h-12 mx-auto rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center text-2xl shadow-lg">
+            🎯
+          </div>
+          <h2 class="text-lg font-black text-white">Параметры и Цель</h2>
+          <p class="text-xs text-slate-400">Какой результат вы хотите увидеть через 21 день?</p>
+        </div>
+
+        <div class="space-y-3">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1.5">Текущий вес (кг):</label>
+              <input type="number" step="0.1" id="wiz-current-weight" value="65.0" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-center text-base font-bold text-pink-300 focus:outline-none focus:border-pink-500">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1.5">Желаемый вес (кг):</label>
+              <input type="number" step="0.1" id="wiz-target-weight" value="58.0" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-center text-base font-bold text-purple-300 focus:outline-none focus:border-purple-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1.5">Главная цель:</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="selectGoal('weight_loss')" id="goal-btn-weight_loss" class="p-2.5 rounded-xl border-2 border-pink-500 bg-pink-500/10 text-white font-bold text-[11px] text-left transition-all">
+                <div>🔥 Сбросить вес</div>
+                <div class="text-[9px] text-slate-400 font-normal">Минус 3-7 кг</div>
+              </button>
+              <button type="button" onclick="selectGoal('tone')" id="goal-btn-tone" class="p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 font-bold text-[11px] text-left transition-all">
+                <div>🍑 Рельеф и ягодицы</div>
+                <div class="text-[9px] text-slate-400 font-normal">Подтянуть тело</div>
+              </button>
+              <button type="button" onclick="selectGoal('energy')" id="goal-btn-energy" class="p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 font-bold text-[11px] text-left transition-all">
+                <div>⚡️ Тонус и бодрость</div>
+                <div class="text-[9px] text-slate-400 font-normal">Энергия каждый день</div>
+              </button>
+              <button type="button" onclick="selectGoal('health')" id="goal-btn-health" class="p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 font-bold text-[11px] text-left transition-all">
+                <div>🧘 Осанка и легкость</div>
+                <div class="text-[9px] text-slate-400 font-normal">Убрать отёки</div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex space-x-2 pt-1">
+          <button onclick="goToWizardStep(1)" class="w-1/3 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all">
+            Назад
+          </button>
+          <button onclick="goToWizardStep(3)" class="w-2/3 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-95 active:scale-95 text-white font-extrabold text-xs shadow-lg shadow-pink-600/30 transition-all flex items-center justify-center space-x-2">
+            <span>Далее: Замеры тела</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3: MEASUREMENTS (WAIST, HIPS) -->
+      <div id="wizard-step-3" class="space-y-4 hidden">
+        <div class="text-center space-y-1">
+          <div class="w-12 h-12 mx-auto rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-2xl shadow-lg">
+            📏
+          </div>
+          <h2 class="text-lg font-black text-white">Стартовые замеры тела</h2>
+          <p class="text-xs text-slate-400">Зафиксируем точку А для отслеживания яркого прогресса</p>
+        </div>
+
+        <div class="space-y-3">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1.5">Талия (см):</label>
+              <input type="number" step="0.5" id="wiz-waist" value="72.0" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-center text-base font-bold text-white focus:outline-none focus:border-pink-500">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1.5">Бёдра (см):</label>
+              <input type="number" step="0.5" id="wiz-hips" value="98.0" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-center text-base font-bold text-white focus:outline-none focus:border-pink-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1.5">Уровень подготовки:</label>
+            <div class="grid grid-cols-3 gap-1.5 text-center">
+              <button type="button" onclick="selectLevel('beginner')" id="lvl-btn-beginner" class="p-2 rounded-xl border-2 border-pink-500 bg-pink-500/10 text-white font-bold text-[10px] transition-all">
+                Начинающий
+              </button>
+              <button type="button" onclick="selectLevel('medium')" id="lvl-btn-medium" class="p-2 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 font-bold text-[10px] transition-all">
+                Средний
+              </button>
+              <button type="button" onclick="selectLevel('pro')" id="lvl-btn-pro" class="p-2 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 font-bold text-[10px] transition-all">
+                Опытный
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex space-x-2 pt-1">
+          <button onclick="goToWizardStep(2)" class="w-1/3 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all">
+            Назад
+          </button>
+          <button onclick="calculateAndShowPlan()" class="w-2/3 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-95 active:scale-95 text-white font-extrabold text-xs shadow-lg shadow-pink-600/30 transition-all flex items-center justify-center space-x-2">
+            <span>Рассчитать мой план 🚀</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 4: PERSONALIZED PLAN RESULTS -->
+      <div id="wizard-step-4" class="space-y-4 hidden">
+        <div class="text-center space-y-1">
+          <div class="w-12 h-12 mx-auto rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-2xl shadow-lg">
+            ✨
+          </div>
+          <h2 class="text-lg font-black text-white">Ваш персональный план Janafit!</h2>
+          <p class="text-xs text-slate-400">План сформирован на основе ваших параметров</p>
+        </div>
+
+        <div class="p-3.5 bg-slate-800/60 rounded-2xl border border-slate-700/60 space-y-3">
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="p-2 bg-slate-900/60 rounded-xl border border-slate-700/40">
+              <div class="text-[9px] text-slate-400 uppercase font-bold">ИМТ</div>
+              <div id="plan-bmi-val" class="font-extrabold text-emerald-400 text-sm">23.0</div>
+              <div id="plan-bmi-status" class="text-[8px] text-emerald-300 font-semibold">Норма</div>
+            </div>
+            <div class="p-2 bg-slate-900/60 rounded-xl border border-slate-700/40">
+              <div class="text-[9px] text-slate-400 uppercase font-bold">Калории/день</div>
+              <div id="plan-cal-val" class="font-extrabold text-pink-400 text-sm">1 540</div>
+              <div class="text-[8px] text-pink-300 font-semibold">Дефицит</div>
+            </div>
+            <div class="p-2 bg-slate-900/60 rounded-xl border border-slate-700/40">
+              <div class="text-[9px] text-slate-400 uppercase font-bold">Вода/день</div>
+              <div id="plan-water-val" class="font-extrabold text-cyan-400 text-sm">2.0 л</div>
+              <div class="text-[8px] text-cyan-300 font-semibold">8 стаканов</div>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-pink-500/10 border border-pink-500/20 text-xs text-slate-200 leading-relaxed space-y-1">
+            <div class="font-bold text-pink-400 flex items-center space-x-1.5">
+              <span>🎯 Прогноз достижения цели:</span>
+            </div>
+            <p id="plan-forecast-text" class="text-[11px] text-slate-300">
+              Снижение веса с 65 кг до 58 кг (минус 7 кг) комфортно достигается за 21–28 дней программы при тренировках через день и норме воды.
+            </p>
+          </div>
+        </div>
+
+        <button onclick="finishOnboardingAndSave()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-95 active:scale-95 text-white font-extrabold text-xs shadow-lg shadow-pink-600/30 transition-all flex items-center justify-center space-x-2">
+          <span>🚀 Начать курс Janafit!</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
 
   <script>
     // Init Telegram WebApp
@@ -749,6 +1078,11 @@
             measurements = data.measurements;
             localStorage.setItem('janafit_measurements', JSON.stringify(measurements));
           }
+          if (data.profile) {
+            userProfile = data.profile;
+            localStorage.setItem('janafit_profile', JSON.stringify(userProfile));
+            updateProfileUI();
+          }
           renderDays();
           renderMeasurements();
         }
@@ -776,29 +1110,42 @@
       updateStats();
     }
 
+    let activeLesson = null;
+    let currentExIndex = 0;
+
     function selectDay(day) {
       currentDay = day;
       const lessonIdx = (day - 1) % curriculum.length;
-      const lesson = curriculum[lessonIdx];
+      activeLesson = curriculum[lessonIdx];
+      currentExIndex = 0;
       const weekNum = Math.ceil(day / 7);
 
       document.getElementById('lesson-week').innerText = `Неделя ${weekNum}`;
       document.getElementById('lesson-tag').innerText = `День ${day}`;
-      document.getElementById('lesson-title').innerText = lesson.title;
-      document.getElementById('lesson-duration').innerText = lesson.duration;
+      document.getElementById('lesson-title').innerText = activeLesson.title;
+      document.getElementById('lesson-duration').innerText = activeLesson.duration;
 
       const player = document.getElementById('yt-player');
-      player.src = `https://www.youtube-nocookie.com/embed/${lesson.ytId}?rel=0&modestbranding=1`;
+      player.src = `https://www.youtube-nocookie.com/embed/${activeLesson.ytId}?rel=0&modestbranding=1`;
 
       const exList = document.getElementById('exercise-list');
       exList.innerHTML = '';
-      lesson.exercises.forEach(ex => {
+      activeLesson.exercises.forEach((ex, idx) => {
         const item = document.createElement('div');
-        item.className = "flex items-start space-x-2.5 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30";
+        item.dataset.time = ex.time || "40 сек";
+        item.onclick = () => {
+          currentExIndex = idx;
+          isWorking = true;
+          timerSeconds = WORK_DURATION;
+          updateWorkoutHUD();
+          updateTimerUI();
+          playBeep(440, 0.1, "sine");
+        };
+        item.className = "flex items-start space-x-2.5 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30 cursor-pointer transition-all";
         item.innerHTML = `
-          <span class="px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-300 font-mono font-bold text-[10px]">${ex.time}</span>
+          <span class="ex-status-tag px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-300 font-mono font-bold text-[10px]">${ex.time}</span>
           <div class="flex-1">
-            <div class="font-semibold text-slate-200">${ex.name}</div>
+            <div class="font-semibold text-slate-200 text-xs">${idx + 1}. ${ex.name}</div>
             <div class="text-[10px] text-slate-400">${ex.note}</div>
           </div>
         `;
@@ -817,6 +1164,8 @@
       }
 
       renderDays();
+      updateWorkoutHUD();
+      updateTimerUI();
     }
 
     function updateStats() {
@@ -932,45 +1281,197 @@
       if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     };
 
-    // Interval Timer (40s work / 20s rest) with Audio Synthesizer
+    // Interval Timer & Unified Exercise HUD Engine
     let timerInterval = null;
-    let timerSeconds = 40;
+    const WORK_DURATION = 40;
+    const REST_DURATION = 20;
+    let timerSeconds = WORK_DURATION;
     let isWorking = true;
 
     const timerDisplay = document.getElementById('timer-display');
-    const timerStatus = document.getElementById('timer-status');
     const timerStartBtn = document.getElementById('timer-start-btn');
     const timerResetBtn = document.getElementById('timer-reset-btn');
+
+    function updateWorkoutHUD() {
+      if (!activeLesson || !activeLesson.exercises || activeLesson.exercises.length === 0) return;
+      const total = activeLesson.exercises.length;
+      if (currentExIndex >= total) currentExIndex = 0;
+      const curEx = activeLesson.exercises[currentExIndex];
+      const nextIdx = (currentExIndex + 1 < total) ? currentExIndex + 1 : 0;
+      const nextEx = activeLesson.exercises[nextIdx];
+
+      document.getElementById('active-step-badge').innerText = `Упражнение ${currentExIndex + 1} из ${total}`;
+      document.getElementById('active-exercise-title').innerText = `${currentExIndex + 1}. ${curEx.name}`;
+      document.getElementById('active-exercise-sub').innerText = curEx.note || "Следите за дыханием и техникой";
+
+      document.getElementById('next-exercise-name').innerText = `${nextIdx + 1}. ${nextEx.name}`;
+      document.getElementById('exercises-progress-badge').innerText = `${currentExIndex} / ${total} завершено`;
+
+      // Highlight active exercise in the checklist below
+      const exList = document.getElementById('exercise-list');
+      if (exList) {
+        Array.from(exList.children).forEach((child, idx) => {
+          const tag = child.querySelector('.ex-status-tag');
+          if (idx === currentExIndex) {
+            child.className = "flex items-start space-x-2.5 p-2.5 rounded-xl bg-pink-500/15 border-2 border-pink-500 shadow-md shadow-pink-500/20 transition-all scale-[1.01]";
+            if (tag) {
+              tag.className = "ex-status-tag px-2 py-0.5 rounded-full bg-pink-500 text-white font-extrabold text-[9px] animate-pulse";
+              tag.innerText = isWorking ? "В ПРОЦЕССЕ 🔥" : "ОТДЫХ 💧";
+            }
+          } else if (idx < currentExIndex) {
+            child.className = "flex items-start space-x-2.5 p-2 rounded-lg bg-slate-800/20 border border-slate-800 opacity-60 transition-all";
+            if (tag) {
+              tag.className = "ex-status-tag px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[9px]";
+              tag.innerText = "✓ Готово";
+            }
+          } else {
+            child.className = "flex items-start space-x-2.5 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30 transition-all";
+            if (tag) {
+              tag.className = "ex-status-tag px-1.5 py-0.5 rounded bg-slate-700 text-slate-300 font-bold text-[9px]";
+              tag.innerText = child.dataset.time || "40 сек";
+            }
+          }
+        });
+      }
+    }
 
     function updateTimerUI() {
       const mins = Math.floor(timerSeconds / 60);
       const secs = timerSeconds % 60;
-      timerDisplay.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      if (timerDisplay) timerDisplay.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+      const phaseBadge = document.getElementById('timer-phase-badge');
+      const subtext = document.getElementById('timer-subtext');
+      const ring = document.getElementById('timer-progress-ring');
+      const ambient = document.getElementById('timer-ambient-glow');
+
+      const maxSec = isWorking ? WORK_DURATION : REST_DURATION;
+      const fraction = (maxSec - timerSeconds) / maxSec;
+      const offset = 377 - (377 * fraction);
+      if (ring) ring.style.strokeDashoffset = offset;
+
+      if (!timerInterval) {
+        if (phaseBadge) {
+          phaseBadge.innerText = "Готов к старту";
+          phaseBadge.className = "text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700";
+        }
+        if (subtext) subtext.innerText = isWorking ? "РАБОТА" : "ОТДЫХ";
+        if (ring) ring.className = "text-slate-700 transition-all duration-300";
+        if (ambient) ambient.className = "absolute -right-8 -top-8 w-36 h-36 bg-slate-700/10 rounded-full blur-2xl pointer-events-none transition-all";
+        return;
+      }
+
+      if (isWorking) {
+        if (phaseBadge) {
+          phaseBadge.innerText = "РАБОТА 🔥";
+          phaseBadge.className = "text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/40 shadow-sm shadow-pink-500/30";
+        }
+        if (subtext) {
+          subtext.innerText = "РАБОТА (40 СЕК)";
+          subtext.className = "text-[10px] text-pink-400 font-bold uppercase tracking-widest mt-0.5";
+        }
+        if (ring) ring.className = "text-pink-500 transition-all duration-300";
+        if (ambient) ambient.className = "absolute -right-8 -top-8 w-36 h-36 bg-pink-500/20 rounded-full blur-2xl pointer-events-none transition-all";
+      } else {
+        if (phaseBadge) {
+          phaseBadge.innerText = "ОТДЫХ 💧";
+          phaseBadge.className = "text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm shadow-amber-500/30";
+        }
+        if (subtext) {
+          subtext.innerText = "ОТДЫХ (20 СЕК)";
+          subtext.className = "text-[10px] text-amber-300 font-bold uppercase tracking-widest mt-0.5";
+        }
+        if (ring) ring.className = "text-amber-400 transition-all duration-300";
+        if (ambient) ambient.className = "absolute -right-8 -top-8 w-36 h-36 bg-amber-500/20 rounded-full blur-2xl pointer-events-none transition-all";
+      }
+    }
+
+    function prevExercise() {
+      if (!activeLesson) return;
+      if (currentExIndex > 0) {
+        currentExIndex--;
+      } else {
+        currentExIndex = activeLesson.exercises.length - 1;
+      }
+      isWorking = true;
+      timerSeconds = WORK_DURATION;
+      updateWorkoutHUD();
+      updateTimerUI();
+      playBeep(440, 0.1, "sine");
+    }
+
+    function nextExercise() {
+      if (!activeLesson) return;
+      if (currentExIndex < activeLesson.exercises.length - 1) {
+        currentExIndex++;
+        isWorking = true;
+        timerSeconds = WORK_DURATION;
+        updateWorkoutHUD();
+        updateTimerUI();
+        playBeep(520, 0.15, "triangle");
+      } else {
+        finishWorkoutSession();
+      }
+    }
+
+    function finishWorkoutSession() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      document.getElementById('timer-btn-icon').className = "fa-solid fa-play";
+      document.getElementById('timer-btn-text').innerText = "Начать заново";
+      document.getElementById('timer-live-dot').classList.add('hidden');
+
+      playBeep(880, 0.4, "triangle");
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+
+      const willDone = confirm("🎉 Поздравляем! Все упражнения дня выполнены! Отметить день в календаре?");
+      if (willDone && !completedDays.includes(currentDay)) {
+        document.getElementById('complete-btn').click();
+      }
     }
 
     timerStartBtn.onclick = () => {
       if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
-        timerStartBtn.innerText = "Продолжить";
+        document.getElementById('timer-btn-icon').className = "fa-solid fa-play";
+        document.getElementById('timer-btn-text').innerText = "Продолжить";
+        document.getElementById('timer-live-dot').classList.add('hidden');
+        updateTimerUI();
       } else {
-        timerStartBtn.innerText = "Пауза";
-        timerStatus.innerText = isWorking ? "РАБОТА 🔥" : "ОТДЫХ 💧";
+        document.getElementById('timer-btn-icon').className = "fa-solid fa-pause";
+        document.getElementById('timer-btn-text').innerText = "Пауза";
+        document.getElementById('timer-live-dot').classList.remove('hidden');
+        updateWorkoutHUD();
+        updateTimerUI();
+        playBeep(660, 0.2, "triangle");
+
         timerInterval = setInterval(() => {
           if (timerSeconds > 0) {
             timerSeconds--;
-            // Beep at 3, 2, 1
             if (timerSeconds === 3 || timerSeconds === 2 || timerSeconds === 1) {
               playBeep(440, 0.1, "sine");
             }
             updateTimerUI();
           } else {
-            // Gong on switch
-            isWorking = !isWorking;
-            timerSeconds = isWorking ? 40 : 20;
-            timerStatus.innerText = isWorking ? "РАБОТА 🔥" : "ОТДЫХ 💧";
-            playBeep(880, 0.35, "triangle");
-            if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+            if (isWorking) {
+              isWorking = false;
+              timerSeconds = REST_DURATION;
+              playBeep(880, 0.4, "triangle");
+              if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+            } else {
+              if (activeLesson && currentExIndex < activeLesson.exercises.length - 1) {
+                currentExIndex++;
+                isWorking = true;
+                timerSeconds = WORK_DURATION;
+                playBeep(784, 0.35, "sine");
+                if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+              } else {
+                finishWorkoutSession();
+                return;
+              }
+            }
+            updateWorkoutHUD();
             updateTimerUI();
           }
         }, 1000);
@@ -981,9 +1482,12 @@
       clearInterval(timerInterval);
       timerInterval = null;
       isWorking = true;
-      timerSeconds = 40;
-      timerStatus.innerText = "Готов";
-      timerStartBtn.innerText = "Старт / Пауза";
+      currentExIndex = 0;
+      timerSeconds = WORK_DURATION;
+      document.getElementById('timer-btn-icon').className = "fa-solid fa-play";
+      document.getElementById('timer-btn-text').innerText = "Запустить тренировку (40/20)";
+      document.getElementById('timer-live-dot').classList.add('hidden');
+      updateWorkoutHUD();
       updateTimerUI();
     };
 
@@ -1096,13 +1600,71 @@
       });
     }
 
+    function renderMealsHistory(meals) {
+      const list = document.getElementById('meals-history-list');
+      const badge = document.getElementById('meals-count-badge');
+      if (!list) return;
+
+      if (!meals || meals.length === 0) {
+        if (badge) badge.innerText = "0 блюд";
+        list.innerHTML = `
+          <div class="text-center py-4 px-2 space-y-1.5 border border-dashed border-slate-700/60 rounded-xl bg-slate-800/20">
+            <div class="text-xl">🥗</div>
+            <div class="text-slate-300 font-semibold text-xs">В дневнике пока пусто</div>
+            <div class="text-[10px] text-slate-500">Сделайте фото тарелки через AI-сканер выше — приём пищи появится здесь!</div>
+          </div>
+        `;
+        return;
+      }
+
+      if (badge) badge.innerText = `${meals.length} ${meals.length === 1 ? 'блюдо' : 'блюда'}`;
+      list.innerHTML = '';
+
+      meals.forEach(m => {
+        const item = document.createElement('div');
+        item.className = "p-3 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-2 hover:border-pink-500/30 transition-all";
+        const dateStr = m.created_at ? new Date(m.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : 'Сегодня';
+
+        item.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-extrabold text-white text-xs flex items-center space-x-1.5">
+                <span>🍽</span>
+                <span>${m.dish_name || 'Приём пищи'}</span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">${dateStr}</div>
+            </div>
+            <span class="px-2 py-0.5 rounded-lg bg-pink-500/20 text-pink-300 font-extrabold text-[11px] border border-pink-500/30">
+              ${m.calories || 0} ккал
+            </span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-1 text-center text-[10px]">
+            <div class="p-1 rounded bg-slate-900/50 text-slate-300"><span class="text-slate-500">Б:</span> <strong class="text-pink-300">${m.protein || 0}г</strong></div>
+            <div class="p-1 rounded bg-slate-900/50 text-slate-300"><span class="text-slate-500">Ж:</span> <strong class="text-amber-300">${m.fats || 0}г</strong></div>
+            <div class="p-1 rounded bg-slate-900/50 text-slate-300"><span class="text-slate-500">У:</span> <strong class="text-cyan-300">${m.carbs || 0}г</strong></div>
+          </div>
+
+          ${m.advice ? `
+            <div class="text-[10px] text-slate-300 bg-slate-900/40 p-2 rounded-lg border border-slate-700/30 flex items-start space-x-1.5 leading-snug">
+              <span class="text-pink-400 font-bold">💡</span>
+              <span>${m.advice}</span>
+            </div>
+          ` : ''}
+        `;
+        list.appendChild(item);
+      });
+    }
+
     async function loadMealsSummary() {
       try {
         const resp = await fetch(`/api/nutrition/meals?user_id=${tgUserId}&init_data=${encodeURIComponent(initDataRaw)}`);
         if (resp.ok) {
           const data = await resp.json();
+          renderMealsHistory(data.meals || []);
           if (data.summary) {
-            document.getElementById('daily-calories-total').innerText = `${data.summary.total_calories} / 1600 ккал`;
+            const targetCal = userProfile?.daily_calories_target || 1600;
+            document.getElementById('daily-calories-total').innerText = `${data.summary.total_calories} / ${targetCal} ккал`;
             document.getElementById('daily-protein-total').innerText = `${data.summary.total_protein} г`;
             document.getElementById('daily-fats-total').innerText = `${data.summary.total_fats} г`;
             document.getElementById('daily-carbs-total').innerText = `${data.summary.total_carbs} г`;
@@ -1137,8 +1699,253 @@
       } catch (e) {}
     }
 
+    // ONBOARDING & PROFILE WIZARD LOGIC
+    let userProfile = null;
+    let wizGender = 'female';
+    let wizGoal = 'weight_loss';
+    let wizLevel = 'beginner';
+
+    function selectGender(g) {
+      wizGender = g;
+      const fBtn = document.getElementById('gender-btn-female');
+      const mBtn = document.getElementById('gender-btn-male');
+      if (g === 'female') {
+        fBtn.className = "p-3 rounded-2xl border-2 border-pink-500 bg-pink-500/10 text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all";
+        mBtn.className = "p-3 rounded-2xl border border-slate-700 bg-slate-800/60 text-slate-300 font-bold text-xs flex items-center justify-center space-x-2 transition-all";
+      } else {
+        mBtn.className = "p-3 rounded-2xl border-2 border-pink-500 bg-pink-500/10 text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all";
+        fBtn.className = "p-3 rounded-2xl border border-slate-700 bg-slate-800/60 text-slate-300 font-bold text-xs flex items-center justify-center space-x-2 transition-all";
+      }
+      if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
+    }
+
+    function selectGoal(g) {
+      wizGoal = g;
+      ['weight_loss', 'tone', 'energy', 'health'].forEach(id => {
+        const btn = document.getElementById(`goal-btn-${id}`);
+        if (!btn) return;
+        if (id === g) {
+          btn.className = "p-2.5 rounded-xl border-2 border-pink-500 bg-pink-500/15 text-white font-bold text-[11px] text-left transition-all";
+        } else {
+          btn.className = "p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 font-bold text-[11px] text-left transition-all";
+        }
+      });
+      if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
+    }
+
+    function selectLevel(lvl) {
+      wizLevel = lvl;
+      ['beginner', 'medium', 'pro'].forEach(id => {
+        const btn = document.getElementById(`lvl-btn-${id}`);
+        if (!btn) return;
+        if (id === lvl) {
+          btn.className = "p-2 rounded-xl border-2 border-pink-500 bg-pink-500/15 text-white font-bold text-[10px] transition-all";
+        } else {
+          btn.className = "p-2 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 font-bold text-[10px] transition-all";
+        }
+      });
+      if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
+    }
+
+    function goToWizardStep(step) {
+      [1, 2, 3, 4].forEach(s => {
+        const el = document.getElementById(`wizard-step-${s}`);
+        if (el) el.classList.add('hidden');
+      });
+      const targetEl = document.getElementById(`wizard-step-${step}`);
+      if (targetEl) targetEl.classList.remove('hidden');
+
+      const labels = {
+        1: "Шаг 1 из 3: О вас",
+        2: "Шаг 2 из 3: Параметры и цель",
+        3: "Шаг 3 из 3: Замеры тела",
+        4: "Ваш персональный план Janafit"
+      };
+      const pcts = { 1: "33%", 2: "66%", 3: "90%", 4: "100%" };
+      document.getElementById('wizard-step-label').innerText = labels[step];
+      document.getElementById('wizard-step-pct').innerText = pcts[step];
+      document.getElementById('wizard-progress-bar').style.width = pcts[step];
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function calculateAndShowPlan() {
+      const age = parseInt(document.getElementById('wiz-age').value) || 25;
+      const height = parseFloat(document.getElementById('wiz-height').value) || 168;
+      const curWeight = parseFloat(document.getElementById('wiz-current-weight').value) || 65;
+      const targetWeight = parseFloat(document.getElementById('wiz-target-weight').value) || 58;
+
+      const bmi = (curWeight / Math.pow(height / 100, 2)).toFixed(1);
+      document.getElementById('plan-bmi-val').innerText = bmi;
+      const bmiStatusEl = document.getElementById('plan-bmi-status');
+      if (bmi < 18.5) {
+        bmiStatusEl.innerText = "Дефицит веса";
+        bmiStatusEl.className = "text-[8px] text-amber-300 font-semibold";
+      } else if (bmi <= 24.9) {
+        bmiStatusEl.innerText = "Здоровая норма";
+        bmiStatusEl.className = "text-[8px] text-emerald-300 font-semibold";
+      } else if (bmi <= 29.9) {
+        bmiStatusEl.innerText = "Избыток веса";
+        bmiStatusEl.className = "text-[8px] text-amber-300 font-semibold";
+      } else {
+        bmiStatusEl.innerText = "Нужен дефицит";
+        bmiStatusEl.className = "text-[8px] text-rose-300 font-semibold";
+      }
+
+      let bmr = (10 * curWeight) + (6.25 * height) - (5 * age);
+      bmr = (wizGender === 'male') ? bmr + 5 : bmr - 161;
+      let targetCal = Math.round(bmr * 1.35);
+      if (wizGoal === 'weight_loss') targetCal = Math.round(targetCal * 0.85);
+      targetCal = Math.max(1300, Math.min(2200, targetCal));
+      document.getElementById('plan-cal-val').innerText = targetCal.toLocaleString('ru-RU');
+
+      const waterL = ((curWeight * 0.032)).toFixed(1);
+      document.getElementById('plan-water-val').innerText = `${waterL} л`;
+
+      const diff = (curWeight - targetWeight).toFixed(1);
+      const forecastEl = document.getElementById('plan-forecast-text');
+      if (diff > 0) {
+        forecastEl.innerText = `Снижение веса с ${curWeight} кг до ${targetWeight} кг (-${diff} кг) безопасно достигается за 21–28 дней курса при тренировках через день и норме воды ${waterL} л.`;
+      } else {
+        forecastEl.innerText = `При вашем весе ${curWeight} кг программа Janafit подарит подтянутый рельеф, упругость кожи и лёгкость за 21 день.`;
+      }
+
+      goToWizardStep(4);
+    }
+
+    async function finishOnboardingAndSave() {
+      const age = parseInt(document.getElementById('wiz-age').value) || 25;
+      const height = parseFloat(document.getElementById('wiz-height').value) || 168;
+      const curWeight = parseFloat(document.getElementById('wiz-current-weight').value) || 65;
+      const targetWeight = parseFloat(document.getElementById('wiz-target-weight').value) || 58;
+      const waist = parseFloat(document.getElementById('wiz-waist').value) || 72;
+      const hips = parseFloat(document.getElementById('wiz-hips').value) || 98;
+      const targetCal = parseInt(document.getElementById('plan-cal-val').innerText.replace(/\s/g, '')) || 1550;
+
+      userProfile = {
+        gender: wizGender,
+        age: age,
+        height: height,
+        current_weight: curWeight,
+        target_weight: targetWeight,
+        waist: waist,
+        hips: hips,
+        goal: wizGoal,
+        activity_level: wizLevel,
+        daily_calories_target: targetCal
+      };
+
+      localStorage.setItem('janafit_profile', JSON.stringify(userProfile));
+      updateProfileUI();
+      closeProfileModal();
+
+      playBeep(880, 0.3, "triangle");
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+
+      try {
+        await fetch('/api/user/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...userProfile,
+            user_id: tgUserId,
+            init_data: initDataRaw
+          })
+        });
+      } catch (e) {}
+    }
+
+    function updateProfileUI() {
+      if (!userProfile) return;
+      const goalsRu = {
+        weight_loss: "Похудение и рельеф",
+        tone: "Рельеф и упругость",
+        energy: "Тонус и бодрость",
+        health: "Осанка и лёгкость"
+      };
+      const chipText = document.getElementById('profile-chip-text');
+      if (chipText) {
+        chipText.innerText = `${userProfile.target_weight} кг`;
+      }
+      const goalTitle = document.getElementById('profile-card-goal-title');
+      if (goalTitle) {
+        goalTitle.innerText = `Цель: ${goalsRu[userProfile.goal] || "Стройность"}`;
+      }
+      const targetText = document.getElementById('profile-card-target-text');
+      if (targetText) {
+        const diff = (userProfile.current_weight - userProfile.target_weight).toFixed(1);
+        targetText.innerText = `Целевой вес: ${userProfile.target_weight} кг (минус ${Math.abs(diff)} кг)`;
+      }
+      const ph = document.getElementById('prof-height-val');
+      if (ph) ph.innerText = `${userProfile.height} см`;
+      const pw = document.getElementById('prof-weight-val');
+      if (pw) pw.innerText = `${userProfile.current_weight} кг`;
+      const pt = document.getElementById('prof-target-val');
+      if (pt) pt.innerText = `${userProfile.target_weight} кг`;
+      const pb = document.getElementById('prof-bmi-val');
+      if (pb) {
+        const bmi = (userProfile.current_weight / Math.pow(userProfile.height / 100, 2)).toFixed(1);
+        pb.innerText = bmi;
+      }
+    }
+
+    function openProfileModal(isEdit = false) {
+      const modal = document.getElementById('onboarding-modal');
+      const closeBtn = document.getElementById('onboarding-close-btn');
+      if (!modal) return;
+      if (isEdit) {
+        closeBtn.classList.remove('hidden');
+        if (userProfile) {
+          selectGender(userProfile.gender || 'female');
+          selectGoal(userProfile.goal || 'weight_loss');
+          selectLevel(userProfile.activity_level || 'beginner');
+          document.getElementById('wiz-age').value = userProfile.age || 25;
+          document.getElementById('wiz-height').value = userProfile.height || 168;
+          document.getElementById('wiz-current-weight').value = userProfile.current_weight || 65;
+          document.getElementById('wiz-target-weight').value = userProfile.target_weight || 58;
+          document.getElementById('wiz-waist').value = userProfile.waist || 72;
+          document.getElementById('wiz-hips').value = userProfile.hips || 98;
+        }
+        goToWizardStep(1);
+      } else {
+        if (!userProfile) {
+          closeBtn.classList.add('hidden');
+          goToWizardStep(1);
+        } else {
+          openProfileModal(true);
+          return;
+        }
+      }
+      modal.classList.remove('hidden');
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('onboarding-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
     // Init App
     renderDays();
+    selectDay(1);
+    renderMeasurements();
+    renderWater();
+
+    // Check saved profile or trigger onboarding
+    const localProf = localStorage.getItem('janafit_profile');
+    if (localProf) {
+      try {
+        userProfile = JSON.parse(localProf);
+        updateProfileUI();
+      } catch (e) {}
+    } else {
+      setTimeout(() => { openProfileModal(false); }, 600);
+    }
+
+    syncWithServer();
+    loadMealsSummary();
+  </script>
+</body>
+</html>
     selectDay(1);
     renderMeasurements();
     renderWater();

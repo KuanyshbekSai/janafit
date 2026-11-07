@@ -102,6 +102,24 @@ async def init_db():
             )
         """)
 
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS user_profiles (
+                user_id INTEGER PRIMARY KEY,
+                gender TEXT DEFAULT 'female',
+                age INTEGER DEFAULT 25,
+                height REAL DEFAULT 168.0,
+                current_weight REAL DEFAULT 65.0,
+                target_weight REAL DEFAULT 58.0,
+                waist REAL DEFAULT 72.0,
+                hips REAL DEFAULT 98.0,
+                goal TEXT DEFAULT 'weight_loss',
+                activity_level TEXT DEFAULT 'medium',
+                daily_calories_target INTEGER DEFAULT 1600,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
         # Попытка добавить колонки, если таблица уже существовала
         for col in [
             "ALTER TABLE user_meals ADD COLUMN omega3_score INTEGER DEFAULT 25",
@@ -307,10 +325,55 @@ async def get_user_meals(user_id: int) -> List[Dict[str, Any]]:
         async with db.execute(
             """SELECT id, dish_name, calories, protein, fats, carbs, advice,
                       omega3_score, aojiru_score, vitamins_score, recommendation_json, created_at
-               FROM user_meals WHERE user_id = ? ORDER BY id DESC LIMIT 10""",
+               FROM user_meals WHERE user_id = ? ORDER BY id DESC LIMIT 20""",
             (user_id,)
         ) as cursor:
             rows = await cursor.fetchall()
             return [dict(r) for r in rows]
+
+async def save_user_profile(
+    user_id: int,
+    gender: str = "female",
+    age: int = 25,
+    height: float = 168.0,
+    current_weight: float = 65.0,
+    target_weight: float = 58.0,
+    waist: float = 72.0,
+    hips: float = 98.0,
+    goal: str = "weight_loss",
+    activity_level: str = "medium",
+    daily_calories_target: int = 1600
+):
+    await ensure_db_ready()
+    now = datetime.utcnow().isoformat()
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        await db.execute("""
+            INSERT INTO user_profiles (
+                user_id, gender, age, height, current_weight, target_weight,
+                waist, hips, goal, activity_level, daily_calories_target, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                gender=excluded.gender,
+                age=excluded.age,
+                height=excluded.height,
+                current_weight=excluded.current_weight,
+                target_weight=excluded.target_weight,
+                waist=excluded.waist,
+                hips=excluded.hips,
+                goal=excluded.goal,
+                activity_level=excluded.activity_level,
+                daily_calories_target=excluded.daily_calories_target,
+                updated_at=excluded.updated_at
+        """, (user_id, gender, age, height, current_weight, target_weight, waist, hips, goal, activity_level, daily_calories_target, now))
+        await db.commit()
+
+async def get_user_profile(user_id: int) -> Optional[Dict[str, Any]]:
+    await ensure_db_ready()
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute("SELECT * FROM user_profiles WHERE user_id = ?", (user_id,)) as cursor:
+            row = await cursor.fetchone()
+            return dict(row) if row else None
+
 
 

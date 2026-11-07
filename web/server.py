@@ -18,7 +18,9 @@ from database import (
     add_ai_message,
     get_recent_ai_history,
     save_user_meal,
-    get_user_meals
+    get_user_meals,
+    save_user_profile,
+    get_user_profile
 )
 from services.robokassa import verify_robokassa_webhook
 from services.security import validate_telegram_init_data
@@ -85,6 +87,20 @@ class MeasurementRequest(BaseModel):
 
 class AIChatRequest(BaseModel):
     question: str
+    init_data: Optional[str] = None
+    user_id: Optional[int] = None
+
+class ProfileRequest(BaseModel):
+    gender: str = "female"
+    age: int = 25
+    height: float = 168.0
+    current_weight: float = 65.0
+    target_weight: float = 58.0
+    waist: float = 72.0
+    hips: float = 98.0
+    goal: str = "weight_loss"
+    activity_level: str = "medium"
+    daily_calories_target: int = 1600
     init_data: Optional[str] = None
     user_id: Optional[int] = None
 
@@ -186,13 +202,37 @@ async def get_user_data(user_id: int = 123456789, init_data: Optional[str] = Non
     progress = await get_user_progress(verified_id)
     measurements = await get_user_measurements(verified_id)
     has_access = await check_user_access(verified_id)
+    profile = await get_user_profile(verified_id)
 
     return {
         "user_id": verified_id,
         "has_access": has_access,
         "completed_days": progress,
-        "measurements": measurements
+        "measurements": measurements,
+        "profile": profile
     }
+
+@app.post("/api/user/profile")
+async def save_profile_endpoint(payload: ProfileRequest):
+    verified_id = get_verified_user_id(payload.init_data, payload.user_id)
+    await save_user_profile(
+        user_id=verified_id,
+        gender=payload.gender,
+        age=payload.age,
+        height=payload.height,
+        current_weight=payload.current_weight,
+        target_weight=payload.target_weight,
+        waist=payload.waist,
+        hips=payload.hips,
+        goal=payload.goal,
+        activity_level=payload.activity_level,
+        daily_calories_target=payload.daily_calories_target
+    )
+    # Также сохраняем замер в дневник замеров
+    await save_user_measurement(verified_id, payload.current_weight, payload.waist, payload.hips)
+    profile = await get_user_profile(verified_id)
+    measurements = await get_user_measurements(verified_id)
+    return {"status": "ok", "profile": profile, "measurements": measurements}
 
 @app.post("/api/progress/toggle")
 async def toggle_progress(payload: ProgressToggleRequest):
