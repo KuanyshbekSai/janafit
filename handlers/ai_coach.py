@@ -156,22 +156,15 @@ async def process_food_photo(message: Message, bot: Bot, state: FSMContext):
             f"🍗 Белки: <b>{p} г</b> | 🥑 Жиры: <b>{f} г</b> | 🍚 Углеводы: <b>{c} г</b>\n\n"
             f"💊 <b>Баланс микронутриентов:</b>\n"
             f"• Омега-3 (ПНЖК): <b>{omega3}%</b> нормы\n"
-            f"• Зеленые энзимы / Аодзиру: <b>{aojiru}%</b> нормы\n"
+            f"• Зеленые энзимы и клетчатка: <b>{aojiru}%</b> нормы\n"
             f"• Витаминный индекс (D3, B, Mg, Zn): <b>{vitamins}%</b>\n\n"
             f"💡 <b>Совет нутрициолога:</b>\n{advice}\n"
         )
 
-        buttons = []
-        if rec and rec.get("product_name"):
-            reply_text += (
-                f"\n🎁 <b>Персональная рекомендация:</b>\n"
-                f"<i>{rec.get('short_reason')}</i>\n"
-                f"👉 <b>{rec.get('product_name')}</b> по спеццене: <b>{rec.get('discount_price')}</b>"
-            )
-            buttons.append([InlineKeyboardButton(text=f"🛒 Заказать {rec.get('product_name')[:25]}...", url=rec.get("action_url", "https://t.me/janafit_bot"))])
-
-        buttons.append([InlineKeyboardButton(text="📱 Открыть дневник в Mini App", web_app={"url": f"{settings.BASE_WEB_URL}/app"})])
-        buttons.append([InlineKeyboardButton(text="💬 Спросить тренера", callback_data="ai_coach_start")])
+        buttons = [
+            [InlineKeyboardButton(text="📱 Открыть дневник в Mini App", web_app={"url": f"{settings.BASE_WEB_URL}/app"})],
+            [InlineKeyboardButton(text="💬 Спросить тренера", callback_data="ai_coach_start")]
+        ]
 
         keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
 
