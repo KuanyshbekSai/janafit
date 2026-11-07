@@ -36,8 +36,8 @@ class Settings(BaseSettings):
     WEB_PORT: int = int(os.getenv("WEB_PORT", "8000"))
     BASE_WEB_URL: str = os.getenv("BASE_WEB_URL", "http://localhost:8000")
 
-    # Database
-    DB_PATH: str = os.getenv("DB_PATH", str(BASE_DIR / "data" / "janafit.db"))
+    # Database (на Vercel файловая система read-only, доступна только /tmp)
+    DB_PATH: str = os.getenv("DB_PATH", "/tmp/janafit.db" if os.getenv("VERCEL") else str(BASE_DIR / "data" / "janafit.db"))
 
     @property
     def admin_id_list(self) -> List[int]:

@@ -1,9 +1,19 @@
 import aiosqlite
+import os
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 from config import settings
 
+def ensure_db_dir():
+    try:
+        dir_name = os.path.dirname(settings.DB_PATH)
+        if dir_name:
+            os.makedirs(dir_name, exist_ok=True)
+    except Exception:
+        pass
+
 async def init_db():
+    ensure_db_dir()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         await db.execute("""
             CREATE TABLE IF NOT EXISTS users (

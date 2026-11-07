@@ -2,7 +2,19 @@
   "builds": [
     {
       "src": "api/index.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "mini_app/**",
+          "api/mini_app/**",
+          "web/**",
+          "services/**",
+          "handlers/**",
+          "config.py",
+          "database.py",
+          "bot_instance.py"
+        ]
+      }
     }
   ],
   "routes": [

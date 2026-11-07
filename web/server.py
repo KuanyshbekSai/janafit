@@ -28,9 +28,24 @@ app = FastAPI(title="Janafit Web & Webhook Server")
 
 @app.on_event("startup")
 async def on_startup():
-    await init_db()
+    try:
+        await init_db()
+    except Exception as e:
+        print(f"Warning: init_db on startup: {e}")
 
-templates_dir = os.path.join(os.path.dirname(__file__), "..", "mini_app")
+# Поиск директории шаблонов (совместимо как с локальным запуском, так и с Vercel Serverless)
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+candidates = [
+    os.path.join(base_dir, "mini_app"),
+    os.path.join(base_dir, "api", "mini_app"),
+    os.path.join(os.path.dirname(__file__), "..", "mini_app"),
+    os.path.join(os.path.dirname(__file__), "..", "api", "mini_app"),
+    "/var/task/mini_app",
+    "/var/task/api/mini_app",
+    "mini_app",
+    "api/mini_app"
+]
+templates_dir = next((d for d in candidates if os.path.isdir(d)), candidates[0])
 templates = Jinja2Templates(directory=templates_dir)
 
 class ProgressToggleRequest(BaseModel):
