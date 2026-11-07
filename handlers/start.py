@@ -2,6 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from database import get_or_create_user, check_user_access
 from config import settings
+from services.gas_sync import fire_and_forget, sync_user_to_gas
 
 router = Router()
 
@@ -32,6 +33,13 @@ async def cmd_start(message: Message):
         last_name=message.from_user.last_name
     )
     has_access = bool(user.get("has_access"))
+
+    fire_and_forget(sync_user_to_gas(
+        user_id=message.from_user.id,
+        name=f"{message.from_user.first_name or ''} {message.from_user.last_name or ''}".strip(),
+        username=message.from_user.username or "",
+        has_access=has_access
+    ))
 
     if has_access:
         text = (

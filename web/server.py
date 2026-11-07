@@ -24,7 +24,8 @@ from database import (
 )
 from services.robokassa import verify_robokassa_webhook
 from services.security import validate_telegram_init_data
-from services.ai_service import ask_ai_coach, analyze_food_photo
+from services.ai_service import ask_ai_coach, analyze_food_photo, analyze_food_audio
+from services.gas_sync import fire_and_forget, sync_user_to_gas, log_payment_to_gas, log_meal_to_gas, log_workout_to_gas
 
 app = FastAPI(title="Janafit Web & Webhook Server", redirect_slashes=False)
 
@@ -139,6 +140,7 @@ async def robokassa_result(
 
     user_id = await mark_payment_success(InvId)
     if user_id:
+        fire_and_forget(log_payment_to_gas(InvId, int(shp_user_id), int(float(OutSum))))
         from bot_instance import bot
         from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
         
@@ -183,11 +185,11 @@ async def payment_success_page(request: Request, InvId: str = "JF-ORDER", OutSum
 async def payment_fail_page(request: Request):
     return templates.TemplateResponse(request=request, name="fail.html", context={})
 
-@app.get("/", response_class=HTMLResponse)
-@app.get("/app", response_class=HTMLResponse)
-@app.get("/api", response_class=HTMLResponse)
-@app.get("/api/app", response_class=HTMLResponse)
-@app.get("/api/index.py", response_class=HTMLResponse)
+@app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
+@app.api_route("/app", methods=["GET", "HEAD"], response_class=HTMLResponse)
+@app.api_route("/api", methods=["GET", "HEAD"], response_class=HTMLResponse)
+@app.api_route("/api/app", methods=["GET", "HEAD"], response_class=HTMLResponse)
+@app.api_route("/api/index.py", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def mini_app_view(request: Request, day: int = 1):
     return templates.TemplateResponse(request=request, name="index.html", context={
         "default_day": day,
@@ -230,6 +232,15 @@ async def save_profile_endpoint(payload: ProfileRequest):
     )
     # Также сохраняем замер в дневник замеров
     await save_user_measurement(verified_id, payload.current_weight, payload.waist, payload.hips)
+    fire_and_forget(sync_user_to_gas(
+        user_id=verified_id,
+        goal=payload.goal,
+        height=payload.height,
+        current_weight=payload.current_weight,
+        target_weight=payload.target_weight,
+        waist=payload.waist,
+        hips=payload.hips
+    ))
     profile = await get_user_profile(verified_id)
     measurements = await get_user_measurements(verified_id)
     return {"status": "ok", "profile": profile, "measurements": measurements}
@@ -238,6 +249,8 @@ async def save_profile_endpoint(payload: ProfileRequest):
 async def toggle_progress(payload: ProgressToggleRequest):
     verified_id = get_verified_user_id(payload.init_data, payload.user_id)
     await save_user_progress(verified_id, payload.day, payload.completed)
+    if payload.completed:
+        fire_and_forget(log_workout_to_gas(verified_id, payload.day))
     return {"status": "ok", "day": payload.day, "completed": payload.completed}
 
 @app.post("/api/measurements/add")
@@ -289,6 +302,61 @@ async def analyze_photo_endpoint(
         vitamins_score=int(analysis.get("vitamins_score", 50)),
         recommendation_json=rec_str
     )
+
+    fire_and_forget(log_meal_to_gas(
+        user_id=verified_id,
+        dish_name=analysis.get("dish_name", "Блюдо"),
+        input_type="Фото",
+        calories=int(analysis.get("calories", 0)),
+        protein=float(analysis.get("protein", 0)),
+        fats=float(analysis.get("fats", 0)),
+        carbs=float(analysis.get("carbs", 0)),
+        health_score=float(analysis.get("health_score", 9.0)),
+        advice=analysis.get("advice", "")
+    ))
+
+    return {"status": "ok", "analysis": analysis}
+
+@app.post("/api/nutrition/analyze-audio")
+async def analyze_audio_endpoint(
+    file: UploadFile = File(...),
+    user_id: int = Form(123456789),
+    init_data: Optional[str] = Form(None)
+):
+    """
+    Принимает аудиозапись с описанием еды, распознает речь, вычисляет КБЖУ и сохраняет в дневник.
+    """
+    verified_id = get_verified_user_id(init_data, user_id)
+    audio_bytes = await file.read()
+    mime_type = file.content_type or "audio/ogg"
+
+    analysis = await analyze_food_audio(audio_bytes, mime_type)
+
+    # Сохраняем в дневник питания
+    await save_user_meal(
+        user_id=verified_id,
+        dish_name=analysis.get("dish_name", "Голосовая запись"),
+        calories=int(analysis.get("calories", 0)),
+        protein=float(analysis.get("protein", 0)),
+        fats=float(analysis.get("fats", 0)),
+        carbs=float(analysis.get("carbs", 0)),
+        advice=analysis.get("advice", ""),
+        omega3_score=int(analysis.get("omega3_score", 25)),
+        aojiru_score=int(analysis.get("aojiru_greens_score", 30)),
+        vitamins_score=int(analysis.get("vitamins_score", 50))
+    )
+
+    fire_and_forget(log_meal_to_gas(
+        user_id=verified_id,
+        dish_name=analysis.get("dish_name", "Голосовая запись"),
+        input_type="Голос",
+        calories=int(analysis.get("calories", 0)),
+        protein=float(analysis.get("protein", 0)),
+        fats=float(analysis.get("fats", 0)),
+        carbs=float(analysis.get("carbs", 0)),
+        health_score=float(analysis.get("health_score", 9.0)),
+        advice=analysis.get("advice", "")
+    ))
 
     return {"status": "ok", "analysis": analysis}
 

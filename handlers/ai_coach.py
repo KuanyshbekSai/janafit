@@ -6,7 +6,8 @@ import io
 
 from config import settings
 from database import add_ai_message, get_recent_ai_history, save_user_meal
-from services.ai_service import ask_ai_coach, analyze_food_photo
+from services.ai_service import ask_ai_coach, analyze_food_photo, analyze_food_audio
+from services.gas_sync import fire_and_forget, log_meal_to_gas
 
 router = Router()
 
@@ -150,6 +151,18 @@ async def process_food_photo(message: Message, bot: Bot, state: FSMContext):
             recommendation_json=rec_json
         )
 
+        fire_and_forget(log_meal_to_gas(
+            user_id=message.from_user.id,
+            dish_name=dish,
+            input_type="Фото",
+            calories=cal,
+            protein=p,
+            fats=f,
+            carbs=c,
+            health_score=score,
+            advice=advice
+        ))
+
         reply_text = (
             f"🍽 <b>{dish}</b> (~{weight} г)\n\n"
             f"🔥 <b>Калорийность:</b> {cal} ккал\n"
@@ -172,4 +185,82 @@ async def process_food_photo(message: Message, bot: Bot, state: FSMContext):
         await message.answer(reply_text, reply_markup=keyboard, parse_mode="HTML")
     except Exception as e:
         await wait_msg.edit_text("Не удалось проанализировать фото. Попробуйте сделать снимок ближе при хорошем освещении.")
+
+@router.message(F.voice)
+async def handle_voice_meal(message: Message, bot: Bot):
+    """
+    Принимает голосовое сообщение, когда пользователь забыл сфотографировать еду.
+    Распознает блюдо, вычисляет КБЖУ, сохраняет в дневник питания и дает советы.
+    """
+    wait_msg = await message.answer("🎙 <i>Слушаю вашу голосовую запись о еде, считаю калории и БЖУ...</i>", parse_mode="HTML")
+
+    try:
+        voice = message.voice
+        file_io = io.BytesIO()
+        await bot.download(voice, destination=file_io)
+        audio_bytes = file_io.getvalue()
+
+        analysis = await analyze_food_audio(audio_bytes, mime_type="audio/ogg")
+
+        dish = analysis.get("dish_name", "Голосовая запись")
+        weight = analysis.get("weight_g", 300)
+        cal = analysis.get("calories", 400)
+        p = analysis.get("protein", 25)
+        f = analysis.get("fats", 12)
+        c = analysis.get("carbs", 40)
+        advice = analysis.get("advice", "")
+        omega3 = analysis.get("omega3_score", 25)
+        aojiru = analysis.get("aojiru_greens_score", 30)
+        vitamins = analysis.get("vitamins_score", 50)
+
+        # Сохраняем в дневник
+        await save_user_meal(
+            user_id=message.from_user.id,
+            dish_name=dish,
+            calories=cal,
+            protein=p,
+            fats=f,
+            carbs=c,
+            advice=advice,
+            omega3_score=omega3,
+            aojiru_score=aojiru,
+            vitamins_score=vitamins
+        )
+
+        fire_and_forget(log_meal_to_gas(
+            user_id=message.from_user.id,
+            dish_name=dish,
+            input_type="Голос",
+            calories=cal,
+            protein=p,
+            fats=f,
+            carbs=c,
+            health_score=8.8,
+            advice=advice
+        ))
+
+        reply_text = (
+            f"🎙 <b>Голосовая запись учтена в дневнике!</b>\n\n"
+            f"🍽 <b>{dish}</b> (~{weight} г)\n\n"
+            f"🔥 <b>Калорийность:</b> {cal} ккал\n"
+            f"🍗 Белки: <b>{p} г</b> | 🥑 Жиры: <b>{f} г</b> | 🍚 Углеводы: <b>{c} г</b>\n\n"
+            f"💊 <b>Баланс микронутриентов:</b>\n"
+            f"• Омега-3: <b>{omega3}%</b> нормы\n"
+            f"• Свежая зелень и клетчатка: <b>{aojiru}%</b>\n"
+            f"• Витамины и минералы: <b>{vitamins}%</b>\n\n"
+            f"💡 <b>Совет нутрициолога:</b>\n{advice}\n"
+        )
+
+        buttons = [
+            [InlineKeyboardButton(text="📱 Открыть дневник в Mini App", web_app={"url": f"{settings.BASE_WEB_URL}/app"})],
+            [InlineKeyboardButton(text="💬 Спросить тренера", callback_data="ai_coach_start")]
+        ]
+
+        keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+
+        await wait_msg.delete()
+        await message.answer(reply_text, reply_markup=keyboard, parse_mode="HTML")
+    except Exception as e:
+        await wait_msg.edit_text("Не удалось распознать голосовое сообщение. Попробуйте надиктовать еще раз четче или ввести текстом.")
+
 

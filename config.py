@@ -59,6 +59,9 @@ class Settings(BaseSettings):
     WEB_PORT: int = _int_env("WEB_PORT", 8000)
     BASE_WEB_URL: str = os.getenv("BASE_WEB_URL", "http://localhost:8000")
 
+    # Google Apps Script & Sheets Integration
+    GAS_WEBAPP_URL: str = os.getenv("GAS_WEBAPP_URL", "")
+
     # Database (на Vercel файловая система read-only, доступна только /tmp)
     DB_PATH: str = _resolve_db_path()
 
