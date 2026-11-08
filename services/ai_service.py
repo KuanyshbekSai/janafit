@@ -59,7 +59,7 @@ async def ask_ai_coach(user_message: str, history: List[Dict[str, str]] = None) 
             "contents": contents,
             "generationConfig": {
                 "temperature": 0.6,
-                "maxOutputTokens": 500,
+                "maxOutputTokens": 1200,
                 "thinkingConfig": {"thinkingBudget": 0}
             }
         }
@@ -154,7 +154,7 @@ async def analyze_food_photo(image_bytes: bytes, mime_type: str = "image/jpeg") 
             ],
             "generationConfig": {
                 "temperature": 0.2,
-                "maxOutputTokens": 600,
+                "maxOutputTokens": 800,
                 "responseMimeType": "application/json",
                 "thinkingConfig": {"thinkingBudget": 0}
             }
@@ -271,7 +271,7 @@ async def analyze_food_audio(audio_bytes: bytes, mime_type: str = "audio/ogg") -
             ],
             "generationConfig": {
                 "temperature": 0.2,
-                "maxOutputTokens": 600,
+                "maxOutputTokens": 800,
                 "responseMimeType": "application/json",
                 "thinkingConfig": {"thinkingBudget": 0}
             }

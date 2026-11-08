@@ -2088,40 +2088,49 @@
               updateNutritionTotals(userMeals);
             }
           }
-        }
-      } catch (e) {}
-    }
           if (data.summary) {
             const targetCal = userProfile?.daily_calories_target || 1600;
-            document.getElementById('daily-calories-total').innerText = `${data.summary.total_calories} / ${targetCal} ккал`;
-            document.getElementById('daily-protein-total').innerText = `${data.summary.total_protein} г`;
-            document.getElementById('daily-fats-total').innerText = `${data.summary.total_fats} г`;
-            document.getElementById('daily-carbs-total').innerText = `${data.summary.total_carbs} г`;
+            const calEl = document.getElementById('daily-calories-total');
+            if (calEl) calEl.innerText = `${data.summary.total_calories} / ${targetCal} ккал`;
+            const pEl = document.getElementById('daily-protein-total');
+            if (pEl) pEl.innerText = `${data.summary.total_protein} г`;
+            const fEl = document.getElementById('daily-fats-total');
+            if (fEl) fEl.innerText = `${data.summary.total_fats} г`;
+            const cEl = document.getElementById('daily-carbs-total');
+            if (cEl) cEl.innerText = `${data.summary.total_carbs} г`;
 
             // Vitamin bars update
             const oScore = Math.min(100, Math.max(10, data.summary.omega3_score || 25));
             const aScore = Math.min(100, Math.max(10, data.summary.aojiru_score || 30));
             const vScore = Math.min(100, Math.max(10, data.summary.vitamins_score || 50));
 
-            document.getElementById('bar-omega-text').innerText = `${oScore}%`;
-            document.getElementById('bar-omega-fill').style.width = `${oScore}%`;
+            const boT = document.getElementById('bar-omega-text');
+            const boF = document.getElementById('bar-omega-fill');
+            if (boT) boT.innerText = `${oScore}%`;
+            if (boF) boF.style.width = `${oScore}%`;
 
-            document.getElementById('bar-aojiru-text').innerText = `${aScore}%`;
-            document.getElementById('bar-aojiru-fill').style.width = `${aScore}%`;
+            const baT = document.getElementById('bar-aojiru-text');
+            const baF = document.getElementById('bar-aojiru-fill');
+            if (baT) baT.innerText = `${aScore}%`;
+            if (baF) baF.style.width = `${aScore}%`;
 
-            document.getElementById('bar-vit-text').innerText = `${vScore}%`;
-            document.getElementById('bar-vit-fill').style.width = `${vScore}%`;
+            const bvT = document.getElementById('bar-vit-text');
+            const bvF = document.getElementById('bar-vit-fill');
+            if (bvT) bvT.innerText = `${vScore}%`;
+            if (bvF) bvF.style.width = `${vScore}%`;
 
             const badge = document.getElementById('vitamin-status-badge');
             const tipEl = document.getElementById('micronutrient-tip-text');
-            if (oScore < 40 || aScore < 40) {
-              badge.className = "px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 font-bold text-[10px] border border-rose-500/25";
-              badge.innerText = "Дефицит полезных жиров/зелени";
-              if (tipEl) tipEl.innerText = "В текущем рационе снижен уровень Омега-3 и зеленых пищевых волокон. Добавьте в меню дикую рыбу, чиа или льняное масло, а также порцию свежих зеленых листьев.";
-            } else {
-              badge.className = "px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-bold text-[10px] border border-emerald-500/25";
-              badge.innerText = "Баланс в норме";
-              if (tipEl) tipEl.innerText = "Отличная плотность микронутриентов! Рацион покрывает базовые потребности организма в жирных кислотах и растительных антиоксидантах.";
+            if (badge) {
+              if (oScore < 40 || aScore < 40) {
+                badge.className = "px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 font-bold text-[10px] border border-rose-500/25";
+                badge.innerText = "Дефицит полезных жиров/зелени";
+                if (tipEl) tipEl.innerText = "В текущем рационе снижен уровень Омега-3 и зеленых пищевых волокон. Добавьте в меню дикую рыбу, чиа или льняное масло, а также порцию свежих зеленых листьев.";
+              } else {
+                badge.className = "px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-bold text-[10px] border border-emerald-500/25";
+                badge.innerText = "Баланс в норме";
+                if (tipEl) tipEl.innerText = "Отличная плотность микронутриентов! Рацион покрывает базовые потребности организма в жирных кислотах и растительных антиоксидантах.";
+              }
             }
           }
         }
