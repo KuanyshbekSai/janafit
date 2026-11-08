@@ -25,7 +25,7 @@ from database import (
 from services.robokassa import verify_robokassa_webhook
 from services.security import validate_telegram_init_data
 from services.ai_service import ask_ai_coach, analyze_food_photo, analyze_food_audio
-from services.gas_sync import fire_and_forget, sync_user_to_gas, log_payment_to_gas, log_meal_to_gas, log_workout_to_gas
+from services.gas_sync import fire_and_forget, sync_user_to_gas, log_payment_to_gas, log_meal_to_gas, log_workout_to_gas, fetch_meals_from_gas, delete_meal_in_gas
 
 app = FastAPI(title="Janafit Web & Webhook Server", redirect_slashes=False)
 
@@ -124,6 +124,8 @@ class DeleteMealRequest(BaseModel):
     meal_id: Optional[int] = None
     user_id: Optional[int] = None
     init_data: Optional[str] = None
+    dish_name: Optional[str] = None
+    calories: Optional[int] = None
 
 def get_verified_user_id(init_data: Optional[str], fallback_user_id: Optional[int] = None) -> int:
     """
@@ -134,6 +136,10 @@ def get_verified_user_id(init_data: Optional[str], fallback_user_id: Optional[in
         verified = validate_telegram_init_data(init_data, settings.BOT_TOKEN)
         if verified and "user" in verified:
             return int(verified["user"].get("id", 0))
+
+    # В продакшене (Vercel) подмена user_id недопустима
+    if os.getenv("VERCEL") or os.getenv("VERCEL_ENV"):
+        raise HTTPException(status_code=401, detail="Invalid Telegram init data")
 
     # Для удобства локального тестирования
     return fallback_user_id or 123456789
@@ -343,7 +349,8 @@ async def save_meal_endpoint(payload: SaveMealRequest):
         vitamins_score=payload.vitamins_score or 50
     )
 
-    fire_and_forget(log_meal_to_gas(
+    # await вместо fire_and_forget: на serverless фоновая задача обрывается после ответа
+    await log_meal_to_gas(
         user_id=verified_id,
         dish_name=payload.dish_name,
         input_type=payload.input_type or "Фото",
@@ -353,7 +360,7 @@ async def save_meal_endpoint(payload: SaveMealRequest):
         carbs=payload.carbs,
         health_score=9.0,
         advice=payload.advice or ""
-    ))
+    )
 
     return {"status": "ok", "meal_id": meal_id}
 
@@ -368,13 +375,41 @@ async def delete_meal_endpoint(payload: DeleteMealRequest):
         async with aiosqlite.connect(settings.DB_PATH) as db:
             await db.execute("DELETE FROM user_meals WHERE id = ? AND user_id = ?", (payload.meal_id, verified_id))
             await db.commit()
+    elif payload.dish_name:
+        import aiosqlite
+        async with aiosqlite.connect(settings.DB_PATH) as db:
+            await db.execute(
+                "DELETE FROM user_meals WHERE id = (SELECT MAX(id) FROM user_meals WHERE user_id = ? AND dish_name = ? AND calories = ?)",
+                (verified_id, payload.dish_name, payload.calories or 0))
+            await db.commit()
+    if payload.dish_name:
+        await delete_meal_in_gas(verified_id, payload.dish_name, payload.calories or 0)
     return {"status": "ok"}
 
 @app.get("/api/nutrition/meals")
 async def get_meals_endpoint(user_id: int = 123456789, init_data: Optional[str] = None):
     verified_id = get_verified_user_id(init_data, user_id)
     meals = await get_user_meals(verified_id)
-    
+
+    # Google Таблица — источник истины (SQLite на Vercel временный)
+    gas_meals = await fetch_meals_from_gas(verified_id)
+    if gas_meals:
+        gas_keys = {(str(g.get("dish_name")), int(float(g.get("calories") or 0))) for g in gas_meals}
+        merged = [
+            {
+                "dish_name": g.get("dish_name"),
+                "calories": int(float(g.get("calories") or 0)),
+                "protein": float(g.get("protein") or 0),
+                "fats": float(g.get("fats") or 0),
+                "carbs": float(g.get("carbs") or 0),
+                "advice": g.get("advice") or "",
+                "created_at": str(g.get("created_at") or ""),
+            }
+            for g in reversed(gas_meals)
+        ]
+        merged += [m for m in meals if (str(m.get("dish_name")), int(m.get("calories") or 0)) not in gas_keys]
+        meals = merged
+
     total_cal = sum(m.get("calories", 0) for m in meals)
     total_p = sum(m.get("protein", 0) for m in meals)
     total_f = sum(m.get("fats", 0) for m in meals)

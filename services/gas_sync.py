@@ -118,3 +118,28 @@ async def fetch_lessons_from_gas() -> Optional[List[Dict[str, Any]]]:
     except Exception as e:
         logger.warning(f"Error fetching lessons from GAS: {e}")
     return None
+
+
+async def fetch_meals_from_gas(user_id: int) -> Optional[List[Dict[str, Any]]]:
+    """Читает историю питания пользователя из Google Таблицы (источник истины)."""
+    gas_url = getattr(settings, "GAS_WEBAPP_URL", "")
+    if not gas_url:
+        return None
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{gas_url}?action=getMeals&user_id={user_id}", timeout=aiohttp.ClientTimeout(total=8)) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    if data.get("status") == "ok":
+                        return data.get("meals", [])
+    except Exception as e:
+        logger.warning(f"Error fetching meals from GAS: {e}")
+    return None
+
+async def delete_meal_in_gas(user_id: int, dish_name: str, calories: int):
+    await _post_gas({
+        "action": "deleteMeal",
+        "user_id": user_id,
+        "dish_name": dish_name,
+        "calories": calories
+    })

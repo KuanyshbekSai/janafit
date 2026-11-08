@@ -379,6 +379,23 @@ function doPost(e) {
       return jsonResponse({ status: "ok", message: "Meal logged" });
     }
 
+    // 3b. Удаление приёма пищи (последняя совпадающая запись пользователя)
+    if (action === "deleteMeal") {
+      const sheet = ss.getSheetByName(SHEET_MEALS);
+      if (sheet) {
+        const rows = sheet.getDataRange().getValues();
+        for (let i = rows.length - 1; i >= 1; i--) {
+          if (Number(rows[i][1]) === Number(payload.user_id) &&
+              String(rows[i][2]) === String(payload.dish_name) &&
+              Number(rows[i][4]) === Number(payload.calories || 0)) {
+            sheet.deleteRow(i + 1);
+            break;
+          }
+        }
+      }
+      return jsonResponse({ status: "ok", message: "Meal deleted" });
+    }
+
     // 4. Отметка о пройденной тренировке
     if (action === "logWorkout") {
       const userSheet = ss.getSheetByName(SHEET_USERS);

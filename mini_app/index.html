@@ -1965,6 +1965,7 @@
 
     function deleteMeal(id) {
       if (!confirm("Удалить этот приём пищи из истории?")) return;
+      const delMeal = userMeals.find(m => m.id == id) || {};
       userMeals = userMeals.filter(m => m.id != id);
       localStorage.setItem('janafit_meals', JSON.stringify(userMeals));
       renderMealsHistory(userMeals);
@@ -1974,7 +1975,7 @@
         fetch('/api/nutrition/delete-meal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ meal_id: id, user_id: tgUserId, init_data: initDataRaw })
+          body: JSON.stringify({ meal_id: (typeof id === 'number' && id < 1e9) ? id : null, dish_name: delMeal.dish_name || null, calories: parseInt(delMeal.calories) || 0, user_id: tgUserId, init_data: initDataRaw })
         }).catch(() => {});
       } catch (e) {}
     }
@@ -2073,11 +2074,16 @@
         if (resp.ok) {
           const data = await resp.json();
           if (data.meals && data.meals.length > 0) {
-            const existingKeys = new Set(userMeals.map(m => `${m.dish_name}_${m.created_at}`));
+            // Мультисет-слияние: совпадение по названию и калориям (форматы дат различаются)
+            const pool = userMeals.map(m => `${m.dish_name}|${parseInt(m.calories) || 0}`);
             let added = false;
             data.meals.forEach(sm => {
-              const key = `${sm.dish_name}_${sm.created_at}`;
-              if (!existingKeys.has(key)) {
+              const key = `${sm.dish_name}|${parseInt(sm.calories) || 0}`;
+              const idx = pool.indexOf(key);
+              if (idx >= 0) {
+                pool.splice(idx, 1);
+              } else {
+                if (!sm.id || sm.id < 1e9) sm.id = Date.now() + Math.floor(Math.random() * 100000);
                 userMeals.push(sm);
                 added = true;
               }
