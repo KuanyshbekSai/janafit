@@ -420,17 +420,23 @@
         </div>
       </div>
 
-      <!-- Quick Action Buttons: Photo & Voice -->
-      <div class="grid grid-cols-2 gap-2 pt-1">
-        <label for="food-photo-input" class="cursor-pointer py-2.5 px-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 active:scale-95 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center space-x-1.5">
-          <i class="fa-solid fa-camera"></i>
-          <span>Снять фото</span>
+      <!-- Quick Action Buttons: Camera, Gallery & Voice -->
+      <div class="grid grid-cols-3 gap-2 pt-1">
+        <label for="food-camera-input" class="cursor-pointer py-2.5 px-2 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:opacity-90 active:scale-95 text-white font-bold text-[11px] shadow-md transition-all flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-camera text-xs"></i>
+          <span>Камера</span>
         </label>
-        <input type="file" id="food-photo-input" accept="image/*" capture="environment" class="hidden">
+        <input type="file" id="food-camera-input" accept="image/*" capture="environment" class="hidden">
 
-        <button type="button" id="record-audio-btn" onclick="toggleAudioRecording()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold text-xs border border-pink-500/40 shadow-md transition-all flex items-center justify-center space-x-1.5">
-          <i class="fa-solid fa-microphone text-pink-400" id="mic-icon"></i>
-          <span id="mic-btn-text">Голосом</span>
+        <label for="food-gallery-input" class="cursor-pointer py-2.5 px-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 active:scale-95 text-white font-bold text-[11px] shadow-md transition-all flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-images text-xs"></i>
+          <span>Галерея</span>
+        </label>
+        <input type="file" id="food-gallery-input" accept="image/*" class="hidden">
+
+        <button type="button" id="record-audio-btn" onclick="toggleAudioRecording()" class="py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold text-[11px] border border-pink-500/40 shadow-md transition-all flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-microphone text-pink-400 text-xs" id="mic-icon"></i>
+          <span id="mic-btn-text">Голос</span>
         </button>
       </div>
 
@@ -1657,66 +1663,74 @@
       }
     }
 
-    // AI Food Photo Scanner Logic
-    const foodInput = document.getElementById('food-photo-input');
-    if (foodInput) {
-      foodInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    // AI Food Photo Scanner Logic (Камера или Галерея)
+    async function handleFoodPhotoFile(file) {
+      if (!file) return;
 
-        const scanState = document.getElementById('food-scanning-state');
-        const resCard = document.getElementById('food-result-card');
+      const scanState = document.getElementById('food-scanning-state');
+      const resCard = document.getElementById('food-result-card');
 
-        scanState.classList.remove('hidden');
-        resCard.classList.add('hidden');
+      scanState.classList.remove('hidden');
+      resCard.classList.add('hidden');
 
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('user_id', tgUserId);
-        formData.append('init_data', initDataRaw);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('user_id', tgUserId);
+      formData.append('init_data', initDataRaw);
 
-        try {
-          const resp = await fetch('/api/nutrition/analyze-photo', {
-            method: 'POST',
-            body: formData
-          });
+      try {
+        const resp = await fetch('/api/nutrition/analyze-photo', {
+          method: 'POST',
+          body: formData
+        });
 
-          scanState.classList.add('hidden');
+        scanState.classList.add('hidden');
 
-          if (resp.ok) {
-            const data = await resp.json();
-            const a = data.analysis;
-            currentScannedAnalysis = { ...a, input_type: "Фото" };
+        if (resp.ok) {
+          const data = await resp.json();
+          const a = data.analysis;
+          currentScannedAnalysis = { ...a, input_type: "Фото" };
 
-            const nameEl = document.getElementById('food-edit-name');
-            const weightEl = document.getElementById('food-edit-weight');
-            const calEl = document.getElementById('food-edit-calories');
-            const protEl = document.getElementById('food-edit-protein');
-            const fatsEl = document.getElementById('food-edit-fats');
-            const carbsEl = document.getElementById('food-edit-carbs');
-            const advEl = document.getElementById('food-advice');
+          const nameEl = document.getElementById('food-edit-name');
+          const weightEl = document.getElementById('food-edit-weight');
+          const calEl = document.getElementById('food-edit-calories');
+          const protEl = document.getElementById('food-edit-protein');
+          const fatsEl = document.getElementById('food-edit-fats');
+          const carbsEl = document.getElementById('food-edit-carbs');
+          const advEl = document.getElementById('food-advice');
 
-            if (nameEl) nameEl.value = a.dish_name || "Блюдо";
-            if (weightEl) weightEl.value = a.weight_g || 300;
-            if (calEl) calEl.value = a.calories || 400;
-            if (protEl) protEl.value = a.protein || 25;
-            if (fatsEl) fatsEl.value = a.fats || 12;
-            if (carbsEl) carbsEl.value = a.carbs || 40;
-            if (advEl) advEl.innerText = a.advice || a.verdict || "Отличный выбор!";
+          if (nameEl) nameEl.value = a.dish_name || "Блюдо";
+          if (weightEl) weightEl.value = a.weight_g || 300;
+          if (calEl) calEl.value = a.calories || 400;
+          if (protEl) protEl.value = a.protein || 25;
+          if (fatsEl) fatsEl.value = a.fats || 12;
+          if (carbsEl) carbsEl.value = a.carbs || 40;
+          if (advEl) advEl.innerText = a.advice || a.verdict || "Отличный выбор!";
 
-            resCard.classList.remove('hidden');
-            resCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            playBeep(784, 0.25, "triangle");
-            if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-          } else {
-            alert("Не удалось распознать фото. Попробуйте еще раз.");
-          }
-        } catch (err) {
-          scanState.classList.add('hidden');
-          alert("Ошибка при анализе фото. Проверьте интернет-соединение.");
+          resCard.classList.remove('hidden');
+          resCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          playBeep(784, 0.25, "triangle");
+          if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        } else {
+          alert("Не удалось распознать фото. Попробуйте еще раз.");
         }
-      });
+      } catch (err) {
+        scanState.classList.add('hidden');
+        alert("Ошибка при анализе фото. Проверьте интернет-соединение.");
+      }
     }
+
+    ['food-camera-input', 'food-gallery-input', 'food-photo-input'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFoodPhotoFile(e.target.files[0]);
+            e.target.value = '';
+          }
+        });
+      }
+    });
 
     // Voice Food Recording Logic (Когда забыл сфотографировать)
     let mediaRecorder = null;
