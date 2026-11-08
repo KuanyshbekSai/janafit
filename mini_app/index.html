@@ -453,39 +453,64 @@
         <div id="food-scanning-label" class="text-xs font-semibold text-pink-300 animate-pulse">Анализирую порцию и калории через ИИ...</div>
       </div>
 
-      <!-- Food Result Card (Hidden by default) -->
-      <div id="food-result-card" class="hidden bg-slate-800/80 rounded-xl p-3 border border-slate-700/60 space-y-2.5 text-xs">
-        <div class="flex justify-between items-start">
-          <div>
-            <div id="food-dish-name" class="font-bold text-white text-sm">Боул с индейкой и киноа</div>
-            <div id="food-dish-weight" class="text-[10px] text-slate-400">Порция: ~340 г</div>
+      <!-- Food Result Card (Interactive with Save & Edit) -->
+      <div id="food-result-card" class="hidden bg-slate-900/95 rounded-2xl p-4 border border-pink-500/40 shadow-xl space-y-3 text-xs">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-sm">✨</span>
+            <span class="font-bold text-white text-xs">Блюдо распознано</span>
           </div>
-          <div class="text-right">
-            <div id="food-calories" class="text-base font-black text-pink-400">385 ккал</div>
-            <div id="food-score" class="text-[10px] text-emerald-400 font-bold">Оценка: 9.5/10</div>
+          <span class="text-[10px] text-pink-400 font-bold bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20">Проверьте и сохраните</span>
+        </div>
+
+        <!-- Editable Dish Name & Grams -->
+        <div class="space-y-1">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Название блюда</label>
+          <input type="text" id="food-edit-name" class="w-full bg-slate-800 border border-slate-700/80 rounded-xl px-3 py-2 text-white font-bold text-xs focus:border-pink-500 outline-none transition-colors" placeholder="Название блюда">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div class="space-y-1">
+            <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Вес порции (г)</label>
+            <input type="number" id="food-edit-weight" class="w-full bg-slate-800 border border-slate-700/80 rounded-xl px-3 py-2 text-slate-200 font-bold text-xs focus:border-pink-500 outline-none" placeholder="300">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Калории (ккал)</label>
+            <input type="number" id="food-edit-calories" class="w-full bg-slate-800 border border-slate-700/80 rounded-xl px-3 py-2 text-pink-400 font-extrabold text-xs focus:border-pink-500 outline-none" placeholder="400">
           </div>
         </div>
 
-        <!-- Macros Grid -->
-        <div class="grid grid-cols-3 gap-1.5 text-center">
-          <div class="p-1.5 bg-slate-900/60 rounded-lg border border-slate-700/40">
-            <div class="text-[9px] text-slate-400 uppercase font-bold">Белки</div>
-            <div id="food-protein" class="font-extrabold text-pink-300">31 г</div>
+        <!-- Macros Grid (Editable) -->
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="p-2 bg-slate-800/80 rounded-xl border border-slate-700/60 space-y-1">
+            <div class="text-[9px] text-slate-400 uppercase font-bold">Белки (г)</div>
+            <input type="number" id="food-edit-protein" class="w-full bg-transparent text-center font-extrabold text-pink-300 text-xs outline-none" value="25">
           </div>
-          <div class="p-1.5 bg-slate-900/60 rounded-lg border border-slate-700/40">
-            <div class="text-[9px] text-slate-400 uppercase font-bold">Жиры</div>
-            <div id="food-fats" class="font-extrabold text-amber-300">11 г</div>
+          <div class="p-2 bg-slate-800/80 rounded-xl border border-slate-700/60 space-y-1">
+            <div class="text-[9px] text-slate-400 uppercase font-bold">Жиры (г)</div>
+            <input type="number" id="food-edit-fats" class="w-full bg-transparent text-center font-extrabold text-amber-300 text-xs outline-none" value="12">
           </div>
-          <div class="p-1.5 bg-slate-900/60 rounded-lg border border-slate-700/40">
-            <div class="text-[9px] text-slate-400 uppercase font-bold">Углеводы</div>
-            <div id="food-carbs" class="font-extrabold text-cyan-300">42 г</div>
+          <div class="p-2 bg-slate-800/80 rounded-xl border border-slate-700/60 space-y-1">
+            <div class="text-[9px] text-slate-400 uppercase font-bold">Углеводы (г)</div>
+            <input type="number" id="food-edit-carbs" class="w-full bg-transparent text-center font-extrabold text-cyan-300 text-xs outline-none" value="40">
           </div>
         </div>
 
         <!-- Coach Tip -->
-        <div class="p-2 rounded-lg bg-pink-500/10 border border-pink-500/20 text-[11px] text-slate-200">
+        <div class="p-2.5 rounded-xl bg-pink-500/10 border border-pink-500/20 text-[11px] text-slate-200 leading-snug">
           <span class="font-bold text-pink-400">💡 Совет нутрициолога: </span>
-          <span id="food-advice">Идеальный баланс чистого белка и сложных углеводов.</span>
+          <span id="food-advice">Хороший питательный выбор.</span>
+        </div>
+
+        <!-- Action Buttons: Save & Cancel -->
+        <div class="pt-1 flex space-x-2">
+          <button type="button" onclick="confirmAndSaveCurrentMeal()" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-95 active:scale-95 text-white font-extrabold text-xs shadow-lg shadow-pink-500/20 transition-all flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Сохранить в дневник</span>
+          </button>
+          <button type="button" onclick="dismissCurrentMealCard()" class="py-3 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-bold transition-all">
+            Отмена
+          </button>
         </div>
       </div>
     </div>
@@ -599,10 +624,16 @@
           </div>
           <div>
             <h3 class="text-xs font-bold uppercase tracking-wider text-white">История питания</h3>
-            <div class="text-[10px] text-slate-400">Сохранённые приёмы пищи за сегодня</div>
+            <div class="text-[10px] text-slate-400">Сохранённые приёмы пищи</div>
           </div>
         </div>
-        <span id="meals-count-badge" class="px-2.5 py-0.5 rounded-full bg-pink-500/10 text-pink-400 font-extrabold text-[10px] border border-pink-500/20">0 блюд</span>
+        <div class="flex items-center space-x-2">
+          <button type="button" onclick="openManualMealModal()" class="px-2.5 py-1 rounded-lg bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 font-bold text-[10px] border border-pink-500/30 flex items-center space-x-1 active:scale-95 transition-all">
+            <i class="fa-solid fa-plus text-[9px]"></i>
+            <span>Вручную</span>
+          </button>
+          <span id="meals-count-badge" class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold text-[10px] border border-slate-700">0 блюд</span>
+        </div>
       </div>
 
       <!-- Meals List Container -->
@@ -914,6 +945,57 @@
     </div>
   </div>
 
+  <!-- MANUAL MEAL MODAL -->
+  <div id="manual-meal-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden transition-all">
+    <div class="bg-slate-900 border border-slate-700/80 rounded-3xl p-5 max-w-sm w-full shadow-2xl relative space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div class="flex items-center space-x-2">
+          <span class="text-base">🥗</span>
+          <h3 class="font-bold text-white text-sm">Добавить приём пищи</h3>
+        </div>
+        <button onclick="closeManualMealModal()" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="space-y-1">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Что вы съели?</label>
+          <input type="text" id="manual-dish-name" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold outline-none focus:border-pink-500" placeholder="Например: Овсянка с ягодами">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div class="space-y-1">
+            <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Калории (ккал)</label>
+            <input type="number" id="manual-dish-calories" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-pink-400 font-bold outline-none focus:border-pink-500" placeholder="350">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Вес порции (г)</label>
+            <input type="number" id="manual-dish-weight" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-pink-500" placeholder="250">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="space-y-1">
+            <label class="text-[9px] text-slate-400 font-bold uppercase">Белки (г)</label>
+            <input type="number" id="manual-dish-protein" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-center text-pink-300 font-bold outline-none" placeholder="15">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[9px] text-slate-400 font-bold uppercase">Жиры (г)</label>
+            <input type="number" id="manual-dish-fats" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-center text-amber-300 font-bold outline-none" placeholder="10">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[9px] text-slate-400 font-bold uppercase">Углеводы (г)</label>
+            <input type="number" id="manual-dish-carbs" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-center text-cyan-300 font-bold outline-none" placeholder="45">
+          </div>
+        </div>
+
+        <button onclick="saveManualMeal()" class="w-full py-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-95 text-white font-extrabold text-xs shadow-lg shadow-pink-500/20 transition-all flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-check"></i>
+          <span>Сохранить в дневник</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Init Telegram WebApp
     const tg = window.Telegram?.WebApp;
@@ -1085,6 +1167,8 @@
     let completedDays = JSON.parse(localStorage.getItem('janafit_completed_days') || '[]');
     let measurements = JSON.parse(localStorage.getItem('janafit_measurements') || '[]');
     let waterCups = parseInt(localStorage.getItem('janafit_water_cups') || '4');
+    let userMeals = JSON.parse(localStorage.getItem('janafit_meals') || '[]');
+    let currentScannedAnalysis = null;
 
     // Fetch initial state from server
     async function syncWithServer() {
@@ -1602,21 +1686,28 @@
           if (resp.ok) {
             const data = await resp.json();
             const a = data.analysis;
+            currentScannedAnalysis = { ...a, input_type: "Фото" };
 
-            document.getElementById('food-dish-name').innerText = a.dish_name || "Блюдо";
-            document.getElementById('food-dish-weight').innerText = `Порция: ~${a.weight_g || 300} г`;
-            document.getElementById('food-calories').innerText = `${a.calories || 400} ккал`;
-            document.getElementById('food-score').innerText = `Оценка: ${a.health_score || 9}/10`;
-            document.getElementById('food-protein').innerText = `${a.protein || 25} г`;
-            document.getElementById('food-fats').innerText = `${a.fats || 12} г`;
-            document.getElementById('food-carbs').innerText = `${a.carbs || 40} г`;
-            document.getElementById('food-advice').innerText = a.advice || a.verdict || "Отличный выбор!";
+            const nameEl = document.getElementById('food-edit-name');
+            const weightEl = document.getElementById('food-edit-weight');
+            const calEl = document.getElementById('food-edit-calories');
+            const protEl = document.getElementById('food-edit-protein');
+            const fatsEl = document.getElementById('food-edit-fats');
+            const carbsEl = document.getElementById('food-edit-carbs');
+            const advEl = document.getElementById('food-advice');
+
+            if (nameEl) nameEl.value = a.dish_name || "Блюдо";
+            if (weightEl) weightEl.value = a.weight_g || 300;
+            if (calEl) calEl.value = a.calories || 400;
+            if (protEl) protEl.value = a.protein || 25;
+            if (fatsEl) fatsEl.value = a.fats || 12;
+            if (carbsEl) carbsEl.value = a.carbs || 40;
+            if (advEl) advEl.innerText = a.advice || a.verdict || "Отличный выбор!";
 
             resCard.classList.remove('hidden');
+            resCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             playBeep(784, 0.25, "triangle");
             if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-
-            loadMealsSummary();
           } else {
             alert("Не удалось распознать фото. Попробуйте еще раз.");
           }
@@ -1728,21 +1819,28 @@
         if (resp.ok) {
           const data = await resp.json();
           const a = data.analysis;
+          currentScannedAnalysis = { ...a, input_type: "Голос" };
 
-          document.getElementById('food-dish-name').innerText = a.dish_name || "Голосовая запись";
-          document.getElementById('food-dish-weight').innerText = `Порция: ~${a.weight_g || 300} г`;
-          document.getElementById('food-calories').innerText = `${a.calories || 400} ккал`;
-          document.getElementById('food-score').innerText = `Оценка: ${a.health_score || 9}/10`;
-          document.getElementById('food-protein').innerText = `${a.protein || 25} г`;
-          document.getElementById('food-fats').innerText = `${a.fats || 12} г`;
-          document.getElementById('food-carbs').innerText = `${a.carbs || 40} г`;
-          document.getElementById('food-advice').innerText = a.advice || a.verdict || "Отличный выбор!";
+          const nameEl = document.getElementById('food-edit-name');
+          const weightEl = document.getElementById('food-edit-weight');
+          const calEl = document.getElementById('food-edit-calories');
+          const protEl = document.getElementById('food-edit-protein');
+          const fatsEl = document.getElementById('food-edit-fats');
+          const carbsEl = document.getElementById('food-edit-carbs');
+          const advEl = document.getElementById('food-advice');
+
+          if (nameEl) nameEl.value = a.dish_name || "Голосовая запись";
+          if (weightEl) weightEl.value = a.weight_g || 300;
+          if (calEl) calEl.value = a.calories || 400;
+          if (protEl) protEl.value = a.protein || 25;
+          if (fatsEl) fatsEl.value = a.fats || 12;
+          if (carbsEl) carbsEl.value = a.carbs || 40;
+          if (advEl) advEl.innerText = a.advice || a.verdict || "Отличный выбор!";
 
           resCard.classList.remove('hidden');
+          resCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
           playBeep(784, 0.25, "triangle");
           if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-
-          loadMealsSummary();
         } else {
           alert("Не удалось распознать голос. Попробуйте еще раз.");
         }
@@ -1750,6 +1848,158 @@
         scanState.classList.add('hidden');
         alert("Ошибка при анализе аудио. Проверьте интернет-соединение.");
       }
+    }
+
+    async function confirmAndSaveCurrentMeal() {
+      const name = document.getElementById('food-edit-name').value.trim() || "Приём пищи";
+      const weight = parseInt(document.getElementById('food-edit-weight').value) || 300;
+      const calories = parseInt(document.getElementById('food-edit-calories').value) || 0;
+      const protein = parseFloat(document.getElementById('food-edit-protein').value) || 0;
+      const fats = parseFloat(document.getElementById('food-edit-fats').value) || 0;
+      const carbs = parseFloat(document.getElementById('food-edit-carbs').value) || 0;
+      const advice = document.getElementById('food-advice').innerText || "";
+
+      const newMeal = {
+        id: Date.now(),
+        dish_name: name,
+        weight_g: weight,
+        calories: calories,
+        protein: protein,
+        fats: fats,
+        carbs: carbs,
+        advice: advice,
+        created_at: new Date().toISOString(),
+        input_type: currentScannedAnalysis?.input_type || "Фото"
+      };
+
+      userMeals.unshift(newMeal);
+      localStorage.setItem('janafit_meals', JSON.stringify(userMeals));
+      renderMealsHistory(userMeals);
+      updateNutritionTotals(userMeals);
+      dismissCurrentMealCard();
+
+      playBeep(880, 0.25, "triangle");
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+
+      try {
+        fetch('/api/nutrition/save-meal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...newMeal,
+            user_id: tgUserId,
+            init_data: initDataRaw
+          })
+        }).catch(() => {});
+      } catch (e) {}
+    }
+
+    function dismissCurrentMealCard() {
+      const resCard = document.getElementById('food-result-card');
+      if (resCard) resCard.classList.add('hidden');
+      currentScannedAnalysis = null;
+    }
+
+    function openManualMealModal() {
+      const modal = document.getElementById('manual-meal-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        document.getElementById('manual-dish-name').focus();
+      }
+    }
+
+    function closeManualMealModal() {
+      const modal = document.getElementById('manual-meal-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function saveManualMeal() {
+      const name = document.getElementById('manual-dish-name').value.trim() || "Приём пищи";
+      const calories = parseInt(document.getElementById('manual-dish-calories').value) || 300;
+      const weight = parseInt(document.getElementById('manual-dish-weight').value) || 250;
+      const protein = parseFloat(document.getElementById('manual-dish-protein').value) || 0;
+      const fats = parseFloat(document.getElementById('manual-dish-fats').value) || 0;
+      const carbs = parseFloat(document.getElementById('manual-dish-carbs').value) || 0;
+
+      const newMeal = {
+        id: Date.now(),
+        dish_name: name,
+        weight_g: weight,
+        calories: calories,
+        protein: protein,
+        fats: fats,
+        carbs: carbs,
+        advice: "Записано вручную",
+        created_at: new Date().toISOString(),
+        input_type: "Вручную"
+      };
+
+      userMeals.unshift(newMeal);
+      localStorage.setItem('janafit_meals', JSON.stringify(userMeals));
+      renderMealsHistory(userMeals);
+      updateNutritionTotals(userMeals);
+      closeManualMealModal();
+
+      document.getElementById('manual-dish-name').value = '';
+      document.getElementById('manual-dish-calories').value = '';
+      document.getElementById('manual-dish-weight').value = '';
+      document.getElementById('manual-dish-protein').value = '';
+      document.getElementById('manual-dish-fats').value = '';
+      document.getElementById('manual-dish-carbs').value = '';
+
+      playBeep(880, 0.25, "triangle");
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+
+      try {
+        fetch('/api/nutrition/save-meal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...newMeal,
+            user_id: tgUserId,
+            init_data: initDataRaw
+          })
+        }).catch(() => {});
+      } catch (e) {}
+    }
+
+    function deleteMeal(id) {
+      if (!confirm("Удалить этот приём пищи из истории?")) return;
+      userMeals = userMeals.filter(m => m.id != id);
+      localStorage.setItem('janafit_meals', JSON.stringify(userMeals));
+      renderMealsHistory(userMeals);
+      updateNutritionTotals(userMeals);
+
+      try {
+        fetch('/api/nutrition/delete-meal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ meal_id: id, user_id: tgUserId, init_data: initDataRaw })
+        }).catch(() => {});
+      } catch (e) {}
+    }
+
+    function updateNutritionTotals(meals) {
+      let totalCal = 0, totalP = 0, totalF = 0, totalC = 0;
+      (meals || []).forEach(m => {
+        totalCal += parseInt(m.calories) || 0;
+        totalP += parseFloat(m.protein) || 0;
+        totalF += parseFloat(m.fats) || 0;
+        totalC += parseFloat(m.carbs) || 0;
+      });
+
+      const targetCal = userProfile?.daily_calories_target || 1600;
+      const calEl = document.getElementById('daily-calories-total');
+      if (calEl) calEl.innerText = `${totalCal} / ${targetCal} ккал`;
+
+      const pEl = document.getElementById('daily-protein-total');
+      if (pEl) pEl.innerText = `${Math.round(totalP)} г`;
+
+      const fEl = document.getElementById('daily-fats-total');
+      if (fEl) fEl.innerText = `${Math.round(totalF)} г`;
+
+      const cEl = document.getElementById('daily-carbs-total');
+      if (cEl) cEl.innerText = `${Math.round(totalC)} г`;
     }
 
     function renderMealsHistory(meals) {
@@ -1763,32 +2013,39 @@
           <div class="text-center py-4 px-2 space-y-1.5 border border-dashed border-slate-700/60 rounded-xl bg-slate-800/20">
             <div class="text-xl">🥗</div>
             <div class="text-slate-300 font-semibold text-xs">В дневнике пока пусто</div>
-            <div class="text-[10px] text-slate-500">Сделайте фото тарелки через AI-сканер выше — приём пищи появится здесь!</div>
+            <div class="text-[10px] text-slate-500">Сделайте фото, надиктуйте голосом или добавьте вручную!</div>
           </div>
         `;
         return;
       }
 
-      if (badge) badge.innerText = `${meals.length} ${meals.length === 1 ? 'блюдо' : 'блюда'}`;
+      if (badge) badge.innerText = `${meals.length} ${meals.length === 1 ? 'блюдо' : 'блюд'}`;
       list.innerHTML = '';
 
-      meals.forEach(m => {
+      meals.forEach((m, idx) => {
         const item = document.createElement('div');
         item.className = "p-3 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-2 hover:border-pink-500/30 transition-all";
         const dateStr = m.created_at ? new Date(m.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : 'Сегодня';
+        const mealId = m.id || idx;
 
         item.innerHTML = `
           <div class="flex justify-between items-start">
-            <div>
-              <div class="font-extrabold text-white text-xs flex items-center space-x-1.5">
+            <div class="flex-1 pr-2">
+              <div class="font-extrabold text-white text-xs flex items-center space-x-1.5 flex-wrap">
                 <span>🍽</span>
                 <span>${m.dish_name || 'Приём пищи'}</span>
+                ${m.input_type ? `<span class="text-[9px] px-1.5 py-0.2 bg-slate-700/60 text-pink-300 rounded font-bold">${m.input_type}</span>` : ''}
               </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">${dateStr}</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">${dateStr} ${m.weight_g ? `• ~${m.weight_g}г` : ''}</div>
             </div>
-            <span class="px-2 py-0.5 rounded-lg bg-pink-500/20 text-pink-300 font-extrabold text-[11px] border border-pink-500/30">
-              ${m.calories || 0} ккал
-            </span>
+            <div class="flex items-center space-x-2">
+              <span class="px-2 py-0.5 rounded-lg bg-pink-500/20 text-pink-300 font-extrabold text-[11px] border border-pink-500/30">
+                ${m.calories || 0} ккал
+              </span>
+              <button onclick="deleteMeal(${mealId})" title="Удалить" class="text-slate-500 hover:text-red-400 p-1 transition-colors">
+                <i class="fa-regular fa-trash-can text-xs"></i>
+              </button>
+            </div>
           </div>
 
           <div class="grid grid-cols-3 gap-1 text-center text-[10px]">
@@ -1809,11 +2066,31 @@
     }
 
     async function loadMealsSummary() {
+      updateNutritionTotals(userMeals);
+
       try {
         const resp = await fetch(`/api/nutrition/meals?user_id=${tgUserId}&init_data=${encodeURIComponent(initDataRaw)}`);
         if (resp.ok) {
           const data = await resp.json();
-          renderMealsHistory(data.meals || []);
+          if (data.meals && data.meals.length > 0) {
+            const existingKeys = new Set(userMeals.map(m => `${m.dish_name}_${m.created_at}`));
+            let added = false;
+            data.meals.forEach(sm => {
+              const key = `${sm.dish_name}_${sm.created_at}`;
+              if (!existingKeys.has(key)) {
+                userMeals.push(sm);
+                added = true;
+              }
+            });
+            if (added) {
+              localStorage.setItem('janafit_meals', JSON.stringify(userMeals));
+              renderMealsHistory(userMeals);
+              updateNutritionTotals(userMeals);
+            }
+          }
+        }
+      } catch (e) {}
+    }
           if (data.summary) {
             const targetCal = userProfile?.daily_calories_target || 1600;
             document.getElementById('daily-calories-total').innerText = `${data.summary.total_calories} / ${targetCal} ккал`;
@@ -2081,6 +2358,8 @@
     selectDay(1);
     renderMeasurements();
     renderWater();
+    renderMealsHistory(userMeals);
+    updateNutritionTotals(userMeals);
 
     // Check saved profile or trigger onboarding
     const localProf = localStorage.getItem('janafit_profile');

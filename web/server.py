@@ -105,6 +105,26 @@ class ProfileRequest(BaseModel):
     init_data: Optional[str] = None
     user_id: Optional[int] = None
 
+class SaveMealRequest(BaseModel):
+    dish_name: str
+    calories: int
+    protein: float = 0.0
+    fats: float = 0.0
+    carbs: float = 0.0
+    weight_g: Optional[int] = 300
+    advice: Optional[str] = ""
+    input_type: Optional[str] = "Фото"
+    omega3_score: Optional[int] = 25
+    aojiru_score: Optional[int] = 30
+    vitamins_score: Optional[int] = 50
+    user_id: Optional[int] = None
+    init_data: Optional[str] = None
+
+class DeleteMealRequest(BaseModel):
+    meal_id: Optional[int] = None
+    user_id: Optional[int] = None
+    init_data: Optional[str] = None
+
 def get_verified_user_id(init_data: Optional[str], fallback_user_id: Optional[int] = None) -> int:
     """
     Верифицирует Telegram initData. Если данные не валидны, но мы в тестовом режиме (localhost),
@@ -276,45 +296,14 @@ async def analyze_photo_endpoint(
     init_data: Optional[str] = Form(None)
 ):
     """
-    Принимает фото тарелки с едой, распознает блюдо, вычисляет КБЖУ и сохраняет в дневник.
+    Принимает фото тарелки с едой, распознает блюдо и вычисляет КБЖУ через Gemini Vision.
+    Возвращает структуру для подтверждения/редактирования пользователем.
     """
     verified_id = get_verified_user_id(init_data, user_id)
     image_bytes = await file.read()
     mime_type = file.content_type or "image/jpeg"
 
     analysis = await analyze_food_photo(image_bytes, mime_type)
-
-    import json
-    rec_obj = analysis.get("recommendation", {})
-    rec_str = json.dumps(rec_obj, ensure_ascii=False) if rec_obj else None
-
-    # Сохраняем в дневник питания
-    await save_user_meal(
-        user_id=verified_id,
-        dish_name=analysis.get("dish_name", "Блюдо"),
-        calories=int(analysis.get("calories", 0)),
-        protein=float(analysis.get("protein", 0)),
-        fats=float(analysis.get("fats", 0)),
-        carbs=float(analysis.get("carbs", 0)),
-        advice=analysis.get("advice", ""),
-        omega3_score=int(analysis.get("omega3_score", 25)),
-        aojiru_score=int(analysis.get("aojiru_greens_score", 30)),
-        vitamins_score=int(analysis.get("vitamins_score", 50)),
-        recommendation_json=rec_str
-    )
-
-    fire_and_forget(log_meal_to_gas(
-        user_id=verified_id,
-        dish_name=analysis.get("dish_name", "Блюдо"),
-        input_type="Фото",
-        calories=int(analysis.get("calories", 0)),
-        protein=float(analysis.get("protein", 0)),
-        fats=float(analysis.get("fats", 0)),
-        carbs=float(analysis.get("carbs", 0)),
-        health_score=float(analysis.get("health_score", 9.0)),
-        advice=analysis.get("advice", "")
-    ))
-
     return {"status": "ok", "analysis": analysis}
 
 @app.post("/api/nutrition/analyze-audio")
@@ -324,41 +313,62 @@ async def analyze_audio_endpoint(
     init_data: Optional[str] = Form(None)
 ):
     """
-    Принимает аудиозапись с описанием еды, распознает речь, вычисляет КБЖУ и сохраняет в дневник.
+    Принимает аудиозапись с описанием еды, распознает речь и рассчитывает КБЖУ.
+    Возвращает структуру для подтверждения/редактирования пользователем.
     """
     verified_id = get_verified_user_id(init_data, user_id)
     audio_bytes = await file.read()
     mime_type = file.content_type or "audio/ogg"
 
     analysis = await analyze_food_audio(audio_bytes, mime_type)
+    return {"status": "ok", "analysis": analysis}
 
-    # Сохраняем в дневник питания
-    await save_user_meal(
+@app.post("/api/nutrition/save-meal")
+async def save_meal_endpoint(payload: SaveMealRequest):
+    """
+    Сохраняет проверенный/отредактированный пользователем приём пищи в базу и Google Таблицу.
+    """
+    verified_id = get_verified_user_id(payload.init_data, payload.user_id)
+    
+    meal_id = await save_user_meal(
         user_id=verified_id,
-        dish_name=analysis.get("dish_name", "Голосовая запись"),
-        calories=int(analysis.get("calories", 0)),
-        protein=float(analysis.get("protein", 0)),
-        fats=float(analysis.get("fats", 0)),
-        carbs=float(analysis.get("carbs", 0)),
-        advice=analysis.get("advice", ""),
-        omega3_score=int(analysis.get("omega3_score", 25)),
-        aojiru_score=int(analysis.get("aojiru_greens_score", 30)),
-        vitamins_score=int(analysis.get("vitamins_score", 50))
+        dish_name=payload.dish_name,
+        calories=payload.calories,
+        protein=payload.protein,
+        fats=payload.fats,
+        carbs=payload.carbs,
+        advice=payload.advice or "",
+        omega3_score=payload.omega3_score or 25,
+        aojiru_score=payload.aojiru_score or 30,
+        vitamins_score=payload.vitamins_score or 50
     )
 
     fire_and_forget(log_meal_to_gas(
         user_id=verified_id,
-        dish_name=analysis.get("dish_name", "Голосовая запись"),
-        input_type="Голос",
-        calories=int(analysis.get("calories", 0)),
-        protein=float(analysis.get("protein", 0)),
-        fats=float(analysis.get("fats", 0)),
-        carbs=float(analysis.get("carbs", 0)),
-        health_score=float(analysis.get("health_score", 9.0)),
-        advice=analysis.get("advice", "")
+        dish_name=payload.dish_name,
+        input_type=payload.input_type or "Фото",
+        calories=payload.calories,
+        protein=payload.protein,
+        fats=payload.fats,
+        carbs=payload.carbs,
+        health_score=9.0,
+        advice=payload.advice or ""
     ))
 
-    return {"status": "ok", "analysis": analysis}
+    return {"status": "ok", "meal_id": meal_id}
+
+@app.post("/api/nutrition/delete-meal")
+async def delete_meal_endpoint(payload: DeleteMealRequest):
+    """
+    Удаляет приём пищи из базы.
+    """
+    verified_id = get_verified_user_id(payload.init_data, payload.user_id)
+    if payload.meal_id:
+        import aiosqlite
+        async with aiosqlite.connect(settings.DB_PATH) as db:
+            await db.execute("DELETE FROM user_meals WHERE id = ? AND user_id = ?", (payload.meal_id, verified_id))
+            await db.commit()
+    return {"status": "ok"}
 
 @app.get("/api/nutrition/meals")
 async def get_meals_endpoint(user_id: int = 123456789, init_data: Optional[str] = None):
