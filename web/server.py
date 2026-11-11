@@ -67,12 +67,12 @@ templates = Jinja2Templates(directory=valid_dirs)
 
 # Mount static assets directory
 assets_candidates = [
+    os.path.join(os.path.dirname(__file__), "..", "public", "assets"),
     os.path.join(os.path.dirname(__file__), "..", "mini_app", "assets"),
-    os.path.join(os.path.dirname(__file__), "..", "api", "mini_app", "assets"),
+    "/var/task/public/assets",
     "/var/task/mini_app/assets",
-    "/var/task/api/mini_app/assets",
-    "mini_app/assets",
-    "api/mini_app/assets"
+    "public/assets",
+    "mini_app/assets"
 ]
 for adir in assets_candidates:
     if os.path.isdir(adir):
