@@ -3,18 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JANAFIT • Панель Администратора</title>
+  <title>JANAFIT • Панель Администратора (CRM & Аналитика)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Oswald', 'sans-serif']
+          },
           colors: {
             brand: {
-              neon: '#00e676',
-              500: '#22c55e',
-              600: '#16a34a'
+              lime: '#B6FF1A',
+              emerald: '#10b981',
+              dark: '#0f172a'
             }
           }
         }
@@ -23,292 +30,481 @@
   </script>
   <style>
     body {
-      background-color: #121212;
-      color: #f1f5f9;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
-    .neon-text {
-      color: #00e676;
-      text-shadow: 0 0 10px rgba(0, 230, 118, 0.4);
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
     }
   </style>
 </head>
-<body class="min-h-screen p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
 
-  <!-- Header -->
-  <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1a1a1a] p-5 rounded-3xl border border-[#2a2a2a] shadow-xl">
-    <div class="flex items-center space-x-3.5">
-      <div class="w-12 h-12 rounded-2xl bg-[#222222] border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/10">
-        <svg viewBox="0 0 24 24" class="w-7 h-7" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12c0 3.7 2.01 6.94 5 8.65V18c-1.84-1.37-3-3.55-3-6 0-4.41 3.59-8 8-8s8 3.59 8 8c0 2.45-1.16 4.63-3 6v2.65c2.99-1.71 5-4.95 5-8.65 0-5.52-4.48-10-10-10zm-1 5v7.5l-3.5 2.5V8.5L11 7zm2 0l3.5 1.5V17L13 14.5V7zM8 3.5C8.83 2.56 10.34 2 12 2s3.17.56 4 1.5L12 6 8 3.5z"/>
-        </svg>
+  <!-- Desktop Top Navigation Bar -->
+  <header class="sticky top-0 z-30 bg-white border-b border-slate-200/80 shadow-sm backdrop-blur-md">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3.5 flex items-center justify-between">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center space-x-4">
+        <div class="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center text-[#B6FF1A] shadow-md shadow-slate-900/10">
+          <svg viewBox="0 0 24 24" class="w-6 h-6 fill-current">
+            <path d="M12 2C6.48 2 2 6.48 2 12c0 3.7 2.01 6.94 5 8.65V18c-1.84-1.37-3-3.55-3-6 0-4.41 3.59-8 8-8s8 3.59 8 8c0 2.45-1.16 4.63-3 6v2.65c2.99-1.71 5-4.95 5-8.65 0-5.52-4.48-10-10-10zm-1 5v7.5l-3.5 2.5V8.5L11 7zm2 0l3.5 1.5V17L13 14.5V7zM8 3.5C8.83 2.56 10.34 2 12 2s3.17.56 4 1.5L12 6 8 3.5z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-lg font-black tracking-tight text-slate-900 font-display uppercase">JANAFIT CRM</h1>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+              Desktop Edition
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium">Панель управления марафоном трансформации</p>
+        </div>
       </div>
-      <div>
-        <div class="text-[11px] uppercase tracking-wider text-emerald-400 font-extrabold">Управление платформой</div>
-        <h1 class="text-xl font-black text-white">JANAFIT ADMIN PANEL</h1>
-      </div>
-    </div>
 
-    <div class="flex items-center space-x-3">
-      <a href="/app" target="_blank" class="px-3.5 py-2 rounded-xl bg-[#262626] hover:bg-[#333333] text-xs font-bold text-slate-200 border border-slate-700 transition-all flex items-center space-x-1.5">
-        <i class="fa-solid fa-mobile-screen"></i>
-        <span>Открыть Mini App</span>
-      </a>
-      <button onclick="loadAdminData()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-extrabold text-black transition-all flex items-center space-x-1.5 shadow-lg shadow-emerald-500/20">
-        <i class="fa-solid fa-rotate"></i>
-        <span>Обновить</span>
-      </button>
+      <!-- Quick Status Badges & Actions -->
+      <div class="flex items-center space-x-3">
+        <div class="hidden md:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Сервер: Онлайн</span>
+        </div>
+
+        <div class="hidden lg:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-semibold text-slate-700 border border-slate-200">
+          <i class="fa-solid fa-credit-card text-emerald-600"></i>
+          <span>Тариф: <b>7 990 ₸</b></span>
+        </div>
+
+        <a href="/app" target="_blank" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 border border-slate-300 transition-all flex items-center space-x-2 shadow-sm">
+          <i class="fa-solid fa-mobile-screen text-slate-500"></i>
+          <span>Открыть Mini App</span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400"></i>
+        </a>
+
+        <button onclick="loadAdminData()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all flex items-center space-x-2 shadow-sm shadow-slate-900/10">
+          <i id="refresh-icon" class="fa-solid fa-rotate"></i>
+          <span>Обновить</span>
+        </button>
+      </div>
+
     </div>
   </header>
 
-  <!-- 1. Главный Дашборд (Аналитика) -->
-  <section class="space-y-3">
-    <h2 class="text-xs uppercase font-extrabold text-slate-400 tracking-wider flex items-center space-x-2">
-      <i class="fa-solid fa-chart-pie text-emerald-400"></i>
-      <span>1. Главный Дашборд • Аналитика</span>
-    </h2>
+  <!-- Main Desktop Container -->
+  <main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div class="bg-[#1a1a1a] p-4 rounded-2xl border border-[#2a2a2a] space-y-1">
-        <div class="text-[11px] text-slate-400 font-semibold">Всего в базе</div>
-        <div id="stat-total-users" class="text-2xl font-black text-white">--</div>
-        <div class="text-[10px] text-slate-400">Пользователей бота</div>
-      </div>
-
-      <div class="bg-[#1a1a1a] p-4 rounded-2xl border border-[#2a2a2a] space-y-1">
-        <div class="text-[11px] text-slate-400 font-semibold">Новые за сегодня</div>
-        <div id="stat-new-today" class="text-2xl font-black text-emerald-400">--</div>
-        <div id="stat-new-week" class="text-[10px] text-slate-400">за неделю: --</div>
-      </div>
-
-      <div class="bg-[#1a1a1a] p-4 rounded-2xl border border-[#2a2a2a] space-y-1">
-        <div class="text-[11px] text-slate-400 font-semibold">Выручка (₸)</div>
-        <div id="stat-revenue" class="text-2xl font-black neon-text">-- ₸</div>
-        <div id="stat-paid-count" class="text-[10px] text-slate-400">-- оплат</div>
-      </div>
-
-      <div class="bg-[#1a1a1a] p-4 rounded-2xl border border-[#2a2a2a] space-y-1">
-        <div class="text-[11px] text-slate-400 font-semibold">Конверсия в оплату</div>
-        <div id="stat-conversion" class="text-2xl font-black text-emerald-400">--%</div>
-        <div class="text-[10px] text-slate-400">Трипвайер ➔ Оплата</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2. Модуль «Пользователи» (CRM) -->
-  <section class="bg-[#1a1a1a] p-5 rounded-3xl border border-[#2a2a2a] shadow-xl space-y-4">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-      <div>
-        <h2 class="text-base font-black text-white flex items-center space-x-2">
-          <i class="fa-solid fa-users text-emerald-400"></i>
-          <span>2. Модуль «Пользователи» (CRM)</span>
+    <!-- 1. KPI Analytics Cards -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs uppercase font-extrabold tracking-wider text-slate-500 flex items-center space-x-2">
+          <i class="fa-solid fa-chart-simple text-emerald-600"></i>
+          <span>1. Аналитика и показатели (Real-time)</span>
         </h2>
-        <p class="text-xs text-slate-400">База клиентов, статусы оплат и ручное управление доступом</p>
+        <span class="text-[11px] text-slate-400">Синхронизация с базой данных</span>
       </div>
 
-      <div class="flex items-center space-x-2">
-        <button onclick="setFilter('all')" id="flt-all" class="px-3 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs">Все</button>
-        <button onclick="setFilter('paid')" id="flt-paid" class="px-3 py-1.5 rounded-xl bg-[#262626] text-slate-300 font-bold text-xs hover:text-white">Оплатили</button>
-        <button onclick="setFilter('free')" id="flt-free" class="px-3 py-1.5 rounded-xl bg-[#262626] text-slate-300 font-bold text-xs hover:text-white">Бесплатные</button>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Card 1 -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">Всего в базе</span>
+            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-users"></i>
+            </div>
+          </div>
+          <div id="stat-total-users" class="text-3xl font-black text-slate-900 mt-2 font-display">--</div>
+          <div class="flex items-center space-x-1.5 mt-2 text-xs text-slate-500">
+            <i class="fa-brands fa-telegram text-sky-500"></i>
+            <span>Пользователи бота и Mini App</span>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">Новые участники</span>
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-user-plus"></i>
+            </div>
+          </div>
+          <div id="stat-new-today" class="text-3xl font-black text-emerald-600 mt-2 font-display">--</div>
+          <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
+            <span id="stat-new-week">за неделю: --</span>
+            <span class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-bold text-[10px]">Прирост</span>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">Выручка от продаж</span>
+            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-coins"></i>
+            </div>
+          </div>
+          <div id="stat-revenue" class="text-3xl font-black text-slate-900 mt-2 font-display">-- ₸</div>
+          <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
+            <span id="stat-paid-count">-- оплат</span>
+            <span class="text-slate-700 font-semibold text-[11px]">Robokassa</span>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">Конверсия в оплату</span>
+            <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-percent"></i>
+            </div>
+          </div>
+          <div id="stat-conversion" class="text-3xl font-black text-purple-600 mt-2 font-display">--%</div>
+          <div class="flex items-center space-x-1 mt-2 text-xs text-slate-500">
+            <span>Трипвайер (2 дня) ➔ 7 990 ₸</span>
+          </div>
+        </div>
+
       </div>
-    </div>
+    </section>
 
-    <!-- Users Table -->
-    <div class="overflow-x-auto rounded-2xl border border-[#2a2a2a]">
-      <table class="w-full text-left text-xs text-slate-300">
-        <thead class="bg-[#222222] text-[10px] uppercase tracking-wider text-slate-400">
-          <tr>
-            <th class="p-3">ID / User</th>
-            <th class="p-3">Имя</th>
-            <th class="p-3">Дата регистрации</th>
-            <th class="p-3">Статус доступа</th>
-            <th class="p-3 text-right">Действие</th>
-          </tr>
-        </thead>
-        <tbody id="users-tbody" class="divide-y divide-[#2a2a2a]">
-          <tr>
-            <td colspan="5" class="p-4 text-center text-slate-500">Загрузка пользователей...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+    <!-- 2. CRM Table: Пользователи и доступ -->
+    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      
+      <!-- Table Toolbar -->
+      <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+            <i class="fa-solid fa-address-book text-emerald-600"></i>
+            <span>2. CRM: Пользователи и управление доступом</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Полная база клиентов с возможностью ручного открытия или отзыва доступа к марафону</p>
+        </div>
 
-  <!-- 3. Модуль «Рассылки» (Broadcasts) -->
-  <section class="bg-[#1a1a1a] p-5 rounded-3xl border border-[#2a2a2a] shadow-xl space-y-4">
-    <div>
-      <h2 class="text-base font-black text-white flex items-center space-x-2">
-        <i class="fa-solid fa-paper-plane text-emerald-400"></i>
-        <span>3. Модуль «Рассылки» (Broadcasts)</span>
-      </h2>
-      <p class="text-xs text-slate-400">Отправка сообщений аудитории бота по сегментам</p>
-    </div>
+        <!-- Search and Filters -->
+        <div class="flex flex-wrap items-center gap-3">
+          
+          <!-- Search Box -->
+          <div class="relative w-full sm:w-64">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" id="user-search" oninput="filterUsersList()" placeholder="Поиск по ID, username, имени..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition-all">
+          </div>
 
-    <div class="space-y-3">
-      <div class="flex items-center space-x-4 text-xs font-bold">
-        <label class="flex items-center space-x-2 cursor-pointer">
-          <input type="radio" name="b-target" value="all" checked class="accent-emerald-500">
-          <span>Всем пользователям</span>
-        </label>
-        <label class="flex items-center space-x-2 cursor-pointer">
-          <input type="radio" name="b-target" value="free" class="accent-emerald-500">
-          <span>Только НЕ оплатившим (дожим)</span>
-        </label>
-        <label class="flex items-center space-x-2 cursor-pointer">
-          <input type="radio" name="b-target" value="paid" class="accent-emerald-500">
-          <span>Только оплатившим участникам</span>
-        </label>
-      </div>
+          <!-- Filter Pills -->
+          <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button onclick="setFilter('all')" id="flt-all" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-sm transition-all">
+              Все
+            </button>
+            <button onclick="setFilter('paid')" id="flt-paid" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all">
+              Оплатили
+            </button>
+            <button onclick="setFilter('free')" id="flt-free" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all">
+              Бесплатные
+            </button>
+          </div>
 
-      <textarea id="broadcast-text" rows="4" placeholder="Введите текст сообщения (поддерживаются HTML теги: <b>, <i>, <code>)..." class="w-full bg-[#121212] border border-[#2a2a2a] rounded-2xl p-3 text-xs text-white outline-none focus:border-emerald-500"></textarea>
-
-      <div class="flex justify-between items-center">
-        <span class="text-[11px] text-slate-400">Сообщение придет пользователям от лица бота @janafit_coach_bot</span>
-        <button onclick="sendBroadcast()" id="b-send-btn" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 hover:opacity-95 text-black font-black text-xs shadow-lg shadow-emerald-500/20 transition-all">
-          Запустить рассылку 🚀
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. Настройки и Контент -->
-  <section class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div class="bg-[#1a1a1a] p-5 rounded-3xl border border-[#2a2a2a] space-y-3">
-      <h3 class="text-sm font-black text-white flex items-center space-x-2">
-        <i class="fa-solid fa-sliders text-emerald-400"></i>
-        <span>Настройки марафона</span>
-      </h3>
-      <div class="text-xs space-y-2 text-slate-300">
-        <div class="flex justify-between border-b border-[#262626] pb-1.5">
-          <span class="text-slate-400">Стоимость на Paywall:</span>
-          <span class="font-extrabold text-emerald-400">7 990 ₸</span>
-        </div>
-        <div class="flex justify-between border-b border-[#262626] pb-1.5">
-          <span class="text-slate-400">Длительность программы:</span>
-          <span class="font-bold text-white">14 видеотренировок</span>
-        </div>
-        <div class="flex justify-between border-b border-[#262626] pb-1.5">
-          <span class="text-slate-400">Трипвайер (тест-драйв):</span>
-          <span class="font-bold text-emerald-400">2 бесплатных урока</span>
-        </div>
-        <div class="flex justify-between border-b border-[#262626] pb-1.5">
-          <span class="text-slate-400">Эквайринг:</span>
-          <span class="font-bold text-white">Robokassa + Kaspi</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="bg-[#1a1a1a] p-5 rounded-3xl border border-[#2a2a2a] space-y-3">
-      <h3 class="text-sm font-black text-white flex items-center space-x-2">
-        <i class="fa-solid fa-shield-halved text-emerald-400"></i>
-        <span>Безопасность и Anti-Piracy</span>
-      </h3>
-      <div class="text-xs space-y-2 text-slate-300">
-        <div class="flex items-center space-x-2">
-          <span class="text-emerald-400 font-bold">✓</span>
-          <span>Защита от контекстного меню (Right-click block)</span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <span class="text-emerald-400 font-bold">✓</span>
-          <span>Динамический водяной знак с Telegram ID</span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <span class="text-emerald-400 font-bold">✓</span>
-          <span>Тайм-локинг (Drip-feed выдача по дням)</span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <span class="text-emerald-400 font-bold">✓</span>
-          <span>AI-сканер тарелок и дневник питания</span>
         </div>
       </div>
+
+      <!-- Table Body -->
+      <div class="overflow-x-auto custom-scroll">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
+              <th class="py-3.5 px-5">ID пользователя</th>
+              <th class="py-3.5 px-5">Username</th>
+              <th class="py-3.5 px-5">Имя / Профиль</th>
+              <th class="py-3.5 px-5">Дата регистрации</th>
+              <th class="py-3.5 px-5">Статус доступа</th>
+              <th class="py-3.5 px-5 text-right">Управление доступом</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody" class="divide-y divide-slate-100 font-medium text-slate-700">
+            <tr>
+              <td colspan="6" class="py-10 text-center text-slate-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2 text-slate-400"></i>
+                <div>Загрузка базы пользователей...</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Footer Stats -->
+      <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+        <span id="users-count-label">Показано пользователей: 0</span>
+        <span>Лимит выборки: 100 активных записей</span>
+      </div>
+
+    </section>
+
+    <!-- 3. Desktop Two-Column Section: Broadcasts & Settings -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Left Column: Модуль Рассылок (Broadcasts) -->
+      <section class="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+            <i class="fa-solid fa-paper-plane text-emerald-600"></i>
+            <span>3. Модуль «Рассылки» (Broadcasts)</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Сегментированная отправка уведомлений и предложений в Telegram от лица бота</p>
+        </div>
+
+        <!-- Audience Selector -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider text-[10px]">Сегмент получателей:</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <label class="flex items-center space-x-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all">
+              <input type="radio" name="b-target" value="all" checked class="accent-slate-900">
+              <span class="text-xs font-semibold text-slate-800">Все пользователи</span>
+            </label>
+            <label class="flex items-center space-x-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all">
+              <input type="radio" name="b-target" value="free" class="accent-slate-900">
+              <span class="text-xs font-semibold text-slate-800">Не оплатившие (дожим)</span>
+            </label>
+            <label class="flex items-center space-x-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all">
+              <input type="radio" name="b-target" value="paid" class="accent-slate-900">
+              <span class="text-xs font-semibold text-slate-800">Оплатившие участники</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Message Composer -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider text-[10px]">Текст рассылки (HTML):</label>
+            <span class="text-[10px] text-slate-400">Поддерживаются: &lt;b&gt;, &lt;i&gt;, &lt;code&gt;, &lt;a href="..."&gt;</span>
+          </div>
+          <textarea id="broadcast-text" rows="5" placeholder="Например: &#10;🔥 Привет! Новый день марафона уже доступен в боте. Переходи в Mini App и включай тренировку!" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 font-sans"></textarea>
+        </div>
+
+        <!-- Send Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+          <div class="flex items-center space-x-1.5 text-xs text-slate-500">
+            <i class="fa-solid fa-robot text-slate-400"></i>
+            <span>Отправитель: <b>@janafit_coach_bot</b></span>
+          </div>
+          <button onclick="sendBroadcast()" id="b-send-btn" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>Отправить рассылку</span>
+          </button>
+        </div>
+
+        <div id="broadcast-result" class="hidden p-3 rounded-xl text-xs font-medium"></div>
+
+      </section>
+
+      <!-- Right Column: Settings & Anti-Piracy -->
+      <section class="lg:col-span-5 space-y-4">
+        
+        <!-- Marathon Config Card -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-3">
+          <h3 class="text-sm font-extrabold text-slate-900 flex items-center space-x-2">
+            <i class="fa-solid fa-sliders text-emerald-600"></i>
+            <span>Параметры и Эквайринг</span>
+          </h3>
+          <div class="divide-y divide-slate-100 text-xs text-slate-700">
+            <div class="flex justify-between py-2">
+              <span class="text-slate-500">Тариф марафона:</span>
+              <span class="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">7 990 ₸</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span class="text-slate-500">Длительность:</span>
+              <span class="font-bold text-slate-900">14 дней (Drip-feed)</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span class="text-slate-500">Трипвайер:</span>
+              <span class="font-bold text-slate-900">2 дня бесплатно (Тест-драйв)</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span class="text-slate-500">Платежный шлюз:</span>
+              <span class="font-bold text-slate-900">Robokassa (Казахстан)</span>
+            </div>
+            <div class="flex justify-between py-2">
+              <span class="text-slate-500">Идентификатор магазина:</span>
+              <span class="font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">janafit / test</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security & Anti-Piracy Card -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-3">
+          <h3 class="text-sm font-extrabold text-slate-900 flex items-center space-x-2">
+            <i class="fa-solid fa-shield-halved text-emerald-600"></i>
+            <span>Защита контента и Anti-Piracy</span>
+          </h3>
+          <div class="space-y-2 text-xs text-slate-600">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i>
+              <span>Динамический водяной знак с Telegram ID пользователя</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i>
+              <span>Защита от правого клика и скачивания видеопотока</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i>
+              <span>Пошаговое открытие уроков (Drip-feed таймер)</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i>
+              <span>AI сканер тарелок и расчет КБЖУ в дневнике питания</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
     </div>
-  </section>
+
+  </main>
 
   <script>
+    let allUsersCache = [];
     let currentFilter = 'all';
 
     async function loadAdminData() {
+      const refreshIcon = document.getElementById('refresh-icon');
+      if (refreshIcon) refreshIcon.classList.add('fa-spin');
+
       try {
         const statsResp = await fetch('/api/admin/stats');
         if (statsResp.ok) {
           const s = await statsResp.json();
-          document.getElementById('stat-total-users').innerText = s.total_users;
-          document.getElementById('stat-new-today').innerText = `+${s.new_today}`;
-          document.getElementById('stat-new-week').innerText = `за неделю: +${s.new_week}`;
-          document.getElementById('stat-revenue').innerText = `${s.total_revenue.toLocaleString('ru-RU')} ₸`;
-          document.getElementById('stat-paid-count').innerText = `${s.successful_payments} оплат`;
-          document.getElementById('stat-conversion').innerText = `${s.conversion_rate}%`;
+          document.getElementById('stat-total-users').innerText = s.total_users || 0;
+          document.getElementById('stat-new-today').innerText = `+${s.new_today || 0}`;
+          document.getElementById('stat-new-week').innerText = `за неделю: +${s.new_week || 0}`;
+          document.getElementById('stat-revenue').innerText = `${(s.total_revenue || 0).toLocaleString('ru-RU')} ₸`;
+          document.getElementById('stat-paid-count').innerText = `${s.successful_payments || 0} оплат`;
+          document.getElementById('stat-conversion').innerText = `${s.conversion_rate || 0}%`;
         }
-        loadUsers();
+        await loadUsers();
       } catch (err) {
         console.error("Admin data load error:", err);
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove('fa-spin');
       }
     }
 
     async function loadUsers() {
       const tbody = document.getElementById('users-tbody');
-      tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Загрузка...</td></tr>';
-      try {
-        const resp = await fetch(`/api/admin/users?filter=${currentFilter}`);
-        if (resp.ok) {
-          const users = await resp.json();
-          if (users.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Пользователи не найдены</td></tr>';
-            return;
-          }
-          tbody.innerHTML = users.map(u => {
-            const isPaid = Boolean(u.has_access);
-            const statusBadge = isPaid 
-              ? '<span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 text-[10px]">Оплачено (VIP)</span>'
-              : '<span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-bold border border-slate-700 text-[10px]">Бесплатный</span>';
-            const actionBtn = isPaid
-              ? `<button onclick="toggleAccess(${u.user_id}, false)" class="px-2.5 py-1 rounded-lg bg-red-900/40 hover:bg-red-900/60 text-red-300 border border-red-800 text-[10px] font-bold">Отозвать</button>`
-              : `<button onclick="toggleAccess(${u.user_id}, true)" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-black text-[10px] font-extrabold">Выдать VIP</button>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-10 text-center text-slate-400">
+            <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2 text-slate-400"></i>
+            <div>Загрузка списка пользователей...</div>
+          </td>
+        </tr>`;
 
-            return `
-              <tr class="hover:bg-[#202020] transition-colors">
-                <td class="p-3">
-                  <div class="font-bold text-white">${u.username ? '@' + u.username : 'без юзернейма'}</div>
-                  <div class="text-[10px] text-slate-500">ID: ${u.user_id}</div>
-                </td>
-                <td class="p-3 font-semibold text-slate-200">${u.first_name || ''} ${u.last_name || ''}</td>
-                <td class="p-3 text-slate-400 text-[11px]">${u.created_at ? u.created_at.slice(0, 10) : '--'}</td>
-                <td class="p-3">${statusBadge}</td>
-                <td class="p-3 text-right">${actionBtn}</td>
-              </tr>
-            `;
-          }).join('');
+      try {
+        const resp = await fetch(`/api/admin/users?filter=${currentFilter}&limit=100`);
+        if (resp.ok) {
+          allUsersCache = await resp.json();
+          renderUsersTable(allUsersCache);
+        } else {
+          tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-rose-500 font-semibold">Не удалось загрузить пользователей</td></tr>';
         }
-      } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-400">Ошибка загрузки пользователей</td></tr>';
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-rose-500 font-semibold">Ошибка связи с сервером</td></tr>';
       }
+    }
+
+    function renderUsersTable(users) {
+      const tbody = document.getElementById('users-tbody');
+      const countLabel = document.getElementById('users-count-label');
+      countLabel.innerText = `Показано пользователей: ${users.length}`;
+
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">Пользователи по выбранному фильтру не найдены</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const isPaid = Boolean(u.has_access);
+        const regDate = u.created_at ? new Date(u.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+        const tgLink = u.username ? `<a href="https://t.me/${u.username}" target="_blank" class="text-sky-600 hover:underline flex items-center space-x-1"><i class="fa-brands fa-telegram"></i><span>@${u.username}</span></a>` : '<span class="text-slate-400">—</span>';
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="py-3 px-5 font-mono text-slate-600 font-semibold">${u.user_id}</td>
+            <td class="py-3 px-5">${tgLink}</td>
+            <td class="py-3 px-5 font-medium text-slate-800">${u.first_name || '—'}</td>
+            <td class="py-3 px-5 text-slate-500">${regDate}</td>
+            <td class="py-3 px-5">
+              ${isPaid 
+                ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800"><i class="fa-solid fa-circle-check text-[10px] mr-1"></i>Оплачен (Полный доступ)</span>'
+                : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600"><i class="fa-solid fa-clock text-[10px] mr-1"></i>Трипвайер (2 дня)</span>'
+              }
+            </td>
+            <td class="py-3 px-5 text-right">
+              ${isPaid 
+                ? `<button onclick="toggleAccess(${u.user_id}, false)" class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] border border-rose-200 transition-all">
+                     Забрать доступ
+                   </button>`
+                : `<button onclick="toggleAccess(${u.user_id}, true)" class="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] border border-emerald-200 transition-all">
+                     Выдать доступ
+                   </button>`
+              }
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterUsersList() {
+      const q = document.getElementById('user-search').value.toLowerCase().trim();
+      if (!q) {
+        renderUsersTable(allUsersCache);
+        return;
+      }
+      const filtered = allUsersCache.filter(u => {
+        const uid = String(u.user_id || '');
+        const uname = (u.username || '').toLowerCase();
+        const fname = (u.first_name || '').toLowerCase();
+        return uid.includes(q) || uname.includes(q) || fname.includes(q);
+      });
+      renderUsersTable(filtered);
     }
 
     function setFilter(flt) {
       currentFilter = flt;
       ['all', 'paid', 'free'].forEach(f => {
         const btn = document.getElementById(`flt-${f}`);
+        if (!btn) return;
         if (f === flt) {
-          btn.className = "px-3 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs";
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-sm transition-all";
         } else {
-          btn.className = "px-3 py-1.5 rounded-xl bg-[#262626] text-slate-300 font-bold text-xs hover:text-white";
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all";
         }
       });
       loadUsers();
     }
 
     async function toggleAccess(userId, grant) {
-      if (!confirm(`Вы действительно хотите ${grant ? 'выдать доступ' : 'отозвать доступ у'} ID: ${userId}?`)) return;
+      const actionText = grant ? "выдать полный доступ" : "отозвать доступ";
+      if (!confirm(`Вы действительно хотите ${actionText} пользователю ${userId}?`)) {
+        return;
+      }
+
       try {
         const resp = await fetch('/api/admin/toggle-access', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: userId, grant: grant })
         });
-        if (resp.ok) {
-          loadAdminData();
+        const res = await resp.json();
+        if (resp.ok && res.status === 'ok') {
+          await loadAdminData();
         } else {
-          alert('Ошибка при изменении доступа');
+          alert('Ошибка обновления доступа: ' + (res.detail || 'Неизвестная ошибка'));
         }
       } catch (err) {
         alert('Ошибка связи с сервером');
@@ -321,12 +517,19 @@
         alert('Введите текст рассылки!');
         return;
       }
-      const target = document.querySelector('input[name="b-target"]:checked')?.value || 'all';
-      if (!confirm(`Запустить рассылку для сегмента "${target}"?`)) return;
+
+      const targetRadio = document.querySelector('input[name="b-target"]:checked');
+      const target = targetRadio ? targetRadio.value : 'all';
+
+      if (!confirm(`Запустить рассылку в Telegram для сегмента "${target}"?`)) {
+        return;
+      }
 
       const btn = document.getElementById('b-send-btn');
+      const resBox = document.getElementById('broadcast-result');
       btn.disabled = true;
-      btn.innerText = 'Отправка...';
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i>Отправка...';
+      resBox.className = 'hidden';
 
       try {
         const resp = await fetch('/api/admin/broadcast', {
@@ -334,23 +537,26 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: text, target: target })
         });
-        if (resp.ok) {
-          const res = await resp.json();
-          alert(`Рассылка завершена! Отправлено: ${res.sent} пользователям.`);
+        const res = await resp.json();
+        if (resp.ok && res.status === 'ok') {
+          resBox.className = 'p-3 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 block';
+          resBox.innerHTML = `✅ Рассылка успешно завершена! Доставлено: <b>${res.sent}</b>, ошибок: <b>${res.failed}</b>`;
           document.getElementById('broadcast-text').value = '';
         } else {
-          alert('Ошибка при рассылке.');
+          resBox.className = 'p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200 block';
+          resBox.innerHTML = `⚠️ Ошибка рассылки: ${res.detail || 'Попробуйте позже'}`;
         }
-      } catch (err) {
-        alert('Ошибка связи с сервером.');
+      } catch (e) {
+        resBox.className = 'p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200 block';
+        resBox.innerHTML = '⚠️ Сетевая ошибка при отправке рассылки';
       } finally {
         btn.disabled = false;
-        btn.innerText = 'Запустить рассылку 🚀';
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-1.5"></i><span>Отправить рассылку</span>';
       }
     }
 
-    // Auto-load on open
-    loadAdminData();
+    // Auto-load on page ready
+    document.addEventListener('DOMContentLoaded', loadAdminData);
   </script>
 </body>
 </html>
