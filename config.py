@@ -36,9 +36,9 @@ class Settings(BaseSettings):
     SUPPORT_CHAT_ID: int = _int_env("SUPPORT_CHAT_ID", 0)
 
     # Offer
-    COURSE_PRICE: int = _int_env("COURSE_PRICE", 4990)
-    COURSE_ORIGINAL_PRICE: int = _int_env("COURSE_ORIGINAL_PRICE", 8900)
-    COURSE_TITLE: str = os.getenv("COURSE_TITLE", "Janafit: Перезагрузка и Стройность (21 день)")
+    COURSE_PRICE: int = _int_env("COURSE_PRICE", 7990)
+    COURSE_ORIGINAL_PRICE: int = _int_env("COURSE_ORIGINAL_PRICE", 14900)
+    COURSE_TITLE: str = os.getenv("COURSE_TITLE", "Janafit: 14-дневный марафон трансформации")
 
     # Robokassa
     ROBOKASSA_LOGIN: str = os.getenv("ROBOKASSA_LOGIN", "")

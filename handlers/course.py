@@ -12,7 +12,14 @@ LESSONS = [
     {"day": 4, "title": "День 4: Плоский живот и вакуум", "duration": "18 мин", "focus": "Поперечная мышца, укрепление тазового дна", "yt_url": "https://youtu.be/ml6cT4AZdqI"},
     {"day": 5, "title": "День 5: Стройные ноги и бедра", "duration": "24 мин", "focus": "Внутренняя и задняя поверхность бедер", "yt_url": "https://youtu.be/IT94xC35u6k"},
     {"day": 6, "title": "День 6: Мягкое кардио-жиросжигание", "duration": "25 мин", "focus": "Интервальная нагрузка без прыжков", "yt_url": "https://youtu.be/UBMk30rjy0o"},
-    {"day": 7, "title": "День 7: Глубокая растяжка и релакс", "duration": "25 мин", "focus": "Восстановление мышц и гибкость", "yt_url": "https://youtu.be/enYITYwv8c4"}
+    {"day": 7, "title": "День 7: Глубокая растяжка и релакс", "duration": "25 мин", "focus": "Восстановление мышц и гибкость", "yt_url": "https://youtu.be/enYITYwv8c4"},
+    {"day": 8, "title": "День 8: Интенсивный лимфодренаж 2.0", "duration": "25 мин", "focus": "Глубокая проработка застоев и детокс", "yt_url": "https://youtu.be/gC_L9qAHVJ8"},
+    {"day": 9, "title": "День 9: Точеные руки и тонкая талия", "duration": "24 мин", "focus": "Тонус трицепса, осанка и косые мышцы", "yt_url": "https://youtu.be/2MoGxae-zyo"},
+    {"day": 10, "title": "День 10: Ягодичный пампинг и бедра", "duration": "28 мин", "focus": "Формирование объема без утяжеления квадрицепса", "yt_url": "https://youtu.be/I94V6qBfF0Y"},
+    {"day": 11, "title": "День 11: Пресс и дыхательные вакуумы", "duration": "22 мин", "focus": "Укрепление поперечной мышцы и заужение талии", "yt_url": "https://youtu.be/ml6cT4AZdqI"},
+    {"day": 12, "title": "День 12: Жиросжигание Full Body", "duration": "26 мин", "focus": "Ускорение обмена веществ в безопасном пульсе", "yt_url": "https://youtu.be/UBMk30rjy0o"},
+    {"day": 13, "title": "День 13: Мобильность суставов и ТБС", "duration": "25 мин", "focus": "Женское здоровье и легкость в походке", "yt_url": "https://youtu.be/IT94xC35u6k"},
+    {"day": 14, "title": "День 14: Финальная победная тренировка", "duration": "30 мин", "focus": "Закрепление формы, рельеф и заряд энергии", "yt_url": "https://youtu.be/enYITYwv8c4"}
 ]
 
 @router.message(F.text == "/demo")
@@ -35,13 +42,19 @@ async def cb_open_course(callback: CallbackQuery, bot: Bot):
     has_access = await check_user_access(user_id)
 
     if not has_access:
-        await callback.message.answer(
-            "🔒 <b>Доступ закрыт!</b>\n\nЧтобы открыть уроки, пожалуйста, оформите курс.",
-            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text=f"💳 Купить за {settings.COURSE_PRICE:,} ₸", callback_data="buy_course")]
-            ]),
-            parse_mode="HTML"
+        # Для пользователей без подписки открываем демо-список с 2 бесплатными тренировками
+        text = (
+            "🎁 <b>Бесплатный тест-драйв Janafit:</b>\n\n"
+            "Вам открыты первые 2 полноценные тренировки. Попробуйте их прямо сейчас!\n"
+            "Для доступа ко всем 14 урокам, блоку психологии и разделу питания — активируйте участие:"
         )
+        keyboard = [
+            [InlineKeyboardButton(text="🎁 Урок 1: Пробуждение и лимфодренаж", callback_data="lesson:1")],
+            [InlineKeyboardButton(text="🎁 Урок 2: Осанка и здоровая спина", callback_data="lesson:2")],
+            [InlineKeyboardButton(text=f"🔥 Открыть полный марафон ({settings.COURSE_PRICE:,} ₸)", callback_data="buy_course")],
+            [InlineKeyboardButton(text="◀️ В главное меню", callback_data="back_to_start")]
+        ]
+        await callback.message.edit_text(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard), parse_mode="HTML")
         await callback.answer()
         return
 
@@ -76,14 +89,17 @@ async def cb_open_course(callback: CallbackQuery, bot: Bot):
 @router.callback_query(F.data == "lessons_list")
 async def cb_lessons_list(callback: CallbackQuery):
     user_id = callback.from_user.id
-    if not await check_user_access(user_id):
-        await callback.answer("Нет доступа", show_alert=True)
-        return
+    has_access = await check_user_access(user_id)
 
-    text = "📋 <b>Список тренировок недели 1:</b>\n\nВыберите тренировку для просмотра:"
+    text = "📋 <b>Список тренировок марафона Janafit:</b>\n\nВыберите тренировку для запуска:"
     keyboard = []
     for l in LESSONS:
-        keyboard.append([InlineKeyboardButton(text=f"▶️ {l['title']} ({l['duration']})", callback_data=f"lesson:{l['day']}")])
+        is_free = l["day"] in [1, 2]
+        if has_access or is_free:
+            badge = "🎁 Бесплатно: " if is_free and not has_access else "▶️ "
+            keyboard.append([InlineKeyboardButton(text=f"{badge}{l['title']} ({l['duration']})", callback_data=f"lesson:{l['day']}")])
+        else:
+            keyboard.append([InlineKeyboardButton(text=f"🔒 {l['title']} (по подписке)", callback_data="buy_course")])
 
     keyboard.append([InlineKeyboardButton(text="◀️ В меню курса", callback_data="open_course")])
 
@@ -92,10 +108,18 @@ async def cb_lessons_list(callback: CallbackQuery):
 
 @router.callback_query(F.data.startswith("lesson:"))
 async def cb_view_lesson(callback: CallbackQuery):
+    user_id = callback.from_user.id
     day = int(callback.data.split(":")[1])
-    lesson = next((l for l in LESSONS if l["day"] == day), None)
-    if not lesson:
-        await callback.answer("Урок не найден", show_alert=True)
+    has_access = await check_user_access(user_id)
+
+    if not has_access and day not in [1, 2]:
+        await callback.message.answer(
+            f"🔒 Урок {day} входит в платную программу марафона.\nАктивируйте доступ всего за {settings.COURSE_PRICE:,} ₸!",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton(text="💳 Активировать доступ", callback_data="buy_course")]
+            ])
+        )
+        await callback.answer()
         return
 
     text = (

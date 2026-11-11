@@ -16,10 +16,12 @@
         extend: {
           colors: {
             brand: {
-              400: '#f472b6',
-              500: '#ec4899',
-              600: '#db2777',
-              700: '#be185d',
+              300: '#86efac',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              neon: '#00e676',
             }
           }
         }
@@ -31,11 +33,37 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-tap-highlight-color: transparent;
       transition: background-color 0.25s ease, color 0.25s ease;
+      background-color: #121212 !important;
+      color: #f1f5f9;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    }
+    /* DRM & Anti-piracy watermarking */
+    .drm-watermark {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: rgba(255, 255, 255, 0.4);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 2px 8px;
+      border-radius: 6px;
+      pointer-events: none;
+      z-index: 25;
+      text-transform: uppercase;
     }
     .active-day {
-      background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%) !important;
-      color: #fff !important;
-      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+      background: linear-gradient(135deg, #00e676 0%, #16a34a 100%) !important;
+      color: #000000 !important;
+      font-weight: 900 !important;
+      box-shadow: 0 4px 18px rgba(0, 230, 118, 0.45) !important;
     }
     .no-scrollbar::-webkit-scrollbar {
       display: none;
@@ -118,28 +146,30 @@
     }
   </style>
 </head>
-<body class="min-h-screen pb-24 select-none bg-slate-950 text-slate-100">
+<body class="min-h-screen pb-24 select-none bg-[#121212] text-slate-100">
   
-  <!-- Top Navigation Header -->
-  <header class="p-4 bg-slate-900/90 backdrop-blur sticky top-0 z-30 border-b border-slate-800/80 flex justify-between items-center max-w-lg mx-auto">
-    <div class="flex items-center space-x-3">
-      <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center font-black text-white text-sm shadow-md">
-        JF
+  <!-- Top Navigation Header with Spartan Helmet Logo (По ТЗ) -->
+  <header class="p-3.5 bg-[#181818]/95 backdrop-blur sticky top-0 z-30 border-b border-[#262626] flex justify-between items-center max-w-lg mx-auto">
+    <div class="flex items-center space-x-2.5">
+      <div class="w-9 h-9 rounded-2xl bg-[#222222] border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-md shadow-emerald-500/10 flex-shrink-0">
+        <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12c0 3.7 2.01 6.94 5 8.65V18c-1.84-1.37-3-3.55-3-6 0-4.41 3.59-8 8-8s8 3.59 8 8c0 2.45-1.16 4.63-3 6v2.65c2.99-1.71 5-4.95 5-8.65 0-5.52-4.48-10-10-10zm-1 5v7.5l-3.5 2.5V8.5L11 7zm2 0l3.5 1.5V17L13 14.5V7zM8 3.5C8.83 2.56 10.34 2 12 2s3.17.56 4 1.5L12 6 8 3.5z"/>
+        </svg>
       </div>
       <div>
-        <div class="text-[10px] uppercase tracking-wider text-pink-400 font-bold">Janafit • VIP</div>
-        <h1 class="text-base font-bold text-white leading-tight" id="header-title">Тренировки</h1>
+        <div class="text-[10px] uppercase tracking-wider text-emerald-400 font-extrabold flex items-center space-x-1">
+          <span>JANAFIT</span>
+          <span>•</span>
+          <span class="text-white">VIP</span>
+        </div>
+        <h1 class="text-sm font-black text-white leading-tight" id="header-title">Тренировки</h1>
       </div>
     </div>
     <div class="flex items-center space-x-2">
       <!-- User Profile / Goal Button -->
-      <button id="profile-open-btn" onclick="openProfileModal(false)" class="flex items-center space-x-1 px-2.5 py-1 bg-pink-500/15 border border-pink-500/30 rounded-full text-pink-300 text-xs font-bold hover:scale-105 active:scale-95 transition-all">
+      <button id="profile-open-btn" onclick="openProfileModal(false)" class="flex items-center space-x-1 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-emerald-400 text-xs font-bold hover:scale-105 active:scale-95 transition-all">
         <span>🎯</span>
         <span id="profile-chip-text">Моя цель</span>
-      </button>
-      <!-- Theme Toggle Button -->
-      <button id="theme-toggle-btn" class="w-8 h-8 rounded-full bg-slate-800 hover:scale-105 active:scale-95 flex items-center justify-center text-xs text-amber-300 transition-all border border-slate-700/60" title="Сменить тему">
-        <span id="theme-icon">🌙</span>
       </button>
       <!-- Streak Badge -->
       <div class="flex items-center space-x-1 px-2.5 py-1 bg-amber-500/15 border border-amber-500/30 rounded-full text-amber-400 text-xs font-bold">
@@ -151,11 +181,70 @@
 
   <!-- TAB 1: WORKOUTS -->
   <div id="tab-workouts" class="tab-content active max-w-lg mx-auto">
-    <!-- Horizontal Days Scroll -->
-    <div class="px-4 py-3 bg-slate-900/40 border-b border-slate-800/60">
+    
+    <!-- DASHBOARD PROGRESS WIDGET & MODULAR NAVIGATION (По ТЗ) -->
+    <div class="p-4 bg-gradient-to-br from-[#1a1a1a] to-[#141414] border-b border-[#262626] space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="space-y-0.5">
+          <div class="flex items-center space-x-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span class="text-[10px] uppercase tracking-wider font-extrabold text-emerald-400">Твой прогресс</span>
+          </div>
+          <h2 class="text-base font-black text-white">Марафон 14 дней</h2>
+        </div>
+        <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold" id="dash-status-badge">В процессе</span>
+      </div>
+
+      <div class="flex items-center space-x-4 bg-[#1e1e1e] p-3 rounded-2xl border border-[#2a2a2a]">
+        <!-- Circular Progress Ring -->
+        <div class="relative flex items-center justify-center flex-shrink-0">
+          <svg class="w-16 h-16 transform -rotate-90">
+            <circle cx="32" cy="32" r="26" stroke="#2a2a2a" stroke-width="5" fill="transparent" />
+            <circle id="dash-circle-progress" cx="32" cy="32" r="26" stroke="#00e676" stroke-width="5" fill="transparent" stroke-dasharray="163" stroke-dashoffset="163" stroke-linecap="round" class="transition-all duration-700" />
+          </svg>
+          <div class="absolute flex flex-col items-center justify-center">
+            <span id="dash-percent-text" class="text-xs font-black text-white">0%</span>
+          </div>
+        </div>
+
+        <div class="flex-1 space-y-1">
+          <div class="flex justify-between items-baseline text-xs">
+            <span class="text-slate-300 font-bold">Пройдено:</span>
+            <span id="dash-days-count" class="font-black text-emerald-400">0 из 14 дней</span>
+          </div>
+          <div class="w-full bg-[#2a2a2a] h-1.5 rounded-full overflow-hidden">
+            <div id="dash-bar-fill" class="bg-gradient-to-r from-emerald-500 to-green-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <p class="text-[10px] text-slate-400">Drip-feed: регулярные тренировки без перегрузки</p>
+        </div>
+      </div>
+
+      <!-- Modular Navigation Grid (По ТЗ: Тренировки, Уроки психолога, Уроки врачей, Питание) -->
+      <div class="grid grid-cols-4 gap-1.5 text-center">
+        <button onclick="switchTab('workouts')" class="p-2 rounded-xl bg-[#222222] hover:bg-[#282828] border border-emerald-500/40 text-emerald-400 text-xs font-bold transition-all">
+          <div class="text-sm mb-0.5">🏋️‍♂️</div>
+          <div class="text-[9px] text-white">Тренировки</div>
+        </button>
+        <button onclick="scrollToPsychology()" class="p-2 rounded-xl bg-[#222222] hover:bg-[#282828] border border-slate-800 text-purple-400 text-xs font-bold transition-all">
+          <div class="text-sm mb-0.5">🧠</div>
+          <div class="text-[9px] text-white">Психолог</div>
+        </button>
+        <button onclick="scrollToMedical()" class="p-2 rounded-xl bg-[#222222] hover:bg-[#282828] border border-slate-800 text-cyan-400 text-xs font-bold transition-all">
+          <div class="text-sm mb-0.5">🩺</div>
+          <div class="text-[9px] text-white">Врачи</div>
+        </button>
+        <button onclick="switchTab('nutrition')" class="p-2 rounded-xl bg-[#222222] hover:bg-[#282828] border border-slate-800 text-amber-400 text-xs font-bold transition-all">
+          <div class="text-sm mb-0.5">🥗</div>
+          <div class="text-[9px] text-white">Питание</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Horizontal Days Scroll (Carousel) -->
+    <div class="px-4 py-3 bg-[#161616] border-b border-[#262626]">
       <div class="flex justify-between items-center mb-2">
-        <span class="text-xs text-slate-400 font-medium">Календарь 21 дня:</span>
-        <span id="progress-text" class="text-xs text-pink-400 font-bold">0 из 21 пройдено</span>
+        <span class="text-xs text-slate-400 font-medium">Расписание 14 дней марафона:</span>
+        <span id="progress-text" class="text-xs text-emerald-400 font-bold">0 из 14 пройдено</span>
       </div>
       <div class="overflow-x-auto no-scrollbar py-1">
         <div id="days-container" class="flex space-x-2.5">
@@ -166,40 +255,45 @@
 
     <!-- Main Workout Card -->
     <main class="p-4 space-y-4">
-      <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 shadow-xl space-y-3">
+      <div class="bg-[#1a1a1a] rounded-2xl p-4 border border-[#2a2a2a] shadow-xl space-y-3">
         <div class="flex justify-between items-start">
           <div>
             <div class="flex items-center space-x-2">
-              <span id="lesson-week" class="text-[11px] font-semibold text-pink-400 uppercase tracking-wider">Неделя 1</span>
+              <span id="lesson-week" class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Неделя 1</span>
               <span class="text-slate-600">•</span>
-              <span id="lesson-tag" class="text-[11px] font-semibold text-purple-400 uppercase tracking-wider">День 1</span>
+              <span id="lesson-tag" class="text-[11px] font-bold text-purple-400 uppercase tracking-wider">День 1</span>
             </div>
-            <h2 id="lesson-title" class="text-lg font-bold text-white mt-0.5 leading-snug">Лимфодренаж и пробуждение</h2>
+            <h2 id="lesson-title" class="text-base font-black text-white mt-0.5 leading-snug">Лимфодренаж и пробуждение</h2>
           </div>
-          <span id="lesson-duration" class="text-xs bg-slate-800 text-pink-300 font-semibold px-2.5 py-1 rounded-lg border border-pink-500/20">20 мин</span>
+          <span id="lesson-duration" class="text-xs bg-[#222222] text-emerald-400 font-bold px-2.5 py-1 rounded-lg border border-emerald-500/20">20 мин</span>
         </div>
 
-        <!-- Video Player -->
-        <div class="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-slate-800 shadow-inner">
+        <!-- Video Player with Fullscreen Button & DRM Watermark -->
+        <div id="video-player-container" class="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-[#2a2a2a] shadow-inner select-none">
+          <div id="player-watermark" class="drm-watermark">JANAFIT • @user</div>
           <iframe 
             id="yt-player"
-            class="w-full h-full"
+            class="w-full h-full pointer-events-auto"
             src="https://www.youtube-nocookie.com/embed/gC_L9qAHVJ8?rel=0&modestbranding=1" 
             title="Janafit Workout" 
             frameborder="0" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" 
             allowfullscreen>
           </iframe>
+          <button id="fullscreen-player-btn" onclick="togglePlayerFullscreen()" class="absolute bottom-2 right-2 z-20 px-2 py-1 bg-black/70 hover:bg-black/90 rounded-lg text-white text-[10px] backdrop-blur border border-white/20 flex items-center space-x-1">
+            <i class="fa-solid fa-expand text-[9px]"></i>
+            <span class="font-bold">На весь экран</span>
+          </button>
         </div>
 
         <!-- Action Buttons -->
         <div class="grid grid-cols-2 gap-2 pt-1">
-          <button id="complete-btn" class="py-3 px-3 rounded-xl bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-semibold text-xs transition-all flex items-center justify-center space-x-2 shadow-lg shadow-pink-600/30">
+          <button id="complete-btn" class="py-3 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-extrabold text-xs transition-all flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/25">
             <i class="fa-solid fa-check"></i>
             <span id="complete-btn-text">Отметить выполненным</span>
           </button>
-          <button onclick="switchTab('ai')" class="py-3 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-semibold text-xs transition-all flex items-center justify-center space-x-2 border border-slate-700">
-            <i class="fa-solid fa-robot text-pink-400"></i>
+          <button onclick="switchTab('ai')" class="py-3 px-3 rounded-xl bg-[#222222] hover:bg-[#282828] active:scale-95 text-slate-200 font-bold text-xs transition-all flex items-center justify-center space-x-2 border border-[#2a2a2a]">
+            <i class="fa-solid fa-robot text-emerald-400"></i>
             <span>Спросить AI-тренера</span>
           </button>
         </div>
@@ -288,6 +382,60 @@
         </div>
         <div id="exercise-list" class="space-y-2 text-xs">
           <!-- Rendered by JS, active one highlighted with glowing border -->
+        </div>
+      </div>
+
+      <!-- Psychology Module (4 Lessons to Prevent Relapse) -->
+      <div id="psychology-module" class="bg-gradient-to-br from-[#1a1a1a] to-[#141414] rounded-2xl p-4 border border-purple-500/30 shadow-xl space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center text-sm">
+              🧠
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-white">Психология стройности</h3>
+              <p class="text-[10px] text-slate-400">4 видеоурока психолога от срывов и выгорания</p>
+            </div>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">Drip-Feed</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div onclick="openPsychologyLesson(1)" class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50 cursor-pointer hover:border-purple-500/50 transition-all space-y-1">
+            <div class="flex justify-between items-center text-[10px] text-purple-400 font-bold">
+              <span>День 3</span>
+              <i class="fa-solid fa-play text-[9px]"></i>
+            </div>
+            <div class="font-bold text-slate-200 text-[11px] leading-tight">Самосаботаж</div>
+            <div class="text-[9px] text-slate-400">Как преодолеть лень и первые сомнения</div>
+          </div>
+
+          <div onclick="openPsychologyLesson(2)" class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50 cursor-pointer hover:border-purple-500/50 transition-all space-y-1">
+            <div class="flex justify-between items-center text-[10px] text-purple-400 font-bold">
+              <span>День 7</span>
+              <i class="fa-solid fa-play text-[9px]"></i>
+            </div>
+            <div class="font-bold text-slate-200 text-[11px] leading-tight">Стресс и еда</div>
+            <div class="text-[9px] text-slate-400">Почему мы заедаем эмоции и усталость</div>
+          </div>
+
+          <div onclick="openPsychologyLesson(3)" class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50 cursor-pointer hover:border-purple-500/50 transition-all space-y-1">
+            <div class="flex justify-between items-center text-[10px] text-purple-400 font-bold">
+              <span>День 10</span>
+              <i class="fa-solid fa-play text-[9px]"></i>
+            </div>
+            <div class="font-bold text-slate-200 text-[11px] leading-tight">Кризис плато</div>
+            <div class="text-[9px] text-slate-400">Что делать, если вес встал на месте</div>
+          </div>
+
+          <div onclick="openPsychologyLesson(4)" class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50 cursor-pointer hover:border-purple-500/50 transition-all space-y-1">
+            <div class="flex justify-between items-center text-[10px] text-purple-400 font-bold">
+              <span>День 14</span>
+              <i class="fa-solid fa-play text-[9px]"></i>
+            </div>
+            <div class="font-bold text-slate-200 text-[11px] leading-tight">Новая я навсегда</div>
+            <div class="text-[9px] text-slate-400">Закрепление результата на годы вперед</div>
+          </div>
         </div>
       </div>
     </main>
@@ -391,7 +539,7 @@
         </div>
         <div class="p-3 bg-slate-800/40 rounded-xl border border-slate-700/40 space-y-1">
           <div class="text-2xl">👑</div>
-          <div class="font-bold text-slate-200">Финал 21</div>
+          <div class="font-bold text-slate-200">Финал 14</div>
           <div class="text-[10px] text-slate-400">Новое тело</div>
         </div>
       </div>
@@ -400,6 +548,60 @@
 
   <!-- TAB 3: NUTRITION & WATER -->
   <div id="tab-nutrition" class="tab-content max-w-lg mx-auto p-4 space-y-4">
+
+    <!-- Medical & Expert Nutrition Lecture Series -->
+    <div id="medical-module" class="bg-gradient-to-br from-[#1a1a1a] to-[#141414] rounded-2xl p-4 border border-emerald-500/30 shadow-xl space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-sm">
+            🩺
+          </div>
+          <div>
+            <h3 class="text-xs font-bold text-white">Медицинский блок и Лекторий</h3>
+            <p class="text-[10px] text-slate-400">Лекции нутрициолога и врача-эндокринолога</p>
+          </div>
+        </div>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Врачи</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div onclick="openMedicalLecture(1)" class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50 cursor-pointer hover:border-emerald-500/50 transition-all space-y-1">
+          <div class="flex justify-between items-center text-[10px] text-emerald-400 font-bold">
+            <span>Эндокринолог</span>
+            <i class="fa-solid fa-play text-[9px]"></i>
+          </div>
+          <div class="font-bold text-slate-200 text-[11px] leading-tight">Гормоны и вес</div>
+          <div class="text-[9px] text-slate-400">Кортизол, инсулин и почему вес стоит</div>
+        </div>
+
+        <div onclick="openMedicalLecture(2)" class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50 cursor-pointer hover:border-emerald-500/50 transition-all space-y-1">
+          <div class="flex justify-between items-center text-[10px] text-emerald-400 font-bold">
+            <span>Нутрициолог</span>
+            <i class="fa-solid fa-play text-[9px]"></i>
+          </div>
+          <div class="font-bold text-slate-200 text-[11px] leading-tight">Дефициты и энергия</div>
+          <div class="text-[9px] text-slate-400">Ферритин, железо, витамин D и бодрость</div>
+        </div>
+
+        <div onclick="openMedicalLecture(3)" class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50 cursor-pointer hover:border-emerald-500/50 transition-all space-y-1">
+          <div class="flex justify-between items-center text-[10px] text-emerald-400 font-bold">
+            <span>Рацион</span>
+            <i class="fa-solid fa-play text-[9px]"></i>
+          </div>
+          <div class="font-bold text-slate-200 text-[11px] leading-tight">Конструктор тарелки</div>
+          <div class="text-[9px] text-slate-400">Сбалансированное меню без подсчета калорий</div>
+        </div>
+
+        <div onclick="openMedicalLecture(4)" class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50 cursor-pointer hover:border-emerald-500/50 transition-all space-y-1">
+          <div class="flex justify-between items-center text-[10px] text-emerald-400 font-bold">
+            <span>Лимфодренаж</span>
+            <i class="fa-solid fa-play text-[9px]"></i>
+          </div>
+          <div class="font-bold text-slate-200 text-[11px] leading-tight">Стоп отёки</div>
+          <div class="text-[9px] text-slate-400">Правильный питьевой баланс и соль</div>
+        </div>
+      </div>
+    </div>
     
     <!-- AI Food Scanner Card -->
     <div class="bg-gradient-to-br from-slate-900 to-slate-900/90 rounded-2xl p-4 border border-pink-500/30 shadow-xl space-y-3 relative overflow-hidden">
@@ -709,8 +911,8 @@
 
       <!-- Input box -->
       <div class="pt-2 flex space-x-2">
-        <input type="text" id="ai-input" placeholder="Напишите вопрос..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-pink-500">
-        <button id="ai-send-btn" class="px-4 py-2.5 bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-bold text-xs rounded-xl transition-all">
+        <input type="text" id="ai-input" placeholder="Напишите вопрос..." class="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+        <button id="ai-send-btn" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-extrabold text-xs rounded-xl transition-all">
           <i class="fa-solid fa-paper-plane"></i>
         </button>
       </div>
@@ -718,8 +920,8 @@
   </div>
 
   <!-- Bottom Navigation Bar (4 TABS) -->
-  <nav class="fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 p-2 flex justify-around items-center z-40 max-w-lg mx-auto">
-    <button onclick="switchTab('workouts')" id="nav-workouts" class="flex flex-col items-center text-pink-400 text-[11px] font-semibold space-y-1">
+  <nav class="fixed bottom-0 inset-x-0 bg-[#161616]/95 backdrop-blur border-t border-[#262626] p-2 flex justify-around items-center z-40 max-w-lg mx-auto">
+    <button onclick="switchTab('workouts')" id="nav-workouts" class="flex flex-col items-center text-emerald-400 text-[11px] font-bold space-y-1">
       <i class="fa-solid fa-dumbbell text-base"></i>
       <span>Тренировки</span>
     </button>
@@ -807,7 +1009,7 @@
             🎯
           </div>
           <h2 class="text-lg font-black text-white">Параметры и Цель</h2>
-          <p class="text-xs text-slate-400">Какой результат вы хотите увидеть через 21 день?</p>
+          <p class="text-xs text-slate-400">Какой результат вы хотите увидеть через 14 дней?</p>
         </div>
 
         <div class="space-y-3">
@@ -938,7 +1140,7 @@
               <span>🎯 Прогноз достижения цели:</span>
             </div>
             <p id="plan-forecast-text" class="text-[11px] text-slate-300">
-              Снижение веса с 65 кг до 58 кг (минус 7 кг) комфортно достигается за 21–28 дней программы при тренировках через день и норме воды.
+              Снижение веса с 65 кг до 58 кг (минус 7 кг) комфортно достигается за 14 дней марафона при тренировках и соблюдении нормы воды.
             </p>
           </div>
         </div>
@@ -999,6 +1201,67 @@
           <span>Сохранить в дневник</span>
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- SEAMLESS PAYWALL MODAL (ROBOKASSA 7990 ₸) -->
+  <div id="paywall-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden transition-all">
+    <div class="bg-slate-900 border border-pink-500/40 rounded-3xl p-5 max-w-sm w-full shadow-2xl relative space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div class="flex items-center space-x-2">
+          <span class="text-base">💎</span>
+          <h3 class="font-extrabold text-white text-sm">Полный доступ к Janafit</h3>
+        </div>
+        <button onclick="closePaywallModal()" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs">✕</button>
+      </div>
+
+      <div class="text-center space-y-1">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-pink-500/15 border border-pink-500/30 text-pink-400 text-xs font-bold">
+          <span>🔥</span>
+          <span>Спецпредложение -46%</span>
+        </div>
+        <div class="pt-2">
+          <span class="text-3xl font-black text-white">7 990 ₸</span>
+          <span class="text-sm text-slate-400 line-through ml-2">14 900 ₸</span>
+        </div>
+        <p class="text-xs text-slate-300">14-дневный марафон трансформации от Айтыма Жакупова</p>
+      </div>
+
+      <div class="p-3 bg-slate-800/60 rounded-2xl border border-slate-700/60 space-y-2 text-xs">
+        <div class="flex items-start space-x-2 text-slate-200">
+          <span class="text-pink-400 font-bold">✓</span>
+          <span><b>14 видеотренировок</b> по 25–30 мин (Drip-feed: пошаговая выдача)</span>
+        </div>
+        <div class="flex items-start space-x-2 text-slate-200">
+          <span class="text-purple-400 font-bold">✓</span>
+          <span><b>4 видеоурока от психолога</b> (защита от срывов и лени)</span>
+        </div>
+        <div class="flex items-start space-x-2 text-slate-200">
+          <span class="text-emerald-400 font-bold">✓</span>
+          <span><b>Блок «Питание»</b>: лекции эндокринолога и нутрициолога</span>
+        </div>
+        <div class="flex items-start space-x-2 text-slate-200">
+          <span class="text-cyan-400 font-bold">✓</span>
+          <span><b>AI-тренер 24/7</b>: сканер еды по фото и дневник замеров</span>
+        </div>
+        <div class="flex items-start space-x-2 text-slate-200">
+          <span class="text-amber-400 font-bold">✓</span>
+          <span><b>Доступ в VIP-канал</b> и закрытый чат участниц</span>
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <button id="paywall-robo-btn" onclick="initiateRobokassaPayment()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-95 active:scale-95 text-white font-extrabold text-xs shadow-lg shadow-pink-600/30 transition-all flex items-center justify-center space-x-2">
+          <span>💳 Оплатить 7 990 ₸ картой (Robokassa)</span>
+        </button>
+        <button onclick="requestKaspiFromBot()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs border border-amber-500/20 transition-all flex items-center justify-center space-x-2">
+          <span>🟡 Оплатить через Kaspi (QR / Перевод)</span>
+        </button>
+      </div>
+
+      <p class="text-[10px] text-center text-slate-400">
+        Безопасная оплата через шлюз Robokassa с мгновенной активацией доступа.
+      </p>
     </div>
   </div>
 
@@ -1087,12 +1350,12 @@
     function switchTab(tab) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(b => {
-        b.classList.remove('text-pink-400');
+        b.classList.remove('text-emerald-400');
         b.classList.add('text-slate-400');
       });
 
       document.getElementById(`tab-${tab}`).classList.add('active');
-      document.getElementById(`nav-${tab}`).classList.add('text-pink-400');
+      document.getElementById(`nav-${tab}`).classList.add('text-emerald-400');
       document.getElementById(`nav-${tab}`).classList.remove('text-slate-400');
 
       const titles = {
@@ -1108,7 +1371,7 @@
       }
     }
 
-    // 21-day curriculum with YouTube IDs
+    // 14-day curriculum (Drip-feed model)
     const curriculum = [
       { day: 1, week: 1, title: "Пробуждение и лимфодренаж Full Body", duration: "20 мин", ytId: "gC_L9qAHVJ8",
         exercises: [
@@ -1135,7 +1398,7 @@
           { time: "14:15", name: "Ракушка (Clamshell) на боку", note: "Средняя ягодичная" }
         ]
       },
-      { day: 4, week: 1, title: "Плоский живот и глубокие мышцы кора", duration: "18 мин", ytId: "ml6cT4AZdqI",
+      { day: 4, week: 1, title: "Плоский живот и глубокие мышцы кора", duration: "22 мин", ytId: "ml6cT4AZdqI",
         exercises: [
           { time: "00:00", name: "Диафрагмальное дыхание", note: "Контроль надувания живота" },
           { time: "03:10", name: "«Мертвый жук» (Deadbug)", note: "Поясница прижата к полу" },
@@ -1143,7 +1406,7 @@
           { time: "12:00", name: "Подъемы таза лежа", note: "Без рывков" }
         ]
       },
-      { day: 5, week: 1, title: "Стройные ноги и подтянутые бедра", duration: "24 мин", ytId: "IT94xC35u6k",
+      { day: 5, week: 1, title: "Стройные ноги и подтянутые бедра", duration: "25 мин", ytId: "IT94xC35u6k",
         exercises: [
           { time: "00:00", name: "Динамическая растяжка ног", note: "Разогрев связок" },
           { time: "04:10", name: "Широкое плие с паузой внизу", note: "Колени в стороны" },
@@ -1166,10 +1429,67 @@
           { time: "10:15", name: "Мягкие скручивания", note: "Расслабление позвоночника" },
           { time: "18:00", name: "Шавасана", note: "Полная перезагрузка" }
         ]
+      },
+      { day: 8, week: 2, title: "Интенсивный лимфодренаж и детокс 2.0", duration: "26 мин", ytId: "gC_L9qAHVJ8",
+        exercises: [
+          { time: "00:00", name: "Дыхательная помпа", note: "Снятие застоя в области диафрагмы" },
+          { time: "04:00", name: "Динамические приседы плие", note: "Активация лимфы в паховой зоне" },
+          { time: "10:30", name: "Скручивания сидя с вытяжением", note: "Улучшение работы ЖКТ" },
+          { time: "18:00", name: "Вибрационная разгрузка ног", note: "Легкость в икрах" }
+        ]
+      },
+      { day: 9, week: 2, title: "Точеные руки, осанка и тонкая талия", duration: "24 мин", ytId: "2MoGxae-zyo",
+        exercises: [
+          { time: "00:00", name: "Круговые вращения плечами", note: "Разогрев ротаторов" },
+          { time: "03:40", name: "Отжимания от возвышения", note: "Тонус трицепса без перегруза" },
+          { time: "09:20", name: "Боковая планка на предплечье", note: "Формирование талии" },
+          { time: "15:00", name: "Растяжка широчайших мышц", note: "Снятие спазма" }
+        ]
+      },
+      { day: 10, week: 2, title: "Ягодичный пампинг и рельеф ног", duration: "28 мин", ytId: "I94V6qBfF0Y",
+        exercises: [
+          { time: "00:00", name: "Суставной разогрев таза", note: "Мягкие вращения" },
+          { time: "04:15", name: "Мостик с пульсацией наверху", note: "Максимальное включение ягодиц" },
+          { time: "11:00", name: "Отведение ноги назад стоя", note: "Контроль нейтрали спины" },
+          { time: "18:30", name: "Статическое удержание в выпаде", note: "Форма бедер" }
+        ]
+      },
+      { day: 11, week: 2, title: "Вакуум, кор и плоский живот 2.0", duration: "22 мин", ytId: "ml6cT4AZdqI",
+        exercises: [
+          { time: "00:00", name: "Утренний вакуум стоя", note: "Полный выдох и подтягивание живота" },
+          { time: "04:00", name: "Скручивания без отрыва поясницы", note: "Изоляция пресса" },
+          { time: "09:30", name: "Русский твист с паузой", note: "Косые мышцы и талия" },
+          { time: "15:00", name: "Планка с касанием плеч", note: "Стабилизация кора" }
+        ]
+      },
+      { day: 12, week: 2, title: "Жиросжигающий интервальный комплекс", duration: "26 мин", ytId: "UBMk30rjy0o",
+        exercises: [
+          { time: "00:00", name: "Шаги с махами рук", note: "Вход в пульсовую зону" },
+          { time: "03:45", name: "Конькобежец без прыжков", note: "Ягодицы + кардио" },
+          { time: "09:50", name: "Удары вперед в приседе", note: "Высокий расход калорий" },
+          { time: "16:20", name: "Заминка и нормализация дыхания", note: "Плавный выход" }
+        ]
+      },
+      { day: 13, week: 2, title: "Мобильность суставов и женское здоровье", duration: "25 мин", ytId: "IT94xC35u6k",
+        exercises: [
+          { time: "00:00", name: "Раскрытие тазобедренных суставов", note: "Мягкие покачивания" },
+          { time: "05:00", name: "Упражнения для тазового дна", note: "Активация глубоких слоев" },
+          { time: "11:30", name: "Волна позвоночником", note: "Гибкость и молодость спины" },
+          { time: "18:00", name: "Стретчинг передней линии бедра", note: "Легкость походки" }
+        ]
+      },
+      { day: 14, week: 2, title: "Финальный комплекс Full Body и триумф", duration: "30 мин", ytId: "enYITYwv8c4",
+        exercises: [
+          { time: "00:00", name: "Полный суставной разогрев", note: "Настрой на победный финал" },
+          { time: "05:30", name: "Комплекс тонуса всего тела", note: "Осанка, пресс и ягодицы" },
+          { time: "14:00", name: "Интервальный закрепляющий блок", note: "Максимум эндорфинов" },
+          { time: "22:00", name: "Королевская растяжка и благодарность", note: "Фиксация нового уровня" }
+        ]
       }
     ];
 
     let currentDay = 1;
+    let hasUserAccess = false;
     let completedDays = JSON.parse(localStorage.getItem('janafit_completed_days') || '[]');
     let measurements = JSON.parse(localStorage.getItem('janafit_measurements') || '[]');
     let waterCups = parseInt(localStorage.getItem('janafit_water_cups') || '4');
@@ -1182,6 +1502,9 @@
         const resp = await fetch(`/api/user/data?user_id=${tgUserId}&init_data=${encodeURIComponent(initDataRaw)}`);
         if (resp.ok) {
           const data = await resp.json();
+          if (data.has_access !== undefined) {
+            hasUserAccess = Boolean(data.has_access);
+          }
           if (data.completed_days && data.completed_days.length > 0) {
             completedDays = data.completed_days;
             localStorage.setItem('janafit_completed_days', JSON.stringify(completedDays));
@@ -1204,19 +1527,30 @@
     function renderDays() {
       const container = document.getElementById('days-container');
       container.innerHTML = '';
-      for (let i = 1; i <= 21; i++) {
+      for (let i = 1; i <= 14; i++) {
         const isDone = completedDays.includes(i);
         const isActive = i === currentDay;
+        const isFree = i <= 2;
+        const isLocked = !hasUserAccess && !isFree;
+
         const btn = document.createElement('button');
-        btn.className = `flex-shrink-0 w-12 h-14 rounded-xl flex flex-col items-center justify-center font-bold transition-all ${
+        btn.className = `flex-shrink-0 w-12 h-14 rounded-xl flex flex-col items-center justify-center font-bold transition-all relative ${
           isActive ? 'active-day scale-105' : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
         }`;
         btn.innerHTML = `
-          <span class="text-[9px] uppercase tracking-wider font-semibold ${isActive ? 'text-white' : 'text-slate-400'}">День</span>
+          <span class="text-[8px] uppercase tracking-wider font-semibold ${isActive ? 'text-white' : 'text-slate-400'}">
+            ${isFree ? '🎁 Д' : 'День'}
+          </span>
           <span class="text-base font-extrabold">${i}</span>
-          ${isDone ? '<span class="text-[10px] text-green-300 font-black">✓</span>' : ''}
+          ${isDone ? '<span class="text-[10px] text-green-300 font-black">✓</span>' : (isLocked ? '<span class="text-[9px] text-amber-400">🔒</span>' : '')}
         `;
-        btn.onclick = () => selectDay(i);
+        btn.onclick = () => {
+          if (isLocked) {
+            openPaywallModal();
+          } else {
+            selectDay(i);
+          }
+        };
         container.appendChild(btn);
       }
       updateStats();
@@ -1226,6 +1560,10 @@
     let currentExIndex = 0;
 
     function selectDay(day) {
+      if (day > 2 && !hasUserAccess) {
+        openPaywallModal();
+        return;
+      }
       currentDay = day;
       const lessonIdx = (day - 1) % curriculum.length;
       activeLesson = curriculum[lessonIdx];
@@ -1281,8 +1619,177 @@
     }
 
     function updateStats() {
-      document.getElementById('progress-text').innerText = `${completedDays.length} из 21 пройдено`;
-      document.getElementById('streak-count').innerText = `${Math.max(1, completedDays.length)} дн.`;
+      const count = completedDays.length;
+      const total = 14;
+      const pct = Math.min(100, Math.round((count / total) * 100));
+
+      const progText = document.getElementById('progress-text');
+      if (progText) progText.innerText = `${count} из 14 пройдено`;
+
+      const streakEl = document.getElementById('streak-count');
+      if (streakEl) streakEl.innerText = `${Math.max(1, count)} дн.`;
+
+      // Update Dashboard Progress Ring & Bar (По ТЗ)
+      const dashDays = document.getElementById('dash-days-count');
+      if (dashDays) dashDays.innerText = `${count} из 14 дней`;
+
+      const dashPct = document.getElementById('dash-percent-text');
+      if (dashPct) dashPct.innerText = `${pct}%`;
+
+      const dashBar = document.getElementById('dash-bar-fill');
+      if (dashBar) dashBar.style.width = `${pct}%`;
+
+      const dashCircle = document.getElementById('dash-circle-progress');
+      if (dashCircle) {
+        const circumference = 163;
+        dashCircle.style.strokeDashoffset = circumference - (circumference * pct / 100);
+      }
+
+      const dashBadge = document.getElementById('dash-status-badge');
+      if (dashBadge) {
+        dashBadge.innerText = count >= 14 ? "Победа! 👑" : (count > 0 ? "В процессе ⚡️" : "Старт 🌱");
+      }
+    }
+
+    function togglePlayerFullscreen() {
+      const el = document.getElementById('video-player-container');
+      if (!el) return;
+      if (!document.fullscreenElement) {
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      }
+    }
+
+    function scrollToPsychology() {
+      switchTab('workouts');
+      const target = document.getElementById('psychology-module');
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function scrollToMedical() {
+      switchTab('nutrition');
+      const target = document.getElementById('medical-module');
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Paywall and Modal Helpers
+    function openPaywallModal() {
+      const m = document.getElementById('paywall-modal');
+      if (m) m.classList.remove('hidden');
+    }
+
+    function closePaywallModal() {
+      const m = document.getElementById('paywall-modal');
+      if (m) m.classList.add('hidden');
+    }
+
+    async function initiateRobokassaPayment() {
+      const btn = document.getElementById('paywall-robo-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Переход к оплате...`;
+      }
+      try {
+        const resp = await fetch('/api/payment/create-robokassa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: tgUserId,
+            init_data: initDataRaw
+          })
+        });
+        if (resp.ok) {
+          const res = await resp.json();
+          if (res.pay_url) {
+            if (window.Telegram?.WebApp?.openLink) {
+              window.Telegram.WebApp.openLink(res.pay_url);
+            } else {
+              window.location.href = res.pay_url;
+            }
+            return;
+          }
+        }
+        alert("Ошибка генерации ссылки оплаты. Попробуйте через бота.");
+      } catch (err) {
+        console.error(err);
+        alert("Не удалось связаться с сервером оплаты.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<span>💳 Оплатить 7 990 ₸ картой (Robokassa)</span>`;
+        }
+      }
+    }
+
+    function requestKaspiFromBot() {
+      closePaywallModal();
+      if (window.Telegram?.WebApp?.close) {
+        window.Telegram.WebApp.close();
+      } else {
+        alert("Перейдите в бота и выберите способ оплаты Kaspi!");
+      }
+    }
+
+    function openPsychologyLesson(num) {
+      if (!hasUserAccess && num > 1) {
+        openPaywallModal();
+        return;
+      }
+      const lessons = [
+        { title: "Самосаботаж и лень", sub: "Как не бросить марафон на 3-й день", ytId: "2MoGxae-zyo" },
+        { title: "Стресс и эмоциональный голод", sub: "Разделяем истинный голод и тревогу", ytId: "ml6cT4AZdqI" },
+        { title: "Кризис плато и перфекционизм", sub: "Почему весы замирают и как продолжить", ytId: "IT94xC35u6k" },
+        { title: "Новая идентичность навсегда", sub: "Закрепление привычек и гордость собой", ytId: "enYITYwv8c4" }
+      ];
+      const l = lessons[num - 1];
+      if (l) {
+        document.getElementById('lesson-week').innerText = "Блок Психологии";
+        document.getElementById('lesson-tag').innerText = `Урок ${num}`;
+        document.getElementById('lesson-title').innerText = l.title;
+        document.getElementById('lesson-duration').innerText = "15 мин";
+        const player = document.getElementById('yt-player');
+        if (player) player.src = `https://www.youtube-nocookie.com/embed/${l.ytId}?rel=0&modestbranding=1`;
+        switchTab('workouts');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function openMedicalLecture(num) {
+      if (!hasUserAccess && num > 1) {
+        openPaywallModal();
+        return;
+      }
+      const lectures = [
+        { title: "Гормоны и женский метаболизм", sub: "Эндокринолог: кортизол, щитовидная железа", ytId: "gC_L9qAHVJ8" },
+        { title: "Дефициты витаминов и энергия", sub: "Нутрициолог: ферритин, железо, витамин D", ytId: "2MoGxae-zyo" },
+        { title: "Конструктор тарелки на 14 дней", sub: "Баланс БЖУ без взвешивания и стресса", ytId: "I94V6qBfF0Y" },
+        { title: "Питьевой баланс и лимфоток", sub: "Как убрать отеки лица и ног", ytId: "enYITYwv8c4" }
+      ];
+      const lec = lectures[num - 1];
+      if (lec) {
+        document.getElementById('lesson-week').innerText = "Медицинский блок";
+        document.getElementById('lesson-tag').innerText = `Лекция ${num}`;
+        document.getElementById('lesson-title').innerText = lec.title;
+        document.getElementById('lesson-duration').innerText = "20 мин";
+        const player = document.getElementById('yt-player');
+        if (player) player.src = `https://www.youtube-nocookie.com/embed/${lec.ytId}?rel=0&modestbranding=1`;
+        switchTab('workouts');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // Anti-Piracy Protection & Dynamic DRM watermark
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    if (tg?.initDataUnsafe?.user) {
+      const u = tg.initDataUnsafe.user;
+      const wm = document.getElementById('player-watermark');
+      if (wm) wm.innerText = `JANAFIT VIP • ${u.username ? '@' + u.username : 'ID:' + u.id}`;
+    }
+    if (tg?.enableClosingConfirmation) {
+      tg.enableClosingConfirmation();
     }
 
     document.getElementById('complete-btn').onclick = async () => {
@@ -2307,9 +2814,9 @@
       const diff = (curWeight - targetWeight).toFixed(1);
       const forecastEl = document.getElementById('plan-forecast-text');
       if (diff > 0) {
-        forecastEl.innerText = `Снижение веса с ${curWeight} кг до ${targetWeight} кг (-${diff} кг) безопасно достигается за 21–28 дней курса при тренировках через день и норме воды ${waterL} л.`;
+        forecastEl.innerText = `Снижение веса с ${curWeight} кг до ${targetWeight} кг (-${diff} кг) безопасно достигается за 14 дней марафона при тренировках и норме воды ${waterL} л.`;
       } else {
-        forecastEl.innerText = `При вашем весе ${curWeight} кг программа Janafit подарит подтянутый рельеф, упругость кожи и лёгкость за 21 день.`;
+        forecastEl.innerText = `При вашем весе ${curWeight} кг программа Janafit подарит подтянутый рельеф, упругость кожи и лёгкость за 14 дней.`;
       }
 
       goToWizardStep(4);

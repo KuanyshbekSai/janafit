@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JANAFIT • Панель Администратора</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              neon: '#00e676',
+              500: '#22c55e',
+              600: '#16a34a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #121212;
+      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .neon-text {
+      color: #00e676;
+      text-shadow: 0 0 10px rgba(0, 230, 118, 0.4);
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
+
+  <!-- Header -->
+  <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1a1a1a] p-5 rounded-3xl border border-[#2a2a2a] shadow-xl">
+    <div class="flex items-center space-x-3.5">
+      <div class="w-12 h-12 rounded-2xl bg-[#222222] border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/10">
+        <svg viewBox="0 0 24 24" class="w-7 h-7" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12c0 3.7 2.01 6.94 5 8.65V18c-1.84-1.37-3-3.55-3-6 0-4.41 3.59-8 8-8s8 3.59 8 8c0 2.45-1.16 4.63-3 6v2.65c2.99-1.71 5-4.95 5-8.65 0-5.52-4.48-10-10-10zm-1 5v7.5l-3.5 2.5V8.5L11 7zm2 0l3.5 1.5V17L13 14.5V7zM8 3.5C8.83 2.56 10.34 2 12 2s3.17.56 4 1.5L12 6 8 3.5z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-emerald-400 font-extrabold">Управление платформой</div>
+        <h1 class="text-xl font-black text-white">JANAFIT ADMIN PANEL</h1>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-3">
+      <a href="/app" target="_blank" class="px-3.5 py-2 rounded-xl bg-[#262626] hover:bg-[#333333] text-xs font-bold text-slate-200 border border-slate-700 transition-all flex items-center space-x-1.5">
+        <i class="fa-solid fa-mobile-screen"></i>
+        <span>Открыть Mini App</span>
+      </a>
+      <button onclick="loadAdminData()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-extrabold text-black transition-all flex items-center space-x-1.5 shadow-lg shadow-emerald-500/20">
+        <i class="fa-solid fa-rotate"></i>
+        <span>Обновить</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 1. Главный Дашборд (Аналитика) -->
+  <section class="space-y-3">
+    <h2 class="text-xs uppercase font-extrabold text-slate-400 tracking-wider flex items-center space-x-2">
+      <i class="fa-solid fa-chart-pie text-emerald-400"></i>
+      <span>1. Главный Дашборд • Аналитика</span>
+    </h2>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-[#1a1a1a] p-4 rounded-2xl border border-[#2a2a2a] space-y-1">
+        <div class="text-[11px] text-slate-400 font-semibold">Всего в базе</div>
+        <div id="stat-total-users" class="text-2xl font-black text-white">--</div>
+        <div class="text-[10px] text-slate-400">Пользователей бота</div>
+      </div>
+
+      <div class="bg-[#1a1a1a] p-4 rounded-2xl border border-[#2a2a2a] space-y-1">
+        <div class="text-[11px] text-slate-400 font-semibold">Новые за сегодня</div>
+        <div id="stat-new-today" class="text-2xl font-black text-emerald-400">--</div>
+        <div id="stat-new-week" class="text-[10px] text-slate-400">за неделю: --</div>
+      </div>
+
+      <div class="bg-[#1a1a1a] p-4 rounded-2xl border border-[#2a2a2a] space-y-1">
+        <div class="text-[11px] text-slate-400 font-semibold">Выручка (₸)</div>
+        <div id="stat-revenue" class="text-2xl font-black neon-text">-- ₸</div>
+        <div id="stat-paid-count" class="text-[10px] text-slate-400">-- оплат</div>
+      </div>
+
+      <div class="bg-[#1a1a1a] p-4 rounded-2xl border border-[#2a2a2a] space-y-1">
+        <div class="text-[11px] text-slate-400 font-semibold">Конверсия в оплату</div>
+        <div id="stat-conversion" class="text-2xl font-black text-emerald-400">--%</div>
+        <div class="text-[10px] text-slate-400">Трипвайер ➔ Оплата</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Модуль «Пользователи» (CRM) -->
+  <section class="bg-[#1a1a1a] p-5 rounded-3xl border border-[#2a2a2a] shadow-xl space-y-4">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <div>
+        <h2 class="text-base font-black text-white flex items-center space-x-2">
+          <i class="fa-solid fa-users text-emerald-400"></i>
+          <span>2. Модуль «Пользователи» (CRM)</span>
+        </h2>
+        <p class="text-xs text-slate-400">База клиентов, статусы оплат и ручное управление доступом</p>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button onclick="setFilter('all')" id="flt-all" class="px-3 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs">Все</button>
+        <button onclick="setFilter('paid')" id="flt-paid" class="px-3 py-1.5 rounded-xl bg-[#262626] text-slate-300 font-bold text-xs hover:text-white">Оплатили</button>
+        <button onclick="setFilter('free')" id="flt-free" class="px-3 py-1.5 rounded-xl bg-[#262626] text-slate-300 font-bold text-xs hover:text-white">Бесплатные</button>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="overflow-x-auto rounded-2xl border border-[#2a2a2a]">
+      <table class="w-full text-left text-xs text-slate-300">
+        <thead class="bg-[#222222] text-[10px] uppercase tracking-wider text-slate-400">
+          <tr>
+            <th class="p-3">ID / User</th>
+            <th class="p-3">Имя</th>
+            <th class="p-3">Дата регистрации</th>
+            <th class="p-3">Статус доступа</th>
+            <th class="p-3 text-right">Действие</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody" class="divide-y divide-[#2a2a2a]">
+          <tr>
+            <td colspan="5" class="p-4 text-center text-slate-500">Загрузка пользователей...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3. Модуль «Рассылки» (Broadcasts) -->
+  <section class="bg-[#1a1a1a] p-5 rounded-3xl border border-[#2a2a2a] shadow-xl space-y-4">
+    <div>
+      <h2 class="text-base font-black text-white flex items-center space-x-2">
+        <i class="fa-solid fa-paper-plane text-emerald-400"></i>
+        <span>3. Модуль «Рассылки» (Broadcasts)</span>
+      </h2>
+      <p class="text-xs text-slate-400">Отправка сообщений аудитории бота по сегментам</p>
+    </div>
+
+    <div class="space-y-3">
+      <div class="flex items-center space-x-4 text-xs font-bold">
+        <label class="flex items-center space-x-2 cursor-pointer">
+          <input type="radio" name="b-target" value="all" checked class="accent-emerald-500">
+          <span>Всем пользователям</span>
+        </label>
+        <label class="flex items-center space-x-2 cursor-pointer">
+          <input type="radio" name="b-target" value="free" class="accent-emerald-500">
+          <span>Только НЕ оплатившим (дожим)</span>
+        </label>
+        <label class="flex items-center space-x-2 cursor-pointer">
+          <input type="radio" name="b-target" value="paid" class="accent-emerald-500">
+          <span>Только оплатившим участникам</span>
+        </label>
+      </div>
+
+      <textarea id="broadcast-text" rows="4" placeholder="Введите текст сообщения (поддерживаются HTML теги: <b>, <i>, <code>)..." class="w-full bg-[#121212] border border-[#2a2a2a] rounded-2xl p-3 text-xs text-white outline-none focus:border-emerald-500"></textarea>
+
+      <div class="flex justify-between items-center">
+        <span class="text-[11px] text-slate-400">Сообщение придет пользователям от лица бота @janafit_coach_bot</span>
+        <button onclick="sendBroadcast()" id="b-send-btn" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 hover:opacity-95 text-black font-black text-xs shadow-lg shadow-emerald-500/20 transition-all">
+          Запустить рассылку 🚀
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Настройки и Контент -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="bg-[#1a1a1a] p-5 rounded-3xl border border-[#2a2a2a] space-y-3">
+      <h3 class="text-sm font-black text-white flex items-center space-x-2">
+        <i class="fa-solid fa-sliders text-emerald-400"></i>
+        <span>Настройки марафона</span>
+      </h3>
+      <div class="text-xs space-y-2 text-slate-300">
+        <div class="flex justify-between border-b border-[#262626] pb-1.5">
+          <span class="text-slate-400">Стоимость на Paywall:</span>
+          <span class="font-extrabold text-emerald-400">7 990 ₸</span>
+        </div>
+        <div class="flex justify-between border-b border-[#262626] pb-1.5">
+          <span class="text-slate-400">Длительность программы:</span>
+          <span class="font-bold text-white">14 видеотренировок</span>
+        </div>
+        <div class="flex justify-between border-b border-[#262626] pb-1.5">
+          <span class="text-slate-400">Трипвайер (тест-драйв):</span>
+          <span class="font-bold text-emerald-400">2 бесплатных урока</span>
+        </div>
+        <div class="flex justify-between border-b border-[#262626] pb-1.5">
+          <span class="text-slate-400">Эквайринг:</span>
+          <span class="font-bold text-white">Robokassa + Kaspi</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#1a1a1a] p-5 rounded-3xl border border-[#2a2a2a] space-y-3">
+      <h3 class="text-sm font-black text-white flex items-center space-x-2">
+        <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+        <span>Безопасность и Anti-Piracy</span>
+      </h3>
+      <div class="text-xs space-y-2 text-slate-300">
+        <div class="flex items-center space-x-2">
+          <span class="text-emerald-400 font-bold">✓</span>
+          <span>Защита от контекстного меню (Right-click block)</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-emerald-400 font-bold">✓</span>
+          <span>Динамический водяной знак с Telegram ID</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-emerald-400 font-bold">✓</span>
+          <span>Тайм-локинг (Drip-feed выдача по дням)</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-emerald-400 font-bold">✓</span>
+          <span>AI-сканер тарелок и дневник питания</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    let currentFilter = 'all';
+
+    async function loadAdminData() {
+      try {
+        const statsResp = await fetch('/api/admin/stats');
+        if (statsResp.ok) {
+          const s = await statsResp.json();
+          document.getElementById('stat-total-users').innerText = s.total_users;
+          document.getElementById('stat-new-today').innerText = `+${s.new_today}`;
+          document.getElementById('stat-new-week').innerText = `за неделю: +${s.new_week}`;
+          document.getElementById('stat-revenue').innerText = `${s.total_revenue.toLocaleString('ru-RU')} ₸`;
+          document.getElementById('stat-paid-count').innerText = `${s.successful_payments} оплат`;
+          document.getElementById('stat-conversion').innerText = `${s.conversion_rate}%`;
+        }
+        loadUsers();
+      } catch (err) {
+        console.error("Admin data load error:", err);
+      }
+    }
+
+    async function loadUsers() {
+      const tbody = document.getElementById('users-tbody');
+      tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Загрузка...</td></tr>';
+      try {
+        const resp = await fetch(`/api/admin/users?filter=${currentFilter}`);
+        if (resp.ok) {
+          const users = await resp.json();
+          if (users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Пользователи не найдены</td></tr>';
+            return;
+          }
+          tbody.innerHTML = users.map(u => {
+            const isPaid = Boolean(u.has_access);
+            const statusBadge = isPaid 
+              ? '<span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 text-[10px]">Оплачено (VIP)</span>'
+              : '<span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-bold border border-slate-700 text-[10px]">Бесплатный</span>';
+            const actionBtn = isPaid
+              ? `<button onclick="toggleAccess(${u.user_id}, false)" class="px-2.5 py-1 rounded-lg bg-red-900/40 hover:bg-red-900/60 text-red-300 border border-red-800 text-[10px] font-bold">Отозвать</button>`
+              : `<button onclick="toggleAccess(${u.user_id}, true)" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-black text-[10px] font-extrabold">Выдать VIP</button>`;
+
+            return `
+              <tr class="hover:bg-[#202020] transition-colors">
+                <td class="p-3">
+                  <div class="font-bold text-white">${u.username ? '@' + u.username : 'без юзернейма'}</div>
+                  <div class="text-[10px] text-slate-500">ID: ${u.user_id}</div>
+                </td>
+                <td class="p-3 font-semibold text-slate-200">${u.first_name || ''} ${u.last_name || ''}</td>
+                <td class="p-3 text-slate-400 text-[11px]">${u.created_at ? u.created_at.slice(0, 10) : '--'}</td>
+                <td class="p-3">${statusBadge}</td>
+                <td class="p-3 text-right">${actionBtn}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-400">Ошибка загрузки пользователей</td></tr>';
+      }
+    }
+
+    function setFilter(flt) {
+      currentFilter = flt;
+      ['all', 'paid', 'free'].forEach(f => {
+        const btn = document.getElementById(`flt-${f}`);
+        if (f === flt) {
+          btn.className = "px-3 py-1.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-xl bg-[#262626] text-slate-300 font-bold text-xs hover:text-white";
+        }
+      });
+      loadUsers();
+    }
+
+    async function toggleAccess(userId, grant) {
+      if (!confirm(`Вы действительно хотите ${grant ? 'выдать доступ' : 'отозвать доступ у'} ID: ${userId}?`)) return;
+      try {
+        const resp = await fetch('/api/admin/toggle-access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, grant: grant })
+        });
+        if (resp.ok) {
+          loadAdminData();
+        } else {
+          alert('Ошибка при изменении доступа');
+        }
+      } catch (err) {
+        alert('Ошибка связи с сервером');
+      }
+    }
+
+    async function sendBroadcast() {
+      const text = document.getElementById('broadcast-text').value.trim();
+      if (!text) {
+        alert('Введите текст рассылки!');
+        return;
+      }
+      const target = document.querySelector('input[name="b-target"]:checked')?.value || 'all';
+      if (!confirm(`Запустить рассылку для сегмента "${target}"?`)) return;
+
+      const btn = document.getElementById('b-send-btn');
+      btn.disabled = true;
+      btn.innerText = 'Отправка...';
+
+      try {
+        const resp = await fetch('/api/admin/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text, target: target })
+        });
+        if (resp.ok) {
+          const res = await resp.json();
+          alert(`Рассылка завершена! Отправлено: ${res.sent} пользователям.`);
+          document.getElementById('broadcast-text').value = '';
+        } else {
+          alert('Ошибка при рассылке.');
+        }
+      } catch (err) {
+        alert('Ошибка связи с сервером.');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Запустить рассылку 🚀';
+      }
+    }
+
+    // Auto-load on open
+    loadAdminData();
+  </script>
+</body>
+</html>

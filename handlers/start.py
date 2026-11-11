@@ -34,9 +34,11 @@ def get_main_menu(has_access: bool) -> InlineKeyboardMarkup:
         ]
     else:
         buttons = [
-            [InlineKeyboardButton(text=f"🔥 Забрать курс за {settings.COURSE_PRICE:,} ₸ (990 ₽)", callback_data="buy_course")],
-            [InlineKeyboardButton(text="🎬 Тестовый просмотр уроков (Демо)", web_app={"url": f"{settings.BASE_WEB_URL}/app"})],
-            [InlineKeyboardButton(text="📋 Что внутри курса (Программа)", callback_data="about_course")],
+            [InlineKeyboardButton(text="🎁 2 Бесплатные тренировки (Тест-драйв)", callback_data="free_workouts")],
+            [InlineKeyboardButton(text="🎬 Советы Айтыма Жакупова (Reels)", callback_data="aitym_reels")],
+            [InlineKeyboardButton(text=f"🔥 Участвовать в марафоне за {settings.COURSE_PRICE:,} ₸", callback_data="buy_course")],
+            [InlineKeyboardButton(text="📱 Открыть Janafit App", web_app={"url": f"{settings.BASE_WEB_URL}/app"})],
+            [InlineKeyboardButton(text="📋 Программа (14 уроков + Психолог + Врачи)", callback_data="about_course")],
             [InlineKeyboardButton(text="⭐️ Результаты участниц До/После", callback_data="testimonials")],
             [InlineKeyboardButton(text="🤖 Задать вопрос AI-тренеру", callback_data="ai_coach_start")]
         ]
@@ -67,16 +69,18 @@ async def cmd_start(message: Message):
         )
     else:
         text = (
-            f"✨ <b>Добро пожаловать в Janafit!</b> ✨\n\n"
-            f"Твоя трансформация начинается здесь. Готовая авторская программа тренировок для дома и зала, "
-            f"которая подтягивает тело, убирает объемы и возвращает легкость.\n\n"
-            f"⚡️ <b>СПЕЦИАЛЬНОЕ ПРЕДЛОЖЕНИЕ:</b>\n"
-            f"Стоимость сегодня: <b>{settings.COURSE_PRICE:,} ₸</b> <s>{settings.COURSE_ORIGINAL_PRICE:,} ₸</s> (-44%)\n\n"
-            f"🎯 <b>Что ты получишь сразу после оплаты:</b>\n"
-            f"• 21 видеоурок высокой четкости с таймерами и разбором техники\n"
-            f"• Программа питания без строгих диет и голода\n"
-            f"• Доступ в закрытый закрытый VIP-клуб Janafit\n"
-            f"• Круглосуточный AI-тренер и поддержка живых кураторов"
+            f"✨ <b>Добро пожаловать в Janafit!</b> ✨\n"
+            f"<i>Авторский 14-дневный марафон трансформации от Айтыма Жакупова</i>\n\n"
+            f"🎁 <b>Вам доступны 2 полноценные бесплатные тренировки!</b>\n"
+            f"Оцените качество видео, подачу и почувствуйте включение мышц прямо сейчас.\n\n"
+            f"⚡️ <b>ПОЛНЫЙ ДОСТУП К МАРАФОНУ:</b>\n"
+            f"Стоимость сегодня: <b>{settings.COURSE_PRICE:,} ₸</b> <s>{settings.COURSE_ORIGINAL_PRICE:,} ₸</s>\n\n"
+            f"🎯 <b>Что входит в программу:</b>\n"
+            f"• <b>14 видеотренировок</b> по 25–30 мин (Drip-feed: по расписанию)\n"
+            f"• <b>4 видеоурока от психолога</b> (защита от срывов и мотивация)\n"
+            f"• <b>Блок «Питание»</b>: лекции нутрициолога и эндокринолога + конструктор рациона\n"
+            f"• <b>Интерактивный Mini App</b> с защищенным плеером и таймером\n"
+            f"• <b>AI-тренер 24/7</b> в Telegram"
         )
 
     await message.answer(
@@ -130,24 +134,66 @@ async def cmd_reply_lessons(message: Message):
         ])
         await message.answer("Вам доступен демо-режим. Открыть тренировки:", reply_markup=keyboard)
 
+@router.callback_query(F.data == "free_workouts")
+async def cb_free_workouts(callback: CallbackQuery):
+    text = (
+        "🎁 <b>2 БЕСПЛАТНЫЕ ТРЕНИРОВКИ (ТЕСТ-ДРАЙВ JANAFIT)</b>\n\n"
+        "Мы открыли для вас доступ к первым двум полноценным урокам, чтобы вы оценили качество звука, "
+        "света и методику тренера Айтыма Жакупова:\n\n"
+        "<b>Урок 1: Пробуждение и лимфодренаж Full Body (20 мин)</b>\n"
+        "• Снятие утренней отёчности\n"
+        "• Мягкая суставная гимнастика и диафрагмальное дыхание\n\n"
+        "<b>Урок 2: Осанка и здоровая спина (22 мин)</b>\n"
+        "• Раскрытие грудного отдела и снятие зажимов лопаток\n"
+        "• Укрепление мышечного корсета без осевой нагрузки\n\n"
+        "💡 <i>Откройте Mini App, чтобы запустить тренировку с таймером и видео!</i>"
+    )
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="▶️ Запустить Урок 1 в Mini App", web_app={"url": f"{settings.BASE_WEB_URL}/app?day=1"})],
+        [InlineKeyboardButton(text="▶️ Запустить Урок 2 в Mini App", web_app={"url": f"{settings.BASE_WEB_URL}/app?day=2"})],
+        [InlineKeyboardButton(text=f"🔥 Получить все 14 уроков за {settings.COURSE_PRICE:,} ₸", callback_data="buy_course")],
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_start")]
+    ])
+    await callback.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
+    await callback.answer()
+
+@router.callback_query(F.data == "aitym_reels")
+async def cb_aitym_reels(callback: CallbackQuery):
+    text = (
+        "🎬 <b>СОВЕТЫ АЙТЫМА ЖАКУПОВА (МИКРО-КОНТЕНТ)</b>\n\n"
+        "Короткие ролики до 1 минуты, которые помогут не сорваться и получить максимум от тренировок:\n\n"
+        "1. <b>«Почему диеты не работают без движения»</b>\n"
+        "2. <b>«Как убрать живот за счёт дыхания, а не скручиваний»</b>\n"
+        "3. <b>«Главная ошибка при боли в пояснице»</b>\n\n"
+        "👉 Смотрите разборы и практикуйтесь каждый день вместе с марафоном Janafit!"
+    )
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📱 Открыть видео в Mini App", web_app={"url": f"{settings.BASE_WEB_URL}/app"})],
+        [InlineKeyboardButton(text=f"🔥 Участвовать в марафоне ({settings.COURSE_PRICE:,} ₸)", callback_data="buy_course")],
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_start")]
+    ])
+    await callback.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")
+    await callback.answer()
+
 @router.callback_query(F.data == "about_course")
 async def cb_about_course(callback: CallbackQuery):
     text = (
-        f"📋 <b>ПРОГРАММА КУРСА JANAFIT (21 ДЕНЬ)</b>\n\n"
-        f"<b>Неделя 1: Мягкий старт и лимфодренаж</b>\n"
-        f"• День 1: Пробуждение мышц + дыхательные практики\n"
-        f"• День 2: Осанка, спина и раскрытие грудного отдела\n"
-        f"• День 3: Упругие ягодицы без нагрузки на колени\n\n"
-        f"<b>Неделя 2: Сжигание объемов и рельеф</b>\n"
-        f"• День 4: Плоский живот и глубокие мышцы кора\n"
-        f"• День 5: Стройные ноги и внутренняя поверхность бедра\n"
-        f"• День 6: Кардио-тонус для ускорения метаболизма\n\n"
-        f"<b>Неделя 3: Фиксация результата и гибкость</b>\n"
-        f"• Комплексы Full Body + легкая растяжка\n\n"
-        f"⏱ <i>Длительность уроков: всего 20-30 минут в день. Без громоздких тренажеров!</i>"
+        f"📋 <b>ПРОГРАММА МАРАФОНА JANAFIT (14 ДНЕЙ)</b>\n\n"
+        f"<b>1. Основная программа тренировок:</b>\n"
+        f"• 14 авторских видеоуроков по 25–30 минут\n"
+        f"• Drip-feed модель (уроки открываются постепенно, исключая перегрузку)\n"
+        f"• Без прыжков и тяжелых весов — безопасно для коленей и спины\n\n"
+        f"<b>2. Блок Психологии (4 видеоурока):</b>\n"
+        f"• Открываются в ключевые, эмоционально сложные дни\n"
+        f"• Проработка срывов, эмоционального переедания и мотивации\n\n"
+        f"<b>3. Блок «Питание» (Медицинский блок):</b>\n"
+        f"• Лекции нутрициолога и врача-эндокринолога\n"
+        f"• Конструктор здоровой тарелки и нормы гидратации\n\n"
+        f"⏱ <i>Доступ 24/7 в Telegram Mini App с защищенным плеером и таймером!</i>"
     )
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=f"💳 Купить за {settings.COURSE_PRICE:,} ₸", callback_data="buy_course")],
+        [InlineKeyboardButton(text=f"💳 Принять участие за {settings.COURSE_PRICE:,} ₸", callback_data="buy_course")],
+        [InlineKeyboardButton(text="🎁 Попробовать 2 урока бесплатно", callback_data="free_workouts")],
         [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_start")]
     ])
     await callback.message.edit_text(text, reply_markup=keyboard, parse_mode="HTML")

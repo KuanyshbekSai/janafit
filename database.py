@@ -173,6 +173,82 @@ async def grant_user_access(user_id: int):
         )
         await db.commit()
 
+async def revoke_user_access(user_id: int):
+    """Отзывает доступ к марафону (для Саппорта при возврате средств)."""
+    await ensure_db_ready()
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        await db.execute(
+            "UPDATE users SET has_access = 0 WHERE user_id = ?",
+            (user_id,)
+        )
+        await db.commit()
+
+async def get_admin_dashboard_stats() -> Dict[str, Any]:
+    """Сводная статистика для Главного Дашборда (Аналитика)."""
+    await ensure_db_ready()
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        async with db.execute("SELECT COUNT(*) FROM users") as cur:
+            total_users = (await cur.fetchone())[0] or 0
+
+        async with db.execute("SELECT COUNT(*) FROM users WHERE date(created_at) = date('now')") as cur:
+            new_today = (await cur.fetchone())[0] or 0
+
+        async with db.execute("SELECT COUNT(*) FROM users WHERE created_at >= datetime('now', '-7 days')") as cur:
+            new_week = (await cur.fetchone())[0] or 0
+
+        async with db.execute("SELECT COUNT(*) FROM users WHERE has_access = 1") as cur:
+            paid_users = (await cur.fetchone())[0] or 0
+
+        async with db.execute("SELECT SUM(amount), COUNT(*) FROM payments WHERE status = 'success'") as cur:
+            row = await cur.fetchone()
+            total_revenue = row[0] or 0
+            successful_payments = row[1] or 0
+
+        conversion = round((paid_users / total_users * 100), 1) if total_users > 0 else 0.0
+
+        return {
+            "total_users": total_users,
+            "new_today": new_today,
+            "new_week": new_week,
+            "paid_users": paid_users,
+            "free_users": max(0, total_users - paid_users),
+            "successful_payments": successful_payments,
+            "total_revenue": total_revenue,
+            "conversion_rate": conversion
+        }
+
+async def get_admin_users(filter_type: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
+    """Список пользователей для модуля CRM."""
+    await ensure_db_ready()
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        query = "SELECT user_id, username, first_name, last_name, has_access, access_granted_at, created_at FROM users"
+        params = []
+        if filter_type == "paid":
+            query += " WHERE has_access = 1"
+        elif filter_type == "free":
+            query += " WHERE has_access = 0"
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+
+        async with db.execute(query, tuple(params)) as cur:
+            rows = await cur.fetchall()
+            return [dict(r) for r in rows]
+
+async def get_broadcast_user_ids(filter_type: str = "all") -> List[int]:
+    """Получение ID пользователей для рассылок (все, оплатившие, неоплатившие)."""
+    await ensure_db_ready()
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        if filter_type == "paid":
+            query = "SELECT user_id FROM users WHERE has_access = 1"
+        elif filter_type == "free":
+            query = "SELECT user_id FROM users WHERE has_access = 0"
+        else:
+            query = "SELECT user_id FROM users"
+        async with db.execute(query) as cur:
+            rows = await cur.fetchall()
+            return [r[0] for r in rows]
+
 async def create_payment(invoice_id: str, user_id: int, amount: int, provider: str, receipt_file_id: Optional[str] = None) -> int:
     await ensure_db_ready()
     async with aiosqlite.connect(settings.DB_PATH) as db:

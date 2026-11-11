@@ -1,3 +1,4 @@
+import time
 import uuid
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, ContentType
@@ -41,7 +42,8 @@ async def cb_buy_course(callback: CallbackQuery):
 @router.callback_query(F.data == "pay_robokassa")
 async def cb_pay_robokassa(callback: CallbackQuery):
     user_id = callback.from_user.id
-    invoice_id = f"JF-{int(user_id % 100000)}-{uuid.uuid4().hex[:6].upper()}"
+    # Robokassa требует целочисленный InvId (до 2^31 - 1)
+    invoice_id = str(int(time.time() * 10) % 2000000000)
 
     await create_payment(
         invoice_id=invoice_id,

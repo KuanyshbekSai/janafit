@@ -20,9 +20,16 @@ from database import (
     save_user_meal,
     get_user_meals,
     save_user_profile,
-    get_user_profile
+    get_user_profile,
+    create_payment,
+    grant_user_access,
+    revoke_user_access,
+    get_admin_dashboard_stats,
+    get_admin_users,
+    get_broadcast_user_ids
 )
-from services.robokassa import verify_robokassa_webhook
+import time
+from services.robokassa import verify_robokassa_webhook, generate_robokassa_link
 from services.security import validate_telegram_init_data
 from services.ai_service import ask_ai_coach, analyze_food_photo, analyze_food_audio
 from services.gas_sync import fire_and_forget, sync_user_to_gas, log_payment_to_gas, log_meal_to_gas, log_workout_to_gas, fetch_meals_from_gas, delete_meal_in_gas
@@ -206,6 +213,37 @@ async def payment_success_page(request: Request, InvId: str = "JF-ORDER", OutSum
 async def payment_fail_page(request: Request):
     return templates.TemplateResponse(request=request, name="fail.html", context={})
 
+class CreatePaymentRequest(BaseModel):
+    user_id: Optional[int] = None
+    init_data: Optional[str] = None
+
+@app.post("/api/payment/create-robokassa")
+async def api_create_robokassa_payment(payload: CreatePaymentRequest):
+    """
+    Генерирует ссылку Robokassa для оплаты курса из Mini App.
+    """
+    verified_id = get_verified_user_id(payload.init_data, payload.user_id)
+    inv_id = str(int(time.time() * 10) % 2000000000)
+    await create_payment(
+        invoice_id=inv_id,
+        user_id=verified_id,
+        amount=settings.COURSE_PRICE,
+        provider="robokassa"
+    )
+    pay_url = generate_robokassa_link(
+        invoice_id=inv_id,
+        amount=settings.COURSE_PRICE,
+        description=f"Janafit Course Access #{inv_id}",
+        user_id=verified_id
+    )
+    return {
+        "status": "ok",
+        "pay_url": pay_url,
+        "invoice_id": inv_id,
+        "amount": settings.COURSE_PRICE,
+        "title": settings.COURSE_TITLE
+    }
+
 @app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 @app.api_route("/app", methods=["GET", "HEAD"], response_class=HTMLResponse)
 @app.api_route("/api", methods=["GET", "HEAD"], response_class=HTMLResponse)
@@ -216,6 +254,56 @@ async def mini_app_view(request: Request, day: int = 1):
         "default_day": day,
         "course_title": settings.COURSE_TITLE
     })
+
+# -------------------- ADMIN PANEL (По ТЗ) --------------------
+
+@app.get("/admin", response_class=HTMLResponse)
+@app.get("/api/admin", response_class=HTMLResponse)
+async def admin_panel_view(request: Request):
+    """Панель Администратора Janafit (Дашборд, CRM, Рассылки)."""
+    return templates.TemplateResponse(request=request, name="admin.html", context={})
+
+@app.get("/api/admin/stats")
+async def api_admin_stats():
+    stats = await get_admin_dashboard_stats()
+    return stats
+
+@app.get("/api/admin/users")
+async def api_admin_users(filter: Optional[str] = "all", limit: int = 100):
+    users = await get_admin_users(filter_type=filter, limit=limit)
+    return users
+
+class AdminToggleAccessRequest(BaseModel):
+    user_id: int
+    grant: bool
+
+@app.post("/api/admin/toggle-access")
+async def api_admin_toggle_access(payload: AdminToggleAccessRequest):
+    if payload.grant:
+        await grant_user_access(payload.user_id)
+    else:
+        await revoke_user_access(payload.user_id)
+    return {"status": "ok", "user_id": payload.user_id, "has_access": payload.grant}
+
+class AdminBroadcastRequest(BaseModel):
+    text: str
+    target: str = "all"  # 'all', 'paid', 'free'
+
+@app.post("/api/admin/broadcast")
+async def api_admin_broadcast(payload: AdminBroadcastRequest):
+    user_ids = await get_broadcast_user_ids(payload.target)
+    sent_count = 0
+    try:
+        from bot_instance import bot
+        for uid in user_ids:
+            try:
+                await bot.send_message(chat_id=uid, text=payload.text, parse_mode="HTML")
+                sent_count += 1
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"Broadcast error: {e}")
+    return {"status": "ok", "target": payload.target, "total": len(user_ids), "sent": sent_count}
 
 # API Endpoints для Mini App
 
