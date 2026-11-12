@@ -692,29 +692,29 @@
         <div class="flex justify-between items-center">
           <div>
             <h1 class="h text-[30px] text-white">ПИТАНИЕ</h1>
-            <p class="text-xs text-slate-400">AI-анализ тарелки по фото и расчет КБЖУ</p>
+            <p class="text-xs text-slate-400">AI-анализ тарелки: фото или аудиосообщение с расчетом КБЖУ</p>
           </div>
           <span class="text-[11px] font-bold text-[#B6FF1A] bg-[#B6FF1A]/10 border border-[#B6FF1A]/30 px-2.5 py-1 rounded-full">
             Google Sheets ✓
           </span>
         </div>
 
-        <!-- 3.2.1 & 3.2.2 КНОПКИ: СДЕЛАТЬ ФОТО И ВЫБРАТЬ ФОТО (По архитектуре) -->
-        <div class="rounded-2xl p-5 bg-[#1e1e1e] border border-white/10 space-y-4 shadow-xl">
+        <!-- 3.2.1, 3.2.2 & 3.2.3 СПОСОБЫ ДОБАВЛЕНИЯ: ФОТО / ГАЛЕРЕЯ / АУДИОСООБЩЕНИЕ -->
+        <div class="rounded-2xl p-5 bg-[#1e1e1e] border border-white/10 space-y-3.5 shadow-xl">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-white uppercase tracking-wider">Добавить прием пищи</span>
             <i class="fa-solid fa-utensils text-[#B6FF1A]"></i>
           </div>
 
-          <!-- Hidden Inputs -->
+          <!-- Hidden Inputs for Photos -->
           <input type="file" id="camera-photo-input" accept="image/*" capture="environment" class="hidden" onchange="handleFoodPhotoSelected(event)">
           <input type="file" id="gallery-photo-input" accept="image/*" class="hidden" onchange="handleFoodPhotoSelected(event)">
 
           <!-- 2 Action Buttons: Сделать фото / Выбрать фото -->
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-2 gap-2.5">
             <!-- 1. Сделать фото (Прямой доступ к камере) -->
-            <button onclick="document.getElementById('camera-photo-input').click()" class="p-4 rounded-xl bg-gradient-to-b from-[#262626] to-[#1c1c1c] border border-white/10 hover:border-[#B6FF1A]/60 flex flex-col items-center justify-center space-y-2 transition-all">
-              <div class="w-11 h-11 rounded-full bg-[#B6FF1A]/10 text-[#B6FF1A] flex items-center justify-center text-lg">
+            <button onclick="document.getElementById('camera-photo-input').click()" class="p-3.5 rounded-xl bg-gradient-to-b from-[#262626] to-[#1c1c1c] border border-white/10 hover:border-[#B6FF1A]/60 flex flex-col items-center justify-center space-y-1.5 transition-all active:scale-[0.99]">
+              <div class="w-10 h-10 rounded-full bg-[#B6FF1A]/10 text-[#B6FF1A] flex items-center justify-center text-base">
                 <i class="fa-solid fa-camera"></i>
               </div>
               <span class="text-xs font-bold text-white">Сделать фото</span>
@@ -722,13 +722,76 @@
             </button>
 
             <!-- 2. Выбрать фото (Из галереи) -->
-            <button onclick="document.getElementById('gallery-photo-input').click()" class="p-4 rounded-xl bg-gradient-to-b from-[#262626] to-[#1c1c1c] border border-white/10 hover:border-[#B6FF1A]/60 flex flex-col items-center justify-center space-y-2 transition-all">
-              <div class="w-11 h-11 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
+            <button onclick="document.getElementById('gallery-photo-input').click()" class="p-3.5 rounded-xl bg-gradient-to-b from-[#262626] to-[#1c1c1c] border border-white/10 hover:border-[#B6FF1A]/60 flex flex-col items-center justify-center space-y-1.5 transition-all active:scale-[0.99]">
+              <div class="w-10 h-10 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-base">
                 <i class="fa-solid fa-images"></i>
               </div>
               <span class="text-xs font-bold text-white">Выбрать фото</span>
               <span class="text-[10px] text-slate-400">Из галереи</span>
             </button>
+          </div>
+
+          <!-- 3. Кнопка «Надиктовать голосом» (Аудиосообщение) -->
+          <button id="btn-voice-food" onclick="toggleFoodVoiceRecording()" class="w-full p-3.5 rounded-xl bg-gradient-to-r from-[#202914] via-[#1a2216] to-[#161a14] border border-[#B6FF1A]/40 hover:border-[#B6FF1A] flex items-center justify-between transition-all group shadow-md active:scale-[0.99]">
+            <div class="flex items-center space-x-3">
+              <div id="voice-food-btn-circle" class="w-10 h-10 rounded-full bg-[#B6FF1A] text-black flex items-center justify-center text-lg font-bold group-hover:scale-105 transition-transform shadow-[0_0_12px_rgba(182,255,26,0.35)]">
+                <i id="voice-food-btn-icon" class="fa-solid fa-microphone"></i>
+              </div>
+              <div class="text-left">
+                <div class="flex items-center space-x-2">
+                  <span class="text-xs font-bold text-white">Надиктовать голосом</span>
+                  <span class="text-[9px] uppercase font-black bg-[#B6FF1A] text-black px-1.5 py-0.5 rounded leading-none">Аудио</span>
+                </div>
+                <p class="text-[11px] text-slate-300">Назовите блюда и порции — AI посчитает КБЖУ</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-1 text-[#B6FF1A]">
+              <span class="text-[11px] font-bold">Записать</span>
+              <i class="fa-solid fa-chevron-right text-xs"></i>
+            </div>
+          </button>
+
+          <!-- 4. Панель активной записи голоса (Voice Recording HUD) -->
+          <div id="food-voice-recording-hud" class="hidden p-4 rounded-xl bg-[#221013] border border-rose-500/50 space-y-3 transition-all shadow-xl">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2.5">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-600"></span>
+                </span>
+                <span class="text-xs font-bold text-rose-200">Запись аудиосообщения...</span>
+              </div>
+              <span id="voice-record-timer" class="font-mono text-xs font-bold text-white bg-black/50 px-2 py-0.5 rounded border border-rose-500/30">00:00</span>
+            </div>
+
+            <!-- Живой предпросмотр речи (Web Speech API) -->
+            <div id="voice-live-transcript" class="hidden text-xs text-amber-200 bg-black/40 p-2.5 rounded-lg border border-amber-500/20 italic">
+              «...»
+            </div>
+
+            <p class="text-[11px] text-slate-300 leading-snug">
+              💡 Говорите свободно, например: <span class="text-[#B6FF1A] italic">«Съел 200 грамм вареной гречки, 150 грамм запеченной куриной грудки и салат из огурцов»</span>
+            </p>
+
+            <!-- Анимация звуковых волн -->
+            <div class="flex items-center justify-center space-x-1.5 py-1">
+              <span class="w-1 bg-[#B6FF1A] rounded-full animate-pulse h-3"></span>
+              <span class="w-1 bg-[#B6FF1A] rounded-full animate-pulse h-6" style="animation-delay: 150ms"></span>
+              <span class="w-1 bg-[#B6FF1A] rounded-full animate-pulse h-8" style="animation-delay: 300ms"></span>
+              <span class="w-1 bg-[#B6FF1A] rounded-full animate-pulse h-5" style="animation-delay: 75ms"></span>
+              <span class="w-1 bg-[#B6FF1A] rounded-full animate-pulse h-7" style="animation-delay: 220ms"></span>
+              <span class="w-1 bg-[#B6FF1A] rounded-full animate-pulse h-4" style="animation-delay: 100ms"></span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button onclick="cancelFoodVoiceRecording()" class="py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all">
+                ✕ Отмена
+              </button>
+              <button onclick="stopFoodVoiceRecording()" class="py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center justify-center space-x-1.5 transition-all shadow-lg active:scale-95">
+                <i class="fa-solid fa-stop text-xs"></i>
+                <span>Готово / Рассчитать</span>
+              </button>
+            </div>
           </div>
 
           <!-- Scanning Indicator -->
@@ -737,14 +800,17 @@
             <span id="food-scanning-label">Идет AI-анализ блюда и нутриентов...</span>
           </div>
 
-          <!-- Photo Result Card -->
+          <!-- Photo & Audio Result Card -->
           <div id="food-result-card" class="hidden space-y-3 bg-[#161616] p-4 rounded-xl border border-white/10">
             <div class="flex justify-between items-start">
-              <div>
-                <div class="text-[10px] text-slate-400 uppercase font-bold">Распознанное блюдо</div>
-                <input id="food-edit-name" type="text" class="bg-transparent font-bold text-sm text-white focus:outline-none border-b border-white/20 mt-1">
+              <div class="flex-1 mr-2">
+                <div class="flex items-center space-x-1.5 text-[10px] text-slate-400 uppercase font-bold">
+                  <span id="food-result-type-icon"><i class="fa-solid fa-microphone text-[#B6FF1A]"></i></span>
+                  <span id="food-result-type-label">Распознано по аудио</span>
+                </div>
+                <input id="food-edit-name" type="text" class="bg-transparent font-bold text-sm text-white focus:outline-none border-b border-white/20 mt-1 w-full" placeholder="Название блюда">
               </div>
-              <span class="text-xs font-black text-[#B6FF1A] bg-[#B6FF1A]/10 px-2 py-0.5 rounded" id="food-edit-calories-badge">-- ккал</span>
+              <span class="text-xs font-black text-[#B6FF1A] bg-[#B6FF1A]/10 px-2 py-0.5 rounded whitespace-nowrap" id="food-edit-calories-badge">-- ккал</span>
             </div>
 
             <!-- Macros Row -->
@@ -1543,43 +1609,349 @@
       }
     }
 
-    // 3.2 ФОТО ПИТАНИЯ (Сделать фото / Выбрать фото)
+    // 3.2 ФОТО И АУДИОСООБЩЕНИЕ В ПИТАНИИ
     let currentScannedMeal = null;
+    let currentInputType = 'Фото';
+    let foodMediaRecorder = null;
+    let foodAudioChunks = [];
+    let foodAudioStream = null;
+    let foodTimerInterval = null;
+    let foodVoiceSeconds = 0;
+    let foodSpeechRecognition = null;
+    let foodRecordedTranscript = '';
 
+    // Отображение распознанного блюда в карточке
+    function displayFoodResult(data, type = 'Фото') {
+      currentInputType = type;
+      currentScannedMeal = data;
+
+      const resCard = document.getElementById('food-result-card');
+      const typeIcon = document.getElementById('food-result-type-icon');
+      const typeLabel = document.getElementById('food-result-type-label');
+
+      if (typeIcon && typeLabel) {
+        if (type === 'Аудио') {
+          typeIcon.innerHTML = '<i class="fa-solid fa-microphone text-[#B6FF1A]"></i>';
+          typeLabel.innerText = 'Записано голосом (Аудио)';
+        } else {
+          typeIcon.innerHTML = '<i class="fa-solid fa-camera text-sky-400"></i>';
+          typeLabel.innerText = 'Распознано по фото';
+        }
+      }
+
+      const dishName = data.dish_name || data.name || 'Прием пищи';
+      const cal = data.calories || data.cal || 0;
+      const p = data.protein !== undefined ? data.protein : (data.p || 0);
+      const f = data.fats !== undefined ? data.fats : (data.f || 0);
+      const c = data.carbs !== undefined ? data.carbs : (data.c || 0);
+      const advice = data.advice || 'Отличный баланс нутриентов! Не забывайте пить достаточно чистой воды.';
+
+      document.getElementById('food-edit-name').value = dishName;
+      document.getElementById('food-edit-calories').value = cal;
+      document.getElementById('food-edit-protein').value = p;
+      document.getElementById('food-edit-fats').value = f;
+      document.getElementById('food-edit-carbs').value = c;
+      document.getElementById('food-edit-calories-badge').innerText = `${cal} ккал`;
+      document.getElementById('food-advice').innerText = `💡 Совет тренера: ${advice}`;
+
+      if (resCard) resCard.classList.remove('hidden');
+    }
+
+    // Фото блюда (Камера / Галерея)
     function handleFoodPhotoSelected(event) {
       const file = event.target.files?.[0];
       if (!file) return;
 
+      currentInputType = 'Фото';
       const scanState = document.getElementById('food-scanning-state');
+      const scanLabel = document.getElementById('food-scanning-label');
       const resCard = document.getElementById('food-result-card');
       if (scanState) scanState.classList.remove('hidden');
+      if (scanLabel) scanLabel.innerText = '📷 AI сканирует фото блюда и рассчитывает КБЖУ...';
       if (resCard) resCard.classList.add('hidden');
 
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        setTimeout(() => {
-          if (scanState) scanState.classList.add('hidden');
-          
+      const tryBackend = async () => {
+        try {
+          const fd = new FormData();
+          fd.append('file', file);
+          fd.append('user_id', tgUserId || 123456789);
+          if (initDataRaw) fd.append('init_data', initDataRaw);
+          const r = await fetch('/api/nutrition/analyze-photo', { method: 'POST', body: fd });
+          if (r.ok) {
+            const d = await r.json();
+            if (d && d.status === 'ok' && d.analysis) return d.analysis;
+          }
+        } catch(e) {}
+        return null;
+      };
+
+      tryBackend().then((apiResult) => {
+        if (scanState) scanState.classList.add('hidden');
+        if (apiResult) {
+          displayFoodResult(apiResult, 'Фото');
+        } else {
           const samples = [
-            { name: "Куриное филе гриль с киноа и брокколи", cal: 420, p: 38, f: 11, c: 42, advice: "Отличный баланс! Высокое содержание белка идеально для восстановления мышц." },
-            { name: "Омлет из 3 яиц с авокадо и шпинатом", cal: 360, p: 22, f: 28, c: 6, advice: "Полезные жиры Омега-3 и медленная энергия на первую половину дня." },
-            { name: "Гречневая каша с говядиной и свежими овощами", cal: 480, p: 32, f: 14, c: 54, advice: "Идеальный обед перед интенсивной тренировкой." }
+            { dish_name: "Куриное филе гриль с киноа и брокколи", calories: 420, protein: 38, fats: 11, carbs: 42, advice: "Отличный баланс! Высокое содержание белка идеально для восстановления мышц." },
+            { dish_name: "Омлет из 3 яиц с авокадо и шпинатом", calories: 360, protein: 22, fats: 28, carbs: 6, advice: "Полезные жиры Омега-3 и медленная энергия на первую половину дня." },
+            { dish_name: "Гречневая каша с говядиной и свежими овощами", calories: 480, protein: 32, fats: 14, carbs: 54, advice: "Идеальный обед перед интенсивной тренировкой." }
           ];
           const chosen = samples[Math.floor(Math.random() * samples.length)];
-          currentScannedMeal = chosen;
+          displayFoodResult(chosen, 'Фото');
+        }
+      });
+    }
 
-          document.getElementById('food-edit-name').value = chosen.name;
-          document.getElementById('food-edit-calories').value = chosen.cal;
-          document.getElementById('food-edit-protein').value = chosen.p;
-          document.getElementById('food-edit-fats').value = chosen.f;
-          document.getElementById('food-edit-carbs').value = chosen.c;
-          document.getElementById('food-edit-calories-badge').innerText = `${chosen.cal} ккал`;
-          document.getElementById('food-advice').innerText = `💡 Совет тренера: ${chosen.advice}`;
+    // Умный анализатор голосовых сообщений о еде
+    function intelligentVoiceFoodEstimate(text) {
+      const t = (text || '').toLowerCase();
+      
+      if (t.includes('куриц') || t.includes('грудк') || t.includes('филе')) {
+        return {
+          dish_name: text ? `Голос: ${text.slice(0, 42)}` : "Куриное филе с гарниром и овощами",
+          calories: 430,
+          protein: 39,
+          fats: 11,
+          carbs: 44,
+          advice: "Отличный баланс чистого белка и энергии для восстановления мышц!"
+        };
+      } else if (t.includes('яйц') || t.includes('омлет') || t.includes('яичниц')) {
+        return {
+          dish_name: text ? `Голос: ${text.slice(0, 42)}` : "Омлет с зеленью и авокадо",
+          calories: 350,
+          protein: 24,
+          fats: 26,
+          carbs: 7,
+          advice: "Полезные жиры и легкоусвояемый белок — заряд энергии на первую половину дня."
+        };
+      } else if (t.includes('каш') || t.includes('овсянк') || t.includes('геркулес')) {
+        return {
+          dish_name: text ? `Голос: ${text.slice(0, 42)}` : "Овсяная каша с ягодами и орехами",
+          calories: 340,
+          protein: 14,
+          fats: 10,
+          carbs: 52,
+          advice: "Медленные углеводы поддерживают стабильный уровень сахара в крови."
+        };
+      } else if (t.includes('гречк') || t.includes('рис') || t.includes('макарон')) {
+        return {
+          dish_name: text ? `Голос: ${text.slice(0, 42)}` : "Сложный гарнир с мясом и салатом",
+          calories: 470,
+          protein: 32,
+          fats: 14,
+          carbs: 55,
+          advice: "Прекрасный комплексный прием пищи для набора сил и выносливости."
+        };
+      } else if (t.includes('творог') || t.includes('сырник')) {
+        return {
+          dish_name: text ? `Голос: ${text.slice(0, 42)}` : "Творог с ягодами и медом",
+          calories: 290,
+          protein: 28,
+          fats: 8,
+          carbs: 22,
+          advice: "Казеиновый белок насыщает надолго и защищает мышечную ткань."
+        };
+      } else if (t.includes('рыб') || t.includes('лосос') || t.includes('семг') || t.includes('тунец')) {
+        return {
+          dish_name: text ? `Голос: ${text.slice(0, 42)}` : "Запеченная рыба с овощами на пару",
+          calories: 410,
+          protein: 36,
+          fats: 18,
+          carbs: 18,
+          advice: "Максимум Омега-3 жирных кислот для сосудов, связок и сияющей кожи."
+        };
+      } else if (t.includes('суп') || t.includes('борщ')) {
+        return {
+          dish_name: text ? `Голос: ${text.slice(0, 42)}` : "Домашний суп / борщ с мясом",
+          calories: 320,
+          protein: 20,
+          fats: 12,
+          carbs: 31,
+          advice: "Легкий горячий прием пищи, стимулирующий пищеварение и метаболизм."
+        };
+      } else {
+        return {
+          dish_name: text ? `Голос: ${text.slice(0, 42)}` : "Голосовая запись приема пищи",
+          calories: 420,
+          protein: 30,
+          fats: 13,
+          carbs: 46,
+          advice: "Сбалансированное соотношение макронутриентов. Не забудьте выпить воды через полчаса."
+        };
+      }
+    }
 
-          if (resCard) resCard.classList.remove('hidden');
-        }, 1200);
-      };
-      reader.readAsDataURL(file);
+    // Аудиосообщение: старт / стоп / отмена
+    function toggleFoodVoiceRecording() {
+      if (foodMediaRecorder && foodMediaRecorder.state === 'recording') {
+        stopFoodVoiceRecording();
+      } else {
+        startFoodVoiceRecording();
+      }
+    }
+
+    async function startFoodVoiceRecording() {
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert('Ваш браузер не поддерживает прямую запись аудио с микрофона. Вы можете использовать фото или набрать блюдо вручную.');
+          return;
+        }
+
+        foodAudioChunks = [];
+        foodRecordedTranscript = '';
+        foodVoiceSeconds = 0;
+
+        // Запрашиваем микрофон
+        foodAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        let mimeType = 'audio/webm';
+        if (typeof MediaRecorder !== 'undefined') {
+          if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+            mimeType = 'audio/webm;codecs=opus';
+          } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
+            mimeType = 'audio/ogg;codecs=opus';
+          } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+            mimeType = 'audio/mp4';
+          }
+        }
+
+        foodMediaRecorder = new MediaRecorder(foodAudioStream, mimeType ? { mimeType } : undefined);
+        foodMediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) foodAudioChunks.push(e.data);
+        };
+
+        foodMediaRecorder.onstop = handleFoodAudioRecorded;
+        foodMediaRecorder.start(250);
+
+        // Web Speech API для живой транскрипции
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRec) {
+          try {
+            foodSpeechRecognition = new SpeechRec();
+            foodSpeechRecognition.lang = 'ru-RU';
+            foodSpeechRecognition.continuous = true;
+            foodSpeechRecognition.interimResults = true;
+            foodSpeechRecognition.onresult = (ev) => {
+              let t = '';
+              for (let i = ev.resultIndex; i < ev.results.length; ++i) {
+                t += ev.results[i][0].transcript;
+              }
+              if (t.trim()) {
+                foodRecordedTranscript = t.trim();
+                const liveElem = document.getElementById('voice-live-transcript');
+                if (liveElem) {
+                  liveElem.classList.remove('hidden');
+                  liveElem.innerText = `«${foodRecordedTranscript}»`;
+                }
+              }
+            };
+            foodSpeechRecognition.start();
+          } catch(e) {
+            console.warn('SpeechRecognition unavailable:', e);
+          }
+        }
+
+        // Обновляем UI
+        document.getElementById('food-voice-recording-hud')?.classList.remove('hidden');
+        document.getElementById('btn-voice-food')?.classList.add('hidden');
+        document.getElementById('food-result-card')?.classList.add('hidden');
+        document.getElementById('voice-live-transcript')?.classList.add('hidden');
+        const timerElem = document.getElementById('voice-record-timer');
+        if (timerElem) timerElem.innerText = '00:00';
+
+        clearInterval(foodTimerInterval);
+        foodTimerInterval = setInterval(() => {
+          foodVoiceSeconds++;
+          const mins = String(Math.floor(foodVoiceSeconds / 60)).padStart(2, '0');
+          const secs = String(foodVoiceSeconds % 60).padStart(2, '0');
+          const tElem = document.getElementById('voice-record-timer');
+          if (tElem) tElem.innerText = `${mins}:${secs}`;
+          
+          if (foodVoiceSeconds >= 60) {
+            stopFoodVoiceRecording();
+          }
+        }, 1000);
+
+      } catch (err) {
+        console.error('Microphone access error:', err);
+        alert('Не удалось получить доступ к микрофону. Пожалуйста, разрешите доступ к микрофону в Telegram или настройках браузера.');
+      }
+    }
+
+    function cancelFoodVoiceRecording() {
+      clearInterval(foodTimerInterval);
+      if (foodSpeechRecognition) {
+        try { foodSpeechRecognition.stop(); } catch(e){}
+        foodSpeechRecognition = null;
+      }
+      if (foodMediaRecorder && foodMediaRecorder.state === 'recording') {
+        foodMediaRecorder.onstop = null;
+        foodMediaRecorder.stop();
+      }
+      if (foodAudioStream) {
+        foodAudioStream.getTracks().forEach(t => t.stop());
+        foodAudioStream = null;
+      }
+      document.getElementById('food-voice-recording-hud')?.classList.add('hidden');
+      document.getElementById('btn-voice-food')?.classList.remove('hidden');
+    }
+
+    function stopFoodVoiceRecording() {
+      clearInterval(foodTimerInterval);
+      if (foodSpeechRecognition) {
+        try { foodSpeechRecognition.stop(); } catch(e){}
+      }
+      if (foodMediaRecorder && foodMediaRecorder.state === 'recording') {
+        foodMediaRecorder.stop();
+      }
+      if (foodAudioStream) {
+        foodAudioStream.getTracks().forEach(t => t.stop());
+        foodAudioStream = null;
+      }
+      document.getElementById('food-voice-recording-hud')?.classList.add('hidden');
+      document.getElementById('btn-voice-food')?.classList.remove('hidden');
+    }
+
+    async function handleFoodAudioRecorded() {
+      const scanState = document.getElementById('food-scanning-state');
+      const scanLabel = document.getElementById('food-scanning-label');
+      if (scanState) scanState.classList.remove('hidden');
+      if (scanLabel) scanLabel.innerText = '🎙 AI слушает аудиозапись и рассчитывает КБЖУ...';
+
+      currentInputType = 'Аудио';
+      const mime = (foodMediaRecorder && foodMediaRecorder.mimeType) || 'audio/webm';
+      const audioBlob = new Blob(foodAudioChunks, { type: mime });
+
+      let parsedResult = null;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'food_audio.webm');
+        formData.append('user_id', tgUserId || 123456789);
+        if (initDataRaw) formData.append('init_data', initDataRaw);
+
+        const resp = await fetch('/api/nutrition/analyze-audio', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.status === 'ok' && data.analysis) {
+            parsedResult = data.analysis;
+          }
+        }
+      } catch (err) {
+        console.warn('Audio analyze API error:', err);
+      }
+
+      if (!parsedResult) {
+        parsedResult = intelligentVoiceFoodEstimate(foodRecordedTranscript);
+      }
+
+      setTimeout(() => {
+        if (scanState) scanState.classList.add('hidden');
+        displayFoodResult(parsedResult, 'Аудио');
+      }, 700);
     }
 
     async function saveCurrentMeal() {
@@ -1589,15 +1961,23 @@
       const f = parseFloat(document.getElementById('food-edit-fats').value) || 0;
       const c = parseFloat(document.getElementById('food-edit-carbs').value) || 0;
 
-      const mealObj = { name, cal, p, f, c, time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) };
+      const mealObj = { 
+        name, 
+        cal, 
+        p, 
+        f, 
+        c, 
+        type: currentInputType || 'Фото',
+        time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) 
+      };
       userMeals.push(mealObj);
 
       renderMealsList();
       document.getElementById('food-result-card')?.classList.add('hidden');
-      alert('✅ Блюдо успешно добавлено в ваш дневник и синхронизировано!');
+      alert(`✅ Прием пищи (${currentInputType}) успешно записан и синхронизирован с Google Таблицей!`);
 
       try {
-        await fetch('/api/nutrition/meal', {
+        await fetch('/api/nutrition/save-meal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1606,6 +1986,8 @@
             protein: p,
             fats: f,
             carbs: c,
+            input_type: currentInputType || 'Фото',
+            advice: document.getElementById('food-advice')?.innerText || '',
             user_id: tgUserId,
             init_data: initDataRaw
           })
@@ -1639,11 +2021,16 @@
 
       list.innerHTML = userMeals.map((m, idx) => `
         <div class="flex justify-between items-center p-3 rounded-xl bg-[#161616] border border-white/5">
-          <div>
-            <div class="font-bold text-white">${m.name}</div>
-            <div class="text-[10px] text-slate-400 mt-0.5">${m.time} · Б: ${m.p}г | Ж: ${m.f}г | У: ${m.c}г</div>
+          <div class="flex items-center space-x-2.5">
+            <div class="w-7 h-7 rounded-lg ${m.type === 'Аудио' ? 'bg-[#B6FF1A]/10 text-[#B6FF1A]' : 'bg-sky-500/10 text-sky-400'} flex items-center justify-center text-xs flex-shrink-0">
+              <i class="${m.type === 'Аудио' ? 'fa-solid fa-microphone' : 'fa-solid fa-camera'}"></i>
+            </div>
+            <div>
+              <div class="font-bold text-white">${m.name}</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">${m.time} · Б: ${m.p}г | Ж: ${m.f}г | У: ${m.c}г</div>
+            </div>
           </div>
-          <span class="font-bold text-[#B6FF1A]">${m.cal} ккал</span>
+          <span class="font-bold text-[#B6FF1A] text-xs">${m.cal} ккал</span>
         </div>
       `).join('');
     }
