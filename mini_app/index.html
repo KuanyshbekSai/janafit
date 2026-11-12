@@ -909,6 +909,115 @@
           </div>
         </div>
 
+        <!-- 1.1 ВЫБОР ПОЛА И ФОКУСА (Майнд-карта: Геймификация 1.1) -->
+        <div class="rounded-2xl p-4 bg-[#1e1e1e] border border-white/5 space-y-3">
+          <div class="text-xs font-bold text-white flex items-center justify-between">
+            <span class="flex items-center space-x-1.5">
+              <i class="fa-solid fa-sliders text-[#B6FF1A]"></i>
+              <span>Пол и фокус программы</span>
+            </span>
+            <span id="gender-focus-badge" class="text-[10px] font-bold text-[#B6FF1A] bg-[#B6FF1A]/10 px-2 py-0.5 rounded">
+              Женский • Похудение
+            </span>
+          </div>
+
+          <!-- Пол: Мужчина / Женщина -->
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <button id="btn-gender-female" onclick="setProfileGender('female')" class="py-2.5 px-3 rounded-xl bg-[#262626] border border-[#B6FF1A] text-white font-bold flex items-center justify-center space-x-1.5 transition-all">
+              <span>👩 Женщина</span>
+            </button>
+            <button id="btn-gender-male" onclick="setProfileGender('male')" class="py-2.5 px-3 rounded-xl bg-[#161616] border border-white/10 text-slate-400 font-semibold flex items-center justify-center space-x-1.5 transition-all">
+              <span>👨 Мужчина</span>
+            </button>
+          </div>
+
+          <!-- Фокус: Похудение / Поддержание формы -->
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <button id="btn-focus-loss" onclick="setProfileFocus('weight_loss')" class="py-2.5 px-3 rounded-xl bg-[#262626] border border-[#B6FF1A] text-white font-bold flex items-center justify-center space-x-1.5 transition-all">
+              <span>🔥 Похудение</span>
+            </button>
+            <button id="btn-focus-shape" onclick="setProfileFocus('tone_shape')" class="py-2.5 px-3 rounded-xl bg-[#161616] border border-white/10 text-slate-400 font-semibold flex items-center justify-center space-x-1.5 transition-all">
+              <span>⚡️ Тонус и форма</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 1.3 ДОСТИЖЕНИЯ И БЕЙДЖИ (Майнд-карта: Геймификация 1.3) -->
+        <div class="rounded-2xl p-4 bg-[#1e1e1e] border border-white/5 space-y-3">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-white flex items-center space-x-1.5">
+              <i class="fa-solid fa-medal text-amber-400"></i>
+              <span>Достижения и бейджи</span>
+            </span>
+            <span id="badges-unlocked-count" class="text-xs font-bold text-amber-400">3 / 6 открыто</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-center text-xs">
+            <!-- Стрик 3 дня -->
+            <div id="badge-streak-3" class="p-3 rounded-xl bg-[#161616] border border-[#B6FF1A]/40 flex flex-col items-center justify-center space-y-1 transition-all">
+              <span class="text-xl">🔥</span>
+              <div class="font-bold text-[11px] text-white">Стрик 3 дня</div>
+              <div class="text-[9px] text-emerald-400 font-semibold sub">Открыто</div>
+            </div>
+
+            <!-- Стрик 7 дней -->
+            <div id="badge-streak-7" class="p-3 rounded-xl bg-[#161616] border border-white/10 opacity-60 flex flex-col items-center justify-center space-y-1 transition-all">
+              <span class="text-xl">⚡️</span>
+              <div class="font-bold text-[11px] text-white">Стрик 7 дней</div>
+              <div class="text-[9px] text-slate-500 font-medium sub">В процессе</div>
+            </div>
+
+            <!-- 14 дней -->
+            <div id="badge-streak-14" class="p-3 rounded-xl bg-[#161616] border border-white/10 opacity-60 flex flex-col items-center justify-center space-y-1 transition-all">
+              <span class="text-xl">🏆</span>
+              <div class="font-bold text-[11px] text-white">14 дней</div>
+              <div class="text-[9px] text-slate-500 font-medium sub">Финиш</div>
+            </div>
+
+            <!-- Водный профи -->
+            <div id="badge-water" class="p-3 rounded-xl bg-[#161616] border border-white/10 flex flex-col items-center justify-center space-y-1 transition-all">
+              <span class="text-xl">💧</span>
+              <div class="font-bold text-[11px] text-white">Водный профи</div>
+              <div class="text-[9px] text-sky-400 font-semibold sub">2.5 л / день</div>
+            </div>
+
+            <!-- Без сахара -->
+            <div id="badge-sugar" onclick="toggleSugarBadge()" class="p-3 rounded-xl bg-[#161616] border border-white/10 cursor-pointer flex flex-col items-center justify-center space-y-1 transition-all">
+              <span class="text-xl">🥑</span>
+              <div class="font-bold text-[11px] text-white">Без сахара</div>
+              <div class="text-[9px] text-slate-500 font-medium sub">Нажми, если выдержал</div>
+            </div>
+
+            <!-- Первый замер -->
+            <div id="badge-measure" class="p-3 rounded-xl bg-[#161616] border border-[#B6FF1A]/40 flex flex-col items-center justify-center space-y-1 transition-all">
+              <span class="text-xl">🎯</span>
+              <div class="font-bold text-[11px] text-white">Первый замер</div>
+              <div class="text-[9px] text-emerald-400 font-semibold sub">В дневнике</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.2 УМНЫЕ НАПОМИНАНИЯ (Майнд-карта: Геймификация 1.2) -->
+        <div class="rounded-2xl p-4 bg-[#1e1e1e] border border-white/5 space-y-3">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-white flex items-center space-x-1.5">
+              <i class="fa-solid fa-bell text-[#B6FF1A]"></i>
+              <span>Умные напоминания</span>
+            </span>
+            <span id="reminder-time-badge" class="text-[10px] font-bold text-[#B6FF1A] bg-[#B6FF1A]/10 px-2 py-0.5 rounded">
+              19:00 Вечер
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400">Бот @janafit_coach_bot пришлет пуш-уведомление в удобное время:</p>
+
+          <div class="grid grid-cols-4 gap-1.5 text-xs">
+            <button onclick="setReminderTime('08:00')" id="rem-08" class="py-2 rounded-xl bg-[#161616] border border-white/10 text-slate-300 font-bold hover:border-[#B6FF1A]">08:00</button>
+            <button onclick="setReminderTime('13:00')" id="rem-13" class="py-2 rounded-xl bg-[#161616] border border-white/10 text-slate-300 font-bold hover:border-[#B6FF1A]">13:00</button>
+            <button onclick="setReminderTime('19:00')" id="rem-19" class="py-2 rounded-xl bg-[#262626] border border-[#B6FF1A] text-[#B6FF1A] font-bold">19:00</button>
+            <button onclick="setReminderTime('21:00')" id="rem-21" class="py-2 rounded-xl bg-[#161616] border border-white/10 text-slate-300 font-bold hover:border-[#B6FF1A]">21:00</button>
+          </div>
+        </div>
+
         <!-- 3.4.2 ЦЕЛЕВОЙ ВЕС -->
         <div class="rounded-2xl p-4 bg-[#1e1e1e] border border-white/5 space-y-3">
           <div class="flex justify-between items-center text-xs">
@@ -1697,6 +1806,195 @@
       }).join('');
     }
 
+    // ========================================================
+    // ГЕЙМИФИКАЦИЯ И НАСТРОЙКИ ПРОФИЛЯ (Майнд-карта 1)
+    // ========================================================
+    let userGender = localStorage.getItem('janafit_gender') || 'female';
+    let userFocus = localStorage.getItem('janafit_focus') || 'weight_loss';
+    let userReminderTime = localStorage.getItem('janafit_reminder') || '19:00';
+    let isSugarFreeToday = localStorage.getItem('janafit_sugar_free') === 'true';
+
+    function setProfileGender(gender) {
+      userGender = gender;
+      localStorage.setItem('janafit_gender', gender);
+      updateProfileBadgesAndSettings();
+    }
+
+    function setProfileFocus(focus) {
+      userFocus = focus;
+      localStorage.setItem('janafit_focus', focus);
+      // Адаптация калоража
+      const targetCal = focus === 'weight_loss' ? 1600 : 2000;
+      const targetText = document.getElementById('daily-calories-total');
+      if (targetText) {
+        const curCal = userMeals.reduce((acc, m) => acc + m.cal, 0);
+        targetText.innerText = `${curCal} / ${targetCal} ккал`;
+      }
+      updateProfileBadgesAndSettings();
+    }
+
+    function setReminderTime(time) {
+      userReminderTime = time;
+      localStorage.setItem('janafit_reminder', time);
+      ['08', '13', '19', '21'].forEach(t => {
+        const btn = document.getElementById(`rem-${t}`);
+        if (!btn) return;
+        const val = `${t}:00`;
+        if (val === time) {
+          btn.className = "py-2 rounded-xl bg-[#262626] border border-[#B6FF1A] text-[#B6FF1A] font-bold";
+        } else {
+          btn.className = "py-2 rounded-xl bg-[#161616] border border-white/10 text-slate-300 font-bold hover:border-[#B6FF1A]";
+        }
+      });
+      const badge = document.getElementById('reminder-time-badge');
+      if (badge) badge.innerText = `${time} Напоминание`;
+      alert(`⏰ Напоминание установлено на ${time}! Бот пришлет мотивационное уведомление от Айтыма.`);
+    }
+
+    function toggleSugarBadge() {
+      isSugarFreeToday = !isSugarFreeToday;
+      localStorage.setItem('janafit_sugar_free', isSugarFreeToday);
+      updateGamificationBadges();
+      if (isSugarFreeToday) {
+        alert('🎉 Отлично! Бейдж «Без сахара» разблокирован за сегодня!');
+      }
+    }
+
+    function updateProfileBadgesAndSettings() {
+      // Кнопки пола
+      const btnFemale = document.getElementById('btn-gender-female');
+      const btnMale = document.getElementById('btn-gender-male');
+      if (btnFemale && btnMale) {
+        if (userGender === 'female') {
+          btnFemale.className = "py-2.5 px-3 rounded-xl bg-[#262626] border border-[#B6FF1A] text-white font-bold flex items-center justify-center space-x-1.5 transition-all";
+          btnMale.className = "py-2.5 px-3 rounded-xl bg-[#161616] border border-white/10 text-slate-400 font-semibold flex items-center justify-center space-x-1.5 transition-all";
+        } else {
+          btnMale.className = "py-2.5 px-3 rounded-xl bg-[#262626] border border-[#B6FF1A] text-white font-bold flex items-center justify-center space-x-1.5 transition-all";
+          btnFemale.className = "py-2.5 px-3 rounded-xl bg-[#161616] border border-white/10 text-slate-400 font-semibold flex items-center justify-center space-x-1.5 transition-all";
+        }
+      }
+
+      // Кнопки фокуса
+      const btnLoss = document.getElementById('btn-focus-loss');
+      const btnShape = document.getElementById('btn-focus-shape');
+      if (btnLoss && btnShape) {
+        if (userFocus === 'weight_loss') {
+          btnLoss.className = "py-2.5 px-3 rounded-xl bg-[#262626] border border-[#B6FF1A] text-white font-bold flex items-center justify-center space-x-1.5 transition-all";
+          btnShape.className = "py-2.5 px-3 rounded-xl bg-[#161616] border border-white/10 text-slate-400 font-semibold flex items-center justify-center space-x-1.5 transition-all";
+        } else {
+          btnShape.className = "py-2.5 px-3 rounded-xl bg-[#262626] border border-[#B6FF1A] text-white font-bold flex items-center justify-center space-x-1.5 transition-all";
+          btnLoss.className = "py-2.5 px-3 rounded-xl bg-[#161616] border border-white/10 text-slate-400 font-semibold flex items-center justify-center space-x-1.5 transition-all";
+        }
+      }
+
+      const focusBadge = document.getElementById('gender-focus-badge');
+      if (focusBadge) {
+        const gText = userGender === 'male' ? 'Мужской' : 'Женский';
+        const fText = userFocus === 'weight_loss' ? 'Похудение' : 'Тонус и форма';
+        focusBadge.innerText = `${gText} • ${fText}`;
+      }
+
+      // Кнопки напоминания
+      ['08', '13', '19', '21'].forEach(t => {
+        const btn = document.getElementById(`rem-${t}`);
+        if (!btn) return;
+        const val = `${t}:00`;
+        if (val === userReminderTime) {
+          btn.className = "py-2 rounded-xl bg-[#262626] border border-[#B6FF1A] text-[#B6FF1A] font-bold";
+        } else {
+          btn.className = "py-2 rounded-xl bg-[#161616] border border-white/10 text-slate-300 font-bold hover:border-[#B6FF1A]";
+        }
+      });
+      const remBadge = document.getElementById('reminder-time-badge');
+      if (remBadge) remBadge.innerText = `${userReminderTime} Напоминание`;
+
+      updateGamificationBadges();
+    }
+
+    function updateGamificationBadges() {
+      let unlockedCount = 0;
+
+      // 1. Стрик 3 дня
+      const badge3 = document.getElementById('badge-streak-3');
+      if (badge3) {
+        const ok = completedDays.length >= 3;
+        if (ok) unlockedCount++;
+        badge3.className = ok ? "p-3 rounded-xl bg-[#161616] border border-[#B6FF1A]/60 flex flex-col items-center justify-center space-y-1 transition-all" : "p-3 rounded-xl bg-[#161616] border border-white/10 opacity-50 flex flex-col items-center justify-center space-y-1 transition-all";
+        const sub = badge3.querySelector('.sub');
+        if (sub) {
+          sub.innerText = ok ? 'Открыто' : `${completedDays.length}/3 дней`;
+          sub.className = ok ? 'text-[9px] text-emerald-400 font-semibold sub' : 'text-[9px] text-slate-500 font-medium sub';
+        }
+      }
+
+      // 2. Стрик 7 дней
+      const badge7 = document.getElementById('badge-streak-7');
+      if (badge7) {
+        const ok = completedDays.length >= 7;
+        if (ok) unlockedCount++;
+        badge7.className = ok ? "p-3 rounded-xl bg-[#161616] border border-[#B6FF1A]/60 flex flex-col items-center justify-center space-y-1 transition-all" : "p-3 rounded-xl bg-[#161616] border border-white/10 opacity-50 flex flex-col items-center justify-center space-y-1 transition-all";
+        const sub = badge7.querySelector('.sub');
+        if (sub) {
+          sub.innerText = ok ? 'Открыто' : `${completedDays.length}/7 дней`;
+          sub.className = ok ? 'text-[9px] text-emerald-400 font-semibold sub' : 'text-[9px] text-slate-500 font-medium sub';
+        }
+      }
+
+      // 3. 14 дней
+      const badge14 = document.getElementById('badge-streak-14');
+      if (badge14) {
+        const ok = completedDays.length >= 14;
+        if (ok) unlockedCount++;
+        badge14.className = ok ? "p-3 rounded-xl bg-[#161616] border border-[#B6FF1A]/60 flex flex-col items-center justify-center space-y-1 transition-all" : "p-3 rounded-xl bg-[#161616] border border-white/10 opacity-50 flex flex-col items-center justify-center space-y-1 transition-all";
+        const sub = badge14.querySelector('.sub');
+        if (sub) {
+          sub.innerText = ok ? 'Победа!' : `${completedDays.length}/14 дней`;
+          sub.className = ok ? 'text-[9px] text-emerald-400 font-semibold sub' : 'text-[9px] text-slate-500 font-medium sub';
+        }
+      }
+
+      // 4. Водный профи
+      const badgeWater = document.getElementById('badge-water');
+      if (badgeWater) {
+        const ok = waterMl >= 2500;
+        if (ok) unlockedCount++;
+        badgeWater.className = ok ? "p-3 rounded-xl bg-[#161616] border border-sky-400/60 shadow-sm shadow-sky-400/20 flex flex-col items-center justify-center space-y-1 transition-all" : "p-3 rounded-xl bg-[#161616] border border-white/10 opacity-60 flex flex-col items-center justify-center space-y-1 transition-all";
+        const sub = badgeWater.querySelector('.sub');
+        if (sub) {
+          sub.innerText = ok ? '2.5 л закрыто!' : `${waterMl}/2500 мл`;
+          sub.className = ok ? 'text-[9px] text-sky-400 font-bold sub' : 'text-[9px] text-slate-500 font-medium sub';
+        }
+      }
+
+      // 5. Без сахара
+      const badgeSugar = document.getElementById('badge-sugar');
+      if (badgeSugar) {
+        if (isSugarFreeToday) unlockedCount++;
+        badgeSugar.className = isSugarFreeToday ? "p-3 rounded-xl bg-[#161616] border border-amber-400/60 shadow-sm shadow-amber-400/20 cursor-pointer flex flex-col items-center justify-center space-y-1 transition-all" : "p-3 rounded-xl bg-[#161616] border border-white/10 opacity-60 cursor-pointer flex flex-col items-center justify-center space-y-1 transition-all";
+        const sub = badgeSugar.querySelector('.sub');
+        if (sub) {
+          sub.innerText = isSugarFreeToday ? 'Выдержал(а)!' : 'Нажми, если без сахара';
+          sub.className = isSugarFreeToday ? 'text-[9px] text-amber-400 font-bold sub' : 'text-[9px] text-slate-500 font-medium sub';
+        }
+      }
+
+      // 6. Первый замер
+      const badgeM = document.getElementById('badge-measure');
+      if (badgeM) {
+        const ok = measurementsHistory.length >= 1;
+        if (ok) unlockedCount++;
+        badgeM.className = ok ? "p-3 rounded-xl bg-[#161616] border border-[#B6FF1A]/60 flex flex-col items-center justify-center space-y-1 transition-all" : "p-3 rounded-xl bg-[#161616] border border-white/10 opacity-50 flex flex-col items-center justify-center space-y-1 transition-all";
+        const sub = badgeM.querySelector('.sub');
+        if (sub) {
+          sub.innerText = ok ? 'В дневнике' : 'Внеси замер';
+          sub.className = ok ? 'text-[9px] text-emerald-400 font-semibold sub' : 'text-[9px] text-slate-500 font-medium sub';
+        }
+      }
+
+      const counter = document.getElementById('badges-unlocked-count');
+      if (counter) counter.innerText = `${unlockedCount} / 6 открыто`;
+    }
+
     // Синхронизация данных с сервером
     async function syncUserData() {
       try {
@@ -1712,6 +2010,7 @@
             completedDays = d.completed_days;
             updateDashboardProgress();
             updateNetflixCard();
+            updateGamificationBadges();
           }
           if (d.measurements && Array.isArray(d.measurements) && d.measurements.length) {
             measurementsHistory = d.measurements.map(m => ({
@@ -1721,6 +2020,7 @@
               hips: m.hips || 98
             }));
             renderMeasurementsHistory();
+            updateGamificationBadges();
           }
         }
       } catch (e) {}
@@ -1735,6 +2035,7 @@
       updateDashboardProgress();
       updateNetflixCard();
       renderMeasurementsHistory();
+      updateProfileBadgesAndSettings();
       syncUserData();
     });
   </script>
