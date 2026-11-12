@@ -622,13 +622,20 @@
           </button>
         </div>
 
-        <div class="aspect-[4/3] w-full bg-black flex items-center justify-center relative">
-          <video id="active-video-player" playsinline controls poster="/assets/workout_poster.jpg" class="w-full h-full object-cover">
-            <source src="/assets/tabata_video.mp4" type="video/mp4">
-            <source src="/assets/workout_video.mp4" type="video/mp4">
-          </video>
-          <div id="player-watermark" class="absolute bottom-3 right-4 text-[10px] font-mono text-white/30 pointer-events-none z-10">
-            ID: 123456789
+        <div class="aspect-video w-full bg-black flex items-center justify-center relative overflow-hidden select-none">
+          <!-- Защищенный плеер YouTube (Unlisted) -->
+          <iframe 
+            id="youtube-player"
+            class="w-full h-full border-0 absolute inset-0 z-0"
+            src="https://www.youtube-nocookie.com/embed/VbNDQWhMnxo?enablejsapi=1&rel=0&modestbranding=1&playsinline=1&controls=1&iv_load_policy=3"
+            title="JANAFIT Тренировка"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+          </iframe>
+
+          <!-- Динамический водяной знак защиты (Anti-Leak / Telegram ID Watermark) -->
+          <div id="player-watermark" class="absolute pointer-events-none z-10 font-mono text-[11px] font-bold text-white/50 bg-black/50 px-2.5 py-1 rounded-md border border-white/10 backdrop-blur-xs transition-all duration-700 bottom-3 right-3 shadow-md">
+            ID: 123456789 • JANAFIT
           </div>
         </div>
       </div>
@@ -1335,6 +1342,7 @@
     // 14 Days Curriculum
     const curriculum = [
       { day: 1, week: 1, title: "1 ТРЕНИРОВКА: Пробуждение и лимфодренаж Full Body", duration: "25 мин",
+        youtubeId: "VbNDQWhMnxo",
         exercises: [
           { name: "Суставная разминка и дыхание", note: "Мягкие вращения руками и шеей", work: 45, rest: 15 },
           { name: "Приседания с подъемом рук", note: "Держи спину прямой, колени наружу", work: 45, rest: 15 },
@@ -1344,6 +1352,7 @@
         ]
       },
       { day: 2, week: 1, title: "2 ТРЕНИРОВКА: Пресс и лимфодренаж", duration: "25 мин",
+        youtubeId: "VbNDQWhMnxo",
         exercises: [
           { name: "Разминка грудного отдела", note: "Глубокое дыхание животом", work: 40, rest: 20 },
           { name: "Скручивания на пресс", note: "Подбородок к потолку", work: 40, rest: 20 },
@@ -1428,27 +1437,40 @@
       currentWorkoutDay = day;
       showScreen('screen-workout');
       
+      const dayData = curriculum[currentWorkoutDay - 1] || curriculum[0];
+      const ytId = dayData.youtubeId || "VbNDQWhMnxo";
+      const iframe = document.getElementById('youtube-player');
+      if (iframe) {
+        iframe.src = `https://www.youtube-nocookie.com/embed/${ytId}?enablejsapi=1&rel=0&modestbranding=1&playsinline=1&controls=1&iv_load_policy=3`;
+      }
+
       const watermark = document.getElementById('player-watermark');
-      if (watermark) watermark.innerText = `Telegram ID: ${tgUserId}`;
+      if (watermark) watermark.innerText = `ID: ${tgUserId} • JANAFIT`;
 
       currentExerciseIdx = 0;
       updateExerciseUI();
     }
 
+    function sendYouTubeCommand(cmd) {
+      const iframe = document.getElementById('youtube-player');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: cmd, args: '' }), '*');
+      }
+    }
+
     // Таймер Табаты
     function toggleTabataTimer() {
       const playIcon = document.getElementById('tabata-play-icon');
-      const video = document.getElementById('active-video-player');
 
       if (isTabataRunning) {
         clearInterval(tabataInterval);
         isTabataRunning = false;
         if (playIcon) playIcon.className = 'fa-solid fa-play text-xl';
-        if (video) video.pause();
+        sendYouTubeCommand('pauseVideo');
       } else {
         isTabataRunning = true;
         if (playIcon) playIcon.className = 'fa-solid fa-pause text-xl';
-        if (video) video.play().catch(() => {});
+        sendYouTubeCommand('playVideo');
         
         tabataInterval = setInterval(() => {
           tabataSecondsLeft--;
@@ -2417,6 +2439,27 @@
       } catch (e) {}
     }
 
+    // Плавное перемещение водяного знака для защиты от копирования/записи экрана
+    function initWatermarkDrift() {
+      const wm = document.getElementById('player-watermark');
+      if (!wm) return;
+      const positions = [
+        { bottom: '12px', right: '14px', top: 'auto', left: 'auto' },
+        { top: '14px', left: '16px', right: 'auto', bottom: 'auto' },
+        { bottom: '12px', left: '16px', right: 'auto', top: 'auto' },
+        { top: '14px', right: '14px', left: 'auto', bottom: 'auto' }
+      ];
+      let pIdx = 0;
+      setInterval(() => {
+        pIdx = (pIdx + 1) % positions.length;
+        const p = positions[pIdx];
+        wm.style.top = p.top;
+        wm.style.left = p.left;
+        wm.style.right = p.right;
+        wm.style.bottom = p.bottom;
+      }, 7000);
+    }
+
     // Запуск при старте
     document.addEventListener('DOMContentLoaded', () => {
       if (tgUserName) {
@@ -2428,6 +2471,7 @@
       renderMeasurementsHistory();
       updateProfileBadgesAndSettings();
       syncUserData();
+      initWatermarkDrift();
     });
   </script>
 </body>
