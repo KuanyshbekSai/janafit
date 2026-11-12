@@ -63,6 +63,16 @@ class Settings(BaseSettings):
     GAS_WEBAPP_URL: str = os.getenv("GAS_WEBAPP_URL", "https://script.google.com/macros/s/AKfycbxPwf1KbjcMRfjnsAz987-SnnUJjBNJFb7g43ID-OLi3xRqsWw2hZbjOWQVsWkO8A0F/exec")
     SPREADSHEET_ID: str = os.getenv("SPREADSHEET_ID", "1SZcSpC5n59SI5Ei7TMy2KPpAHo4Y_xuQQ4lhU941_BA")
 
+    # Безопасность
+    # Токен для входа в веб-админку /admin (длинная случайная строка). Пусто = админка закрыта.
+    ADMIN_TOKEN: str = os.getenv("ADMIN_TOKEN", "")
+    # Общий секрет с Google Apps Script (тот же, что в Script Properties → GAS_SECRET)
+    GAS_SECRET: str = os.getenv("GAS_SECRET", "")
+    # 1 = показывать трассировки ошибок в ответах (только для локальной разработки)
+    DEBUG: int = _int_env("DEBUG", 0)
+    # 1 = разрешить user_id без подписи Telegram (только для локального теста в браузере)
+    ALLOW_INSECURE_USER_ID: int = _int_env("ALLOW_INSECURE_USER_ID", 0)
+
     # Database (на Vercel файловая система read-only, доступна только /tmp)
     DB_PATH: str = _resolve_db_path()
 
@@ -73,6 +83,8 @@ class Settings(BaseSettings):
         "COURSE_ORIGINAL_PRICE",
         "ROBOKASSA_IS_TEST",
         "WEB_PORT",
+        "DEBUG",
+        "ALLOW_INSECURE_USER_ID",
         mode="before"
     )
     @classmethod

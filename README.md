@@ -29,6 +29,9 @@ cp .env.example .env
 * `KASPI_PHONE` — номер телефона для Kaspi перевода / Kaspi Pay.
 * `ROBOKASSA_LOGIN`, `ROBOKASSA_PASSWORD_1`, `ROBOKASSA_PASSWORD_2` — ключи эквайринга Robokassa.
 * `GEMINI_API_KEY` — ключ Google Gemini для работы круглосуточного AI-тренера.
+* `ADMIN_TOKEN` — токен входа в веб-админку `/admin` (без него админка закрыта). Админы из `ADMIN_IDS` также пускаются, если открывают её из Telegram.
+* `GAS_SECRET` — общий секрет с Google Apps Script (см. `gas/README.md`).
+* `ALLOW_INSECURE_USER_ID=1` — только для локального теста Mini App в обычном браузере: разрешает user_id без подписи Telegram. На проде не включать.
 
 ### 3. Запуск системы
 ```bash

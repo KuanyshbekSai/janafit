@@ -1,5 +1,7 @@
 import os
-from fastapi import FastAPI, Request, Form, HTTPException, Header, UploadFile, File
+import hmac
+import logging
+from fastapi import FastAPI, Request, Form, HTTPException, Header, UploadFile, File, Depends
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -33,6 +35,8 @@ from services.robokassa import verify_robokassa_webhook, generate_robokassa_link
 from services.security import validate_telegram_init_data
 from services.ai_service import ask_ai_coach, analyze_food_photo, analyze_food_audio
 from services.gas_sync import fire_and_forget, sync_user_to_gas, log_payment_to_gas, log_meal_to_gas, log_workout_to_gas, fetch_meals_from_gas, delete_meal_in_gas
+
+logger = logging.getLogger("JanafitWeb")
 
 app = FastAPI(title="Janafit Web & Webhook Server", redirect_slashes=False)
 
@@ -83,7 +87,16 @@ for adir in assets_candidates:
 async def global_exception_handler(request: Request, exc: Exception):
     import traceback
     tb = traceback.format_exc()
-    print(f"Server exception on {request.url.path}: {tb}")
+    logger.error(f"Server exception on {request.url.path}: {tb}")
+    if request.url.path.startswith("/api/"):
+        return JSONResponse(status_code=500, content={"status": "error", "message": "Внутренняя ошибка сервера"})
+    if not settings.DEBUG:
+        return HTMLResponse(
+            "<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'></head>"
+            "<body style='font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#0f172a;color:#e2e8f0;'>"
+            "<h2>⚠️ Что-то пошло не так</h2><p>Попробуйте обновить страницу чуть позже.</p></body></html>",
+            status_code=500
+        )
     return HTMLResponse(
         f"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'></head>"
         f"<body style='font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#0f172a;color:#f87171;'>"
@@ -150,15 +163,39 @@ class DeleteMealRequest(BaseModel):
 
 def get_verified_user_id(init_data: Optional[str], fallback_user_id: Optional[int] = None) -> int:
     """
-    Верифицирует Telegram initData. Если данные валидны и BOT_TOKEN задан, гарантирует подлинность Telegram User ID.
-    Если BOT_TOKEN не задан в переменных окружения или данные локальные, безопасно использует fallback_user_id.
+    Возвращает Telegram User ID только из initData с валидной подписью бота.
+    user_id из запроса принимается лишь в режиме локальной разработки
+    (BOT_TOKEN не задан или ALLOW_INSECURE_USER_ID=1), иначе — 401.
     """
     if init_data and settings.BOT_TOKEN:
         verified = validate_telegram_init_data(init_data, settings.BOT_TOKEN)
-        if verified and "user" in verified:
-            return int(verified["user"].get("id", 0))
+        if verified and isinstance(verified.get("user"), dict) and verified["user"].get("id"):
+            return int(verified["user"]["id"])
 
-    return fallback_user_id or 123456789
+    if not settings.BOT_TOKEN or settings.ALLOW_INSECURE_USER_ID:
+        return fallback_user_id or 123456789
+
+    raise HTTPException(status_code=401, detail="Откройте приложение через Telegram")
+
+
+def require_admin(
+    x_admin_token: Optional[str] = Header(None),
+    x_telegram_init_data: Optional[str] = Header(None),
+) -> None:
+    """
+    Доступ к админ-API: либо заголовок X-Admin-Token == ADMIN_TOKEN,
+    либо подписанный initData Telegram от пользователя из ADMIN_IDS.
+    """
+    if settings.ADMIN_TOKEN and x_admin_token and hmac.compare_digest(
+        x_admin_token.encode("utf-8"), settings.ADMIN_TOKEN.encode("utf-8")
+    ):
+        return
+    if x_telegram_init_data and settings.BOT_TOKEN:
+        verified = validate_telegram_init_data(x_telegram_init_data, settings.BOT_TOKEN)
+        if verified and isinstance(verified.get("user"), dict):
+            if int(verified["user"].get("id", 0)) in settings.admin_id_list:
+                return
+    raise HTTPException(status_code=401, detail="Нужен токен администратора")
 
 @app.get("/health")
 @app.get("/api/health")
@@ -277,12 +314,12 @@ async def admin_panel_view(request: Request):
     """Панель Администратора Janafit (Дашборд, CRM, Рассылки)."""
     return templates.TemplateResponse(request=request, name="admin.html", context={})
 
-@app.get("/api/admin/stats")
+@app.get("/api/admin/stats", dependencies=[Depends(require_admin)])
 async def api_admin_stats():
     stats = await get_admin_dashboard_stats()
     return stats
 
-@app.get("/api/admin/users")
+@app.get("/api/admin/users", dependencies=[Depends(require_admin)])
 async def api_admin_users(filter: Optional[str] = "all", limit: int = 100):
     users = await get_admin_users(filter_type=filter, limit=limit)
     return users
@@ -291,7 +328,7 @@ class AdminToggleAccessRequest(BaseModel):
     user_id: int
     grant: bool
 
-@app.post("/api/admin/toggle-access")
+@app.post("/api/admin/toggle-access", dependencies=[Depends(require_admin)])
 async def api_admin_toggle_access(payload: AdminToggleAccessRequest):
     if payload.grant:
         await grant_user_access(payload.user_id)
@@ -303,7 +340,7 @@ class AdminBroadcastRequest(BaseModel):
     text: str
     target: str = "all"  # 'all', 'paid', 'free'
 
-@app.post("/api/admin/broadcast")
+@app.post("/api/admin/broadcast", dependencies=[Depends(require_admin)])
 async def api_admin_broadcast(payload: AdminBroadcastRequest):
     user_ids = await get_broadcast_user_ids(payload.target)
     sent_count = 0
@@ -317,7 +354,7 @@ async def api_admin_broadcast(payload: AdminBroadcastRequest):
                 pass
     except Exception as e:
         print(f"Broadcast error: {e}")
-    return {"status": "ok", "target": payload.target, "total": len(user_ids), "sent": sent_count}
+    return {"status": "ok", "target": payload.target, "total": len(user_ids), "sent": sent_count, "failed": len(user_ids) - sent_count}
 
 # API Endpoints для Mini App
 
@@ -377,6 +414,7 @@ async def toggle_progress(payload: ProgressToggleRequest):
     return {"status": "ok", "day": payload.day, "completed": payload.completed}
 
 @app.post("/api/measurements/add")
+@app.post("/api/measurement")
 async def add_measurement(payload: MeasurementRequest):
     verified_id = get_verified_user_id(payload.init_data, payload.user_id)
     await save_user_measurement(verified_id, payload.weight, payload.waist, payload.hips)
@@ -384,13 +422,14 @@ async def add_measurement(payload: MeasurementRequest):
     return {"status": "ok", "measurements": measurements}
 
 @app.post("/api/ai/ask")
+@app.post("/api/ai/chat")
 async def ai_chat_endpoint(payload: AIChatRequest):
     verified_id = get_verified_user_id(payload.init_data, payload.user_id)
     await add_ai_message(verified_id, "user", payload.question)
     history = await get_recent_ai_history(verified_id, limit=6)
     reply = await ask_ai_coach(payload.question, history)
     await add_ai_message(verified_id, "model", reply)
-    return {"status": "ok", "reply": reply}
+    return {"status": "ok", "reply": reply, "answer": reply}
 
 @app.post("/api/nutrition/analyze-photo")
 async def analyze_photo_endpoint(
@@ -402,6 +441,7 @@ async def analyze_photo_endpoint(
     Принимает фото тарелки с едой, распознает блюдо и вычисляет КБЖУ через Gemini Vision.
     Возвращает структуру для подтверждения/редактирования пользователем.
     """
+    get_verified_user_id(init_data, user_id)
     try:
         image_bytes = await file.read()
         mime_type = file.content_type or "image/jpeg"
@@ -424,6 +464,7 @@ async def analyze_audio_endpoint(
     Принимает аудиозапись с описанием еды, распознает речь и рассчитывает КБЖУ.
     Возвращает структуру для подтверждения/редактирования пользователем.
     """
+    get_verified_user_id(init_data, user_id)
     try:
         audio_bytes = await file.read()
         mime_type = file.content_type or "audio/ogg"

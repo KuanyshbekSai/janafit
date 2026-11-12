@@ -6,11 +6,20 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
+
+def _gas_params(**params: str) -> Dict[str, str]:
+    """Query-параметры для GET-запросов к GAS (с секретом, если он настроен)."""
+    if settings.GAS_SECRET:
+        params["secret"] = settings.GAS_SECRET
+    return params
+
 async def _post_gas(payload: Dict[str, Any]) -> bool:
     gas_url = getattr(settings, "GAS_WEBAPP_URL", "")
     if not gas_url:
         return False
 
+    if settings.GAS_SECRET:
+        payload = {**payload, "secret": settings.GAS_SECRET}
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(gas_url, json=payload, timeout=aiohttp.ClientTimeout(total=8)) as resp:
@@ -110,7 +119,7 @@ async def fetch_lessons_from_gas() -> Optional[List[Dict[str, Any]]]:
         return None
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"{gas_url}?action=getLessons", timeout=aiohttp.ClientTimeout(total=5)) as resp:
+            async with session.get(gas_url, params=_gas_params(action="getLessons"), timeout=aiohttp.ClientTimeout(total=5)) as resp:
                 if resp.status == 200:
                     data = await resp.json()
                     if data.get("status") == "ok":
@@ -127,7 +136,7 @@ async def fetch_meals_from_gas(user_id: int) -> Optional[List[Dict[str, Any]]]:
         return None
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"{gas_url}?action=getMeals&user_id={user_id}", timeout=aiohttp.ClientTimeout(total=8)) as resp:
+            async with session.get(gas_url, params=_gas_params(action="getMeals", user_id=str(user_id)), timeout=aiohttp.ClientTimeout(total=8)) as resp:
                 if resp.status == 200:
                     data = await resp.json()
                     if data.get("status") == "ok":

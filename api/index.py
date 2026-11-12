@@ -15,6 +15,9 @@ except Exception as e:
 
     app = FastAPI(title="Vercel Error Fallback")
     err_tb = traceback.format_exc()
+    print(err_tb)
+    if os.getenv("DEBUG", "0").strip() != "1":
+        err_tb = "Сервис временно недоступен. Подробности — в логах Vercel."
 
     @app.api_route("/", methods=["GET", "POST", "HEAD", "OPTIONS"])
     @app.api_route("/{full_path:path}", methods=["GET", "POST", "HEAD", "OPTIONS"])

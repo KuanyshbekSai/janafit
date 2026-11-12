@@ -369,6 +369,36 @@
 
   <script>
     let allUsersCache = [];
+
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    // Авторизация админки: токен (ADMIN_TOKEN на сервере) хранится только в этом браузере.
+    function getAdminToken() {
+      try { return localStorage.getItem('janafit_admin_token') || ''; } catch (e) { return ''; }
+    }
+    function setAdminToken(token) {
+      try {
+        if (token) localStorage.setItem('janafit_admin_token', token);
+        else localStorage.removeItem('janafit_admin_token');
+      } catch (e) {}
+    }
+    async function adminFetch(url, options = {}, retried = false) {
+      const headers = Object.assign({}, options.headers || {}, { 'X-Admin-Token': getAdminToken() });
+      const tgInit = window.Telegram?.WebApp?.initData;
+      if (tgInit) headers['X-Telegram-Init-Data'] = tgInit;
+      const resp = await fetch(url, Object.assign({}, options, { headers }));
+      if (resp.status === 401 && !retried) {
+        const token = prompt('Введите токен администратора (ADMIN_TOKEN):');
+        if (token) {
+          setAdminToken(token.trim());
+          return adminFetch(url, options, true);
+        }
+      }
+      if (resp.status === 401) setAdminToken('');
+      return resp;
+    }
     let currentFilter = 'all';
 
     async function loadAdminData() {
@@ -376,7 +406,7 @@
       if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
       try {
-        const statsResp = await fetch('/api/admin/stats');
+        const statsResp = await adminFetch('/api/admin/stats');
         if (statsResp.ok) {
           const s = await statsResp.json();
           document.getElementById('stat-total-users').innerText = s.total_users || 0;
@@ -405,7 +435,7 @@
         </tr>`;
 
       try {
-        const resp = await fetch(`/api/admin/users?filter=${currentFilter}&limit=100`);
+        const resp = await adminFetch(`/api/admin/users?filter=${currentFilter}&limit=100`);
         if (resp.ok) {
           allUsersCache = await resp.json();
           renderUsersTable(allUsersCache);
@@ -429,14 +459,16 @@
 
       tbody.innerHTML = users.map(u => {
         const isPaid = Boolean(u.has_access);
+        const uid = Number(u.user_id) || 0;
+        const uname = escapeHtml(u.username || '');
         const regDate = u.created_at ? new Date(u.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-        const tgLink = u.username ? `<a href="https://t.me/${u.username}" target="_blank" class="text-sky-600 hover:underline flex items-center space-x-1"><i class="fa-brands fa-telegram"></i><span>@${u.username}</span></a>` : '<span class="text-slate-400">—</span>';
+        const tgLink = u.username ? `<a href="https://t.me/${encodeURIComponent(u.username)}" target="_blank" class="text-sky-600 hover:underline flex items-center space-x-1"><i class="fa-brands fa-telegram"></i><span>@${uname}</span></a>` : '<span class="text-slate-400">—</span>';
 
         return `
           <tr class="hover:bg-slate-50/80 transition-colors">
-            <td class="py-3 px-5 font-mono text-slate-600 font-semibold">${u.user_id}</td>
+            <td class="py-3 px-5 font-mono text-slate-600 font-semibold">${uid}</td>
             <td class="py-3 px-5">${tgLink}</td>
-            <td class="py-3 px-5 font-medium text-slate-800">${u.first_name || '—'}</td>
+            <td class="py-3 px-5 font-medium text-slate-800">${escapeHtml(u.first_name || '—')}</td>
             <td class="py-3 px-5 text-slate-500">${regDate}</td>
             <td class="py-3 px-5">
               ${isPaid 
@@ -446,10 +478,10 @@
             </td>
             <td class="py-3 px-5 text-right">
               ${isPaid 
-                ? `<button onclick="toggleAccess(${u.user_id}, false)" class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] border border-rose-200 transition-all">
+                ? `<button onclick="toggleAccess(${uid}, false)" class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] border border-rose-200 transition-all">
                      Забрать доступ
                    </button>`
-                : `<button onclick="toggleAccess(${u.user_id}, true)" class="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] border border-emerald-200 transition-all">
+                : `<button onclick="toggleAccess(${uid}, true)" class="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] border border-emerald-200 transition-all">
                      Выдать доступ
                    </button>`
               }
@@ -495,7 +527,7 @@
       }
 
       try {
-        const resp = await fetch('/api/admin/toggle-access', {
+        const resp = await adminFetch('/api/admin/toggle-access', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: userId, grant: grant })
@@ -532,7 +564,7 @@
       resBox.className = 'hidden';
 
       try {
-        const resp = await fetch('/api/admin/broadcast', {
+        const resp = await adminFetch('/api/admin/broadcast', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: text, target: target })

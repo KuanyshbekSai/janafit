@@ -28,6 +28,17 @@ const SHEET_LESSONS = "Уроки";
 const SHEET_MEALS = "Дневник питания";
 const SPREADSHEET_ID = "1SZcSpC5n59SI5Ei7TMy2KPpAHo4Y_xuQQ4lhU941_BA";
 
+/**
+ * Проверка общего секрета с сервером (Script Properties → GAS_SECRET).
+ * Тот же секрет задаётся в переменной окружения GAS_SECRET на сервере.
+ * Пока свойство не задано, проверка пропускается (обратная совместимость).
+ */
+function isAuthorized(provided) {
+  const expected = PropertiesService.getScriptProperties().getProperty("GAS_SECRET");
+  if (!expected) return true;
+  return String(provided || "") === expected;
+}
+
 function getSS() {
   if (SPREADSHEET_ID && SPREADSHEET_ID.trim()) {
     try {
@@ -164,6 +175,10 @@ function doGet(e) {
       return jsonResponse({ status: "ok", app: "Janafit GAS CRM Engine", time: new Date() });
     }
 
+    if (!isAuthorized(params.secret)) {
+      return jsonResponse({ status: "error", message: "unauthorized" });
+    }
+
     // Получение списка всех уроков со ссылками на видео
     if (action === "getLessons") {
       const sheet = ss.getSheetByName(SHEET_LESSONS);
@@ -222,7 +237,7 @@ function doGet(e) {
       const rows = sheet.getDataRange().getValues();
       const meals = [];
       for (let i = 1; i < rows.length; i++) {
-        if (!userId || Number(rows[i][1]) === userId) {
+        if (userId && Number(rows[i][1]) === userId) {
           meals.push({
             created_at: rows[i][0],
             user_id: rows[i][1],
@@ -262,6 +277,10 @@ function doPost(e) {
       }
     } else if (e && e.parameter) {
       payload = e.parameter;
+    }
+
+    if (!isAuthorized(payload.secret)) {
+      return jsonResponse({ status: "error", message: "unauthorized" });
     }
 
     const action = payload.action;
