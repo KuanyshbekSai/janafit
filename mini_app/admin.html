@@ -3,25 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JANAFIT • Панель Администратора (CRM & Аналитика)</title>
+  <title>JANAFIT • Desktop Admin Panel (CRM, CMS & Аналитика)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sofia+Sans+Extra+Condensed:wght@700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
             sans: ['Inter', 'sans-serif'],
-            display: ['Oswald', 'sans-serif']
+            display: ['Sofia Sans Extra Condensed', 'sans-serif']
           },
           colors: {
-            brand: {
-              lime: '#B6FF1A',
-              emerald: '#10b981',
-              dark: '#0f172a'
+            jf: {
+              bg: '#0B0D0A',
+              surface: '#151813',
+              inner: '#1E221B',
+              lime: '#A8F218',
+              amber: '#FFB627'
             }
           }
         }
@@ -30,383 +32,457 @@
   </script>
   <style>
     body {
-      background-color: #f8fafc;
-      color: #0f172a;
+      background-color: #0B0D0A;
+      color: #F3F5EE;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
-    .custom-scroll::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+    .jf-border {
+      border: 1.5px solid rgba(168, 242, 24, 0.45);
     }
-    .custom-scroll::-webkit-scrollbar-track {
-      background: #f1f5f9;
+    .jf-border-strong {
+      border: 2px solid #A8F218;
     }
-    .custom-scroll::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
+    .adm-input {
+      width: 100%;
+      background-color: #1E221B;
+      border: 1.5px solid rgba(168, 242, 24, 0.4);
+      border-radius: 10px;
+      padding: 9px 12px;
+      color: #F3F5EE;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .adm-input:focus {
+      border-color: #A8F218;
+      box-shadow: 0 0 0 2px rgba(168, 242, 24, 0.18);
+    }
+    .nav-tab-btn.active {
+      background-color: #A8F218;
+      color: #0B0D0A;
+      font-weight: 800;
     }
   </style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+<body class="min-h-screen antialiased">
 
-  <!-- Desktop Top Navigation Bar -->
-  <header class="sticky top-0 z-30 bg-white border-b border-slate-200/80 shadow-sm backdrop-blur-md">
-    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3.5 flex items-center justify-between">
-      
-      <!-- Brand & Title -->
-      <div class="flex items-center space-x-4">
-        <div class="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center text-[#B6FF1A] shadow-md shadow-slate-900/10">
-          <svg viewBox="0 0 24 24" class="w-6 h-6 fill-current">
-            <path d="M12 2C6.48 2 2 6.48 2 12c0 3.7 2.01 6.94 5 8.65V18c-1.84-1.37-3-3.55-3-6 0-4.41 3.59-8 8-8s8 3.59 8 8c0 2.45-1.16 4.63-3 6v2.65c2.99-1.71 5-4.95 5-8.65 0-5.52-4.48-10-10-10zm-1 5v7.5l-3.5 2.5V8.5L11 7zm2 0l3.5 1.5V17L13 14.5V7zM8 3.5C8.83 2.56 10.34 2 12 2s3.17.56 4 1.5L12 6 8 3.5z"/>
-          </svg>
-        </div>
+  <!-- =========================================================================
+       1. ЭКРАН АВТОРИЗАЦИИ АДМИНИСТРАТОРА (ЛОГИН И ПАРОЛЬ)
+       ========================================================================= -->
+  <div id="admin-login-screen" class="fixed inset-0 z-50 bg-[#0B0D0A] flex items-center justify-center p-6">
+    <div class="w-full max-w-md bg-[#151813] jf-border-strong rounded-2xl p-8 shadow-2xl space-y-6">
+      <div class="flex items-center justify-between">
         <div>
-          <div class="flex items-center space-x-2">
-            <h1 class="text-lg font-black tracking-tight text-slate-900 font-display uppercase">JANAFIT CRM</h1>
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
-              Desktop Edition
-            </span>
-          </div>
-          <p class="text-xs text-slate-500 font-medium">Панель управления марафоном трансформации</p>
+          <div class="text-xs font-extrabold uppercase tracking-widest text-[#A8F218]">JANAFIT CONTROL CENTER</div>
+          <h1 class="text-4xl font-extrabold font-display uppercase tracking-wide text-[#F3F5EE] mt-1">ВХОД ДЛЯ АДМИНА</h1>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-[#171D11] jf-border flex items-center justify-center text-[#A8F218] text-xl">
+          <i class="fa-solid fa-lock"></i>
         </div>
       </div>
 
-      <!-- Quick Status Badges & Actions -->
+      <p class="text-xs text-[#C9D0BF] leading-relaxed">
+        Десктопная система управления марафоном: статистика, CRM база клиентов, редактирование фото, обложек, видео тренировок и уроков.
+      </p>
+
+      <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#A8F218] mb-1.5">Логин администратора</label>
+          <input id="login-username" type="text" required placeholder="Введите логин (например, admin)" class="adm-input" autocomplete="username" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#A8F218] mb-1.5">Пароль</label>
+          <input id="login-password" type="password" required placeholder="••••••••" class="adm-input" autocomplete="current-password" />
+        </div>
+        <div id="login-error-box" class="hidden p-3 rounded-xl bg-rose-950/70 border border-rose-500 text-rose-200 text-xs font-semibold">
+          Неверный логин или пароль администратора
+        </div>
+        <button type="submit" id="login-submit-btn" class="w-full py-3.5 rounded-xl bg-[#A8F218] hover:opacity-95 text-[#0B0D0A] font-extrabold text-sm transition-all flex items-center justify-center space-x-2 cursor-pointer">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>Войти в панель управления</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       2. ОСНОВНОЙ ДЕСКТОПНЫЙ ИНТЕРФЕЙС АДМИН-ПАНЕЛИ (ПОД КОМПЬЮТЕР)
+       ========================================================================= -->
+  <div id="admin-app-layout" class="hidden min-h-screen flex flex-col">
+
+    <!-- Top Header -->
+    <header class="sticky top-0 z-30 bg-[#11140F] border-b border-[#A8F218]/40 px-8 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <div class="w-10 h-10 rounded-xl bg-[#A8F218] text-[#0B0D0A] flex items-center justify-center font-extrabold text-lg">
+          JF
+        </div>
+        <div>
+          <div class="flex items-center space-x-2.5">
+            <span class="font-display text-2xl font-extrabold tracking-wide text-[#F3F5EE]">JANAFIT DESKTOP ADMIN</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#171D11] text-[#A8F218] border border-[#A8F218]">CRM + CMS v5</span>
+          </div>
+          <p class="text-xs text-[#A7AE9E]">Управление контентом, обложками, ссылками на видео, базой участников и аналитикой</p>
+        </div>
+      </div>
+
       <div class="flex items-center space-x-3">
-        <div class="hidden md:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Сервер: Онлайн</span>
-        </div>
-
-        <div class="hidden lg:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-semibold text-slate-700 border border-slate-200">
-          <i class="fa-solid fa-credit-card text-emerald-600"></i>
-          <span>Тариф: <b>7 990 ₸</b></span>
-        </div>
-
-        <a href="/app" target="_blank" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 border border-slate-300 transition-all flex items-center space-x-2 shadow-sm">
-          <i class="fa-solid fa-mobile-screen text-slate-500"></i>
+        <a href="/app" target="_blank" class="px-4 py-2 rounded-xl bg-[#1E221B] hover:bg-[#262B22] text-xs font-bold text-[#F3F5EE] jf-border flex items-center space-x-2">
+          <i class="fa-solid fa-mobile-screen text-[#A8F218]"></i>
           <span>Открыть Mini App</span>
-          <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400"></i>
         </a>
-
-        <button onclick="loadAdminData()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all flex items-center space-x-2 shadow-sm shadow-slate-900/10">
+        <button onclick="loadAdminAll()" class="px-4 py-2 rounded-xl bg-[#A8F218] hover:opacity-90 text-[#0B0D0A] text-xs font-extrabold flex items-center space-x-2 cursor-pointer">
           <i id="refresh-icon" class="fa-solid fa-rotate"></i>
-          <span>Обновить</span>
+          <span>Обновить данные</span>
+        </button>
+        <button onclick="logoutAdmin()" class="px-3.5 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-500/40 text-xs font-bold cursor-pointer">
+          <i class="fa-solid fa-power-off mr-1"></i>Выйти
         </button>
       </div>
+    </header>
 
-    </div>
-  </header>
+    <!-- Desktop Body with Left Sidebar + Main Workspace -->
+    <div class="flex-1 max-w-[1600px] w-full mx-auto px-8 py-6 grid grid-cols-12 gap-6">
 
-  <!-- Main Desktop Container -->
-  <main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-    <!-- 1. KPI Analytics Cards -->
-    <section>
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-xs uppercase font-extrabold tracking-wider text-slate-500 flex items-center space-x-2">
-          <i class="fa-solid fa-chart-simple text-emerald-600"></i>
-          <span>1. Аналитика и показатели (Real-time)</span>
-        </h2>
-        <span class="text-[11px] text-slate-400">Синхронизация с базой данных</span>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        <!-- Card 1 -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-slate-500">Всего в базе</span>
-            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm">
-              <i class="fa-solid fa-users"></i>
-            </div>
-          </div>
-          <div id="stat-total-users" class="text-3xl font-black text-slate-900 mt-2 font-display">--</div>
-          <div class="flex items-center space-x-1.5 mt-2 text-xs text-slate-500">
-            <i class="fa-brands fa-telegram text-sky-500"></i>
-            <span>Пользователи бота и Mini App</span>
-          </div>
-        </div>
-
-        <!-- Card 2 -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-slate-500">Новые участники</span>
-            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
-              <i class="fa-solid fa-user-plus"></i>
-            </div>
-          </div>
-          <div id="stat-new-today" class="text-3xl font-black text-emerald-600 mt-2 font-display">--</div>
-          <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
-            <span id="stat-new-week">за неделю: --</span>
-            <span class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-bold text-[10px]">Прирост</span>
-          </div>
-        </div>
-
-        <!-- Card 3 -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-slate-500">Выручка от продаж</span>
-            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
-              <i class="fa-solid fa-coins"></i>
-            </div>
-          </div>
-          <div id="stat-revenue" class="text-3xl font-black text-slate-900 mt-2 font-display">-- ₸</div>
-          <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
-            <span id="stat-paid-count">-- оплат</span>
-            <span class="text-slate-700 font-semibold text-[11px]">Robokassa</span>
-          </div>
-        </div>
-
-        <!-- Card 4 -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-slate-500">Конверсия в оплату</span>
-            <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-sm">
-              <i class="fa-solid fa-percent"></i>
-            </div>
-          </div>
-          <div id="stat-conversion" class="text-3xl font-black text-purple-600 mt-2 font-display">--%</div>
-          <div class="flex items-center space-x-1 mt-2 text-xs text-slate-500">
-            <span>Трипвайер (2 дня) ➔ 7 990 ₸</span>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- 2. CRM Table: Пользователи и доступ -->
-    <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-      
-      <!-- Table Toolbar -->
-      <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-base font-extrabold text-slate-900 flex items-center space-x-2">
-            <i class="fa-solid fa-address-book text-emerald-600"></i>
-            <span>2. CRM: Пользователи и управление доступом</span>
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Полная база клиентов с возможностью ручного открытия или отзыва доступа к марафону</p>
-        </div>
-
-        <!-- Search and Filters -->
-        <div class="flex flex-wrap items-center gap-3">
-          
-          <!-- Search Box -->
-          <div class="relative w-full sm:w-64">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="text" id="user-search" oninput="filterUsersList()" placeholder="Поиск по ID, username, имени..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition-all">
-          </div>
-
-          <!-- Filter Pills -->
-          <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button onclick="setFilter('all')" id="flt-all" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-sm transition-all">
-              Все
-            </button>
-            <button onclick="setFilter('paid')" id="flt-paid" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all">
-              Оплатили
-            </button>
-            <button onclick="setFilter('free')" id="flt-free" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all">
-              Бесплатные
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Table Body -->
-      <div class="overflow-x-auto custom-scroll">
-        <table class="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
-              <th class="py-3.5 px-5">ID / Профиль</th>
-              <th class="py-3.5 px-5">Телефон и TG</th>
-              <th class="py-3.5 px-5">Точка А → Б (Цель)</th>
-              <th class="py-3.5 px-5">Прогресс и Рейтинг</th>
-              <th class="py-3.5 px-5">Статус доступа</th>
-              <th class="py-3.5 px-5 text-right">Управление доступом</th>
-            </tr>
-          </thead>
-          <tbody id="users-tbody" class="divide-y divide-slate-100 font-medium text-slate-700">
-            <tr>
-              <td colspan="6" class="py-10 text-center text-slate-400">
-                <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2 text-slate-400"></i>
-                <div>Загрузка базы пользователей...</div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Table Footer Stats -->
-      <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-        <span id="users-count-label">Показано пользователей: 0</span>
-        <span>Лимит выборки: 100 активных записей</span>
-      </div>
-
-    </section>
-
-    <!-- 3. Desktop Two-Column Section: Broadcasts & Settings -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      
-      <!-- Left Column: Модуль Рассылок (Broadcasts) -->
-      <section class="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
-        <div>
-          <h2 class="text-base font-extrabold text-slate-900 flex items-center space-x-2">
-            <i class="fa-solid fa-paper-plane text-emerald-600"></i>
-            <span>3. Модуль «Рассылки» (Broadcasts)</span>
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Сегментированная отправка уведомлений и предложений в Telegram от лица бота</p>
-        </div>
-
-        <!-- Audience Selector -->
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider text-[10px]">Сегмент получателей:</label>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <label class="flex items-center space-x-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all">
-              <input type="radio" name="b-target" value="all" checked class="accent-slate-900">
-              <span class="text-xs font-semibold text-slate-800">Все пользователи</span>
-            </label>
-            <label class="flex items-center space-x-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all">
-              <input type="radio" name="b-target" value="free" class="accent-slate-900">
-              <span class="text-xs font-semibold text-slate-800">Не оплатившие (дожим)</span>
-            </label>
-            <label class="flex items-center space-x-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all">
-              <input type="radio" name="b-target" value="paid" class="accent-slate-900">
-              <span class="text-xs font-semibold text-slate-800">Оплатившие участники</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Message Composer -->
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider text-[10px]">Текст рассылки (HTML):</label>
-            <span class="text-[10px] text-slate-400">Поддерживаются: &lt;b&gt;, &lt;i&gt;, &lt;code&gt;, &lt;a href="..."&gt;</span>
-          </div>
-          <textarea id="broadcast-text" rows="5" placeholder="Например: &#10;🔥 Привет! Новый день марафона уже доступен в боте. Переходи в Mini App и включай тренировку!" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 font-sans"></textarea>
-        </div>
-
-        <!-- Send Bar -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-          <div class="flex items-center space-x-1.5 text-xs text-slate-500">
-            <i class="fa-solid fa-robot text-slate-400"></i>
-            <span>Отправитель: <b>@janafit_coach_bot</b></span>
-          </div>
-          <button onclick="sendBroadcast()" id="b-send-btn" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center space-x-2">
-            <i class="fa-solid fa-paper-plane"></i>
-            <span>Отправить рассылку</span>
+      <!-- Left Navigation Sidebar (3 cols) -->
+      <aside class="col-span-12 lg:col-span-3 space-y-4">
+        <div class="bg-[#151813] jf-border rounded-2xl p-4 space-y-2">
+          <div class="text-[11px] font-extrabold uppercase tracking-wider text-[#A8F218] px-2 mb-2">Разделы управления</div>
+          <button onclick="switchAdminSection('crm')" id="nav-btn-crm" class="nav-tab-btn active w-full text-left px-4 py-3 rounded-xl text-xs font-bold flex items-center space-x-3 transition-all cursor-pointer">
+            <i class="fa-solid fa-users w-4"></i>
+            <span>1. Статистика и CRM база</span>
+          </button>
+          <button onclick="switchAdminSection('workouts')" id="nav-btn-workouts" class="nav-tab-btn w-full text-left px-4 py-3 rounded-xl text-xs font-bold text-[#C9D0BF] hover:bg-[#1E221B] flex items-center space-x-3 transition-all cursor-pointer">
+            <i class="fa-solid fa-dumbbell w-4"></i>
+            <span>2. Видео и Тренировки (2 + 14)</span>
+          </button>
+          <button onclick="switchAdminSection('lessons')" id="nav-btn-lessons" class="nav-tab-btn w-full text-left px-4 py-3 rounded-xl text-xs font-bold text-[#C9D0BF] hover:bg-[#1E221B] flex items-center space-x-3 transition-all cursor-pointer">
+            <i class="fa-solid fa-graduation-cap w-4"></i>
+            <span>3. Уроки и Обложки (11 разделов)</span>
+          </button>
+          <button onclick="switchAdminSection('covers')" id="nav-btn-covers" class="nav-tab-btn w-full text-left px-4 py-3 rounded-xl text-xs font-bold text-[#C9D0BF] hover:bg-[#1E221B] flex items-center space-x-3 transition-all cursor-pointer">
+            <i class="fa-solid fa-image w-4"></i>
+            <span>4. Главные фото и Цены</span>
+          </button>
+          <button onclick="switchAdminSection('broadcast')" id="nav-btn-broadcast" class="nav-tab-btn w-full text-left px-4 py-3 rounded-xl text-xs font-bold text-[#C9D0BF] hover:bg-[#1E221B] flex items-center space-x-3 transition-all cursor-pointer">
+            <i class="fa-solid fa-paper-plane w-4"></i>
+            <span>5. Рассылки в Telegram</span>
           </button>
         </div>
 
-        <div id="broadcast-result" class="hidden p-3 rounded-xl text-xs font-medium"></div>
+        <!-- Быстрая сводка -->
+        <div class="bg-[#171D11] jf-border-strong rounded-2xl p-4 space-y-2 text-xs">
+          <div class="font-extrabold text-[#A8F218] uppercase tracking-wider">Справка по видео</div>
+          <p class="text-[#C9D0BF] leading-relaxed">
+            В поля ссылок на видео можно вставлять:<br>
+            • Прямую ссылку <b>Cloudflare R2</b> (<code>https://.../day1.mp4</code>)<br>
+            • Локальный путь (<code>/assets/workout_video.mp4</code>)<br>
+            • Зашифрованный ID из Telegram-канала в формате <code>tg:FILE_ID</code>
+          </p>
+          <button onclick="saveAllCMSChanges()" class="w-full mt-2 py-2.5 rounded-xl bg-[#A8F218] text-[#0B0D0A] font-extrabold text-xs cursor-pointer">
+            💾 Сохранить все изменения CMS
+          </button>
+        </div>
+      </aside>
 
-      </section>
+      <!-- Main Content Area (9 cols) -->
+      <main class="col-span-12 lg:col-span-9 space-y-6">
 
-      <!-- Right Column: CMS Content Manager & Anti-Piracy -->
-      <section class="lg:col-span-5 space-y-4">
-        
-        <!-- CMS Editor Card (п. 13) -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-3">
-          <h3 class="text-sm font-extrabold text-slate-900 flex items-center space-x-2">
-            <i class="fa-solid fa-pen-to-square text-emerald-600"></i>
-            <span>4. CMS: Управление фото, обложками, видео и ценами</span>
-          </h3>
-          <div class="space-y-2.5 text-xs">
+        <!-- KPI Cards Row (Always visible) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-[#151813] jf-border rounded-2xl p-5">
+            <div class="text-xs text-[#A7AE9E] font-semibold">Всего участников</div>
+            <div id="stat-total-users" class="text-4xl font-extrabold font-display text-[#F3F5EE] mt-1">--</div>
+            <div id="stat-new-week" class="text-xs text-[#A8F218] mt-1">за неделю: --</div>
+          </div>
+          <div class="bg-[#151813] jf-border rounded-2xl p-5">
+            <div class="text-xs text-[#A7AE9E] font-semibold">Новые сегодня</div>
+            <div id="stat-new-today" class="text-4xl font-extrabold font-display text-[#A8F218] mt-1">--</div>
+            <div class="text-xs text-[#C9D0BF] mt-1">Регистрации с Точкой А</div>
+          </div>
+          <div class="bg-[#151813] jf-border rounded-2xl p-5">
+            <div class="text-xs text-[#A7AE9E] font-semibold">Выручка от продаж</div>
+            <div id="stat-revenue" class="text-4xl font-extrabold font-display text-[#FFB627] mt-1">-- ₸</div>
+            <div id="stat-paid-count" class="text-xs text-[#C9D0BF] mt-1">-- оплат</div>
+          </div>
+          <div class="bg-[#151813] jf-border rounded-2xl p-5">
+            <div class="text-xs text-[#A7AE9E] font-semibold">Конверсия в покупку</div>
+            <div id="stat-conversion" class="text-4xl font-extrabold font-display text-[#A8F218] mt-1">--%</div>
+            <div class="text-xs text-[#C9D0BF] mt-1">Тест-драйв → Полный курс</div>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             СЕКЦИЯ 1: СТАТИСТИКА И CRM БАЗА УЧАСТНИКОВ
+             =================================================================== -->
+        <section id="adm-sec-crm" class="bg-[#151813] jf-border rounded-2xl overflow-hidden">
+          <div class="p-5 border-b border-[#A8F218]/30 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <label class="font-bold text-slate-600 block mb-1">Главное фото (Hero обложка):</label>
-              <input id="adm-cms-hero" type="text" value="/assets/aitym_hero.jpg" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
+              <h2 class="text-lg font-extrabold text-[#F3F5EE]">База участников марафона (CRM и замеры Точки А/Б)</h2>
+              <p class="text-xs text-[#A7AE9E]">Телефоны, стартовые и текущие замеры, прогресс тренировок, очки рейтинга и управление доступом</p>
             </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="font-bold text-slate-600 block mb-1">Цена курса:</label>
-                <input id="adm-cms-price" type="text" value="7 990 ₸" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
+            <div class="flex items-center gap-3">
+              <input type="text" id="user-search" oninput="filterUsersList()" placeholder="Поиск по телефону, имени, ID..." class="adm-input w-64" />
+              <div class="flex bg-[#1E221B] p-1 rounded-xl border border-[#A8F218]/30 text-xs">
+                <button onclick="setFilter('all')" id="flt-all" class="px-3 py-1.5 rounded-lg font-bold bg-[#A8F218] text-[#0B0D0A] cursor-pointer">Все</button>
+                <button onclick="setFilter('paid')" id="flt-paid" class="px-3 py-1.5 rounded-lg font-semibold text-[#C9D0BF] cursor-pointer">Оплатили</button>
+                <button onclick="setFilter('free')" id="flt-free" class="px-3 py-1.5 rounded-lg font-semibold text-[#C9D0BF] cursor-pointer">Бесплатные</button>
               </div>
-              <div>
-                <label class="font-bold text-slate-600 block mb-1">Старая цена:</label>
-                <input id="adm-cms-old-price" type="text" value="14 900 ₸" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
-              </div>
             </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-[#1E221B] border-b border-[#A8F218]/30 text-[#A8F218] font-bold uppercase tracking-wider text-[11px]">
+                  <th class="py-3.5 px-4">Участник / ID</th>
+                  <th class="py-3.5 px-4">Телефон и Telegram</th>
+                  <th class="py-3.5 px-4">Пол · Возраст · Цель</th>
+                  <th class="py-3.5 px-4">Вес и Талия (Точка А → Б)</th>
+                  <th class="py-3.5 px-4">Прогресс и Рейтинг</th>
+                  <th class="py-3.5 px-4">Доступ</th>
+                  <th class="py-3.5 px-4 text-right">Действие</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody" class="divide-y divide-[#1E221B] text-[#F3F5EE]">
+                <tr><td colspan="7" class="py-10 text-center text-[#A7AE9E]">Загрузка базы участников...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="px-5 py-3 bg-[#1E221B] text-xs text-[#A7AE9E] flex justify-between">
+            <span id="users-count-label">Показано: 0</span>
+            <span>Пол, цель и стартовые замеры зафиксированы при регистрации</span>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             СЕКЦИЯ 2: CMS — УПРАВЛЕНИЕ ВИДЕО И ТРЕНИРОВКАМИ (2 БЕСПЛАТНЫЕ + 14 ДНЕЙ)
+             =================================================================== -->
+        <section id="adm-sec-workouts" class="hidden bg-[#151813] jf-border rounded-2xl p-6 space-y-6">
+          <div class="flex items-center justify-between border-b border-[#A8F218]/30 pb-4">
             <div>
-              <label class="font-bold text-slate-600 block mb-1">Бесплатная тренировка 1 (MP4 / R2 / tg:FILE_ID):</label>
-              <input id="adm-cms-free1" type="text" value="/assets/workout_video.mp4" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
+              <h2 class="text-lg font-extrabold text-[#F3F5EE]">CMS: Управление видео и описанием тренировок (2 бесплатные + 14 дней)</h2>
+              <p class="text-xs text-[#A7AE9E]">Меняйте названия, длительность и ссылки на видео для любого дня — изменения сразу появятся в Mini App</p>
             </div>
-            <div>
-              <label class="font-bold text-slate-600 block mb-1">Бесплатная тренировка 2 (MP4 / R2 / tg:FILE_ID):</label>
-              <input id="adm-cms-free2" type="text" value="/assets/tabata_video.mp4" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
-            </div>
-            <button onclick="saveDesktopCMS()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all">
-              💾 Сохранить обложки, ссылки и цены
+            <button onclick="saveAllCMSChanges()" class="px-5 py-2.5 rounded-xl bg-[#A8F218] text-[#0B0D0A] font-extrabold text-xs cursor-pointer">
+              💾 Сохранить все тренировки
             </button>
           </div>
-        </div>
 
-        <!-- Security & Anti-Piracy Card -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-3">
-          <h3 class="text-sm font-extrabold text-slate-900 flex items-center space-x-2">
-            <i class="fa-solid fa-shield-halved text-emerald-600"></i>
-            <span>Защита контента и Anti-Piracy</span>
-          </h3>
-          <div class="space-y-2 text-xs text-slate-600">
-            <div class="flex items-center space-x-2">
-              <i class="fa-solid fa-circle-check text-emerald-600"></i>
-              <span>Динамический водяной знак с Telegram ID пользователя</span>
+          <div id="cms-workouts-editor-list" class="space-y-4">
+            <!-- Генерируется через JS renderWorkoutsCMSEditor() -->
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             СЕКЦИЯ 3: CMS — УПРАВЛЕНИЕ УРОКАМИ И ОБЛОЖКАМИ ЭКСПЕРТОВ (11 РАЗДЕЛОВ)
+             =================================================================== -->
+        <section id="adm-sec-lessons" class="hidden bg-[#151813] jf-border rounded-2xl p-6 space-y-6">
+          <div class="flex items-center justify-between border-b border-[#A8F218]/30 pb-4">
+            <div>
+              <h2 class="text-lg font-extrabold text-[#F3F5EE]">CMS: Уроки экспертов и обложки разделов (11 разделов)</h2>
+              <p class="text-xs text-[#A7AE9E]">Редактируйте названия разделов, ссылки на обложки (фото), видео-ссылки и описания уроков</p>
             </div>
-            <div class="flex items-center space-x-2">
-              <i class="fa-solid fa-circle-check text-emerald-600"></i>
-              <span>Защита от правого клика и скачивания видеопотока</span>
+            <button onclick="saveAllCMSChanges()" class="px-5 py-2.5 rounded-xl bg-[#A8F218] text-[#0B0D0A] font-extrabold text-xs cursor-pointer">
+              💾 Сохранить уроки и обложки
+            </button>
+          </div>
+
+          <div id="cms-lessons-editor-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Генерируется через JS renderLessonsCMSEditor() -->
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             СЕКЦИЯ 4: CMS — ГЛАВНЫЕ ФОТО, ОБЛОЖКИ И ТАРИФЫ
+             =================================================================== -->
+        <section id="adm-sec-covers" class="hidden bg-[#151813] jf-border rounded-2xl p-6 space-y-6">
+          <div class="flex items-center justify-between border-b border-[#A8F218]/30 pb-4">
+            <div>
+              <h2 class="text-lg font-extrabold text-[#F3F5EE]">CMS: Главная обложка (Hero), экран оплаты и цены</h2>
+              <p class="text-xs text-[#A7AE9E]">Настройка главного портрета Айтыма на первом экране и стоимости тарифа «Трансформация»</p>
             </div>
-            <div class="flex items-center space-x-2">
-              <i class="fa-solid fa-circle-check text-emerald-600"></i>
-              <span>Пошаговое открытие уроков (Drip-feed таймер)</span>
+            <button onclick="saveAllCMSChanges()" class="px-5 py-2.5 rounded-xl bg-[#A8F218] text-[#0B0D0A] font-extrabold text-xs cursor-pointer">
+              💾 Сохранить обложки и цены
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-[#A8F218] uppercase mb-1.5">Главное фото на первом экране (Hero Image URL)</label>
+                <input id="adm-cms-hero" type="text" value="/assets/aitym_hero.jpg" class="adm-input" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-[#A8F218] uppercase mb-1.5">Обложка плеера по умолчанию (Poster URL)</label>
+                <input id="adm-cms-poster" type="text" value="/assets/workout_poster.jpg" class="adm-input" />
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-[#A8F218] uppercase mb-1.5">Актуальная цена курса</label>
+                  <input id="adm-cms-price" type="text" value="7 990 ₸" class="adm-input" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-[#A8F218] uppercase mb-1.5">Старая цена (зачёркнутая)</label>
+                  <input id="adm-cms-old-price" type="text" value="14 900 ₸" class="adm-input" />
+                </div>
+              </div>
             </div>
-            <div class="flex items-center space-x-2">
-              <i class="fa-solid fa-circle-check text-emerald-600"></i>
-              <span>AI сканер тарелок и расчет КБЖУ в дневнике питания</span>
+            <div class="bg-[#1E221B] jf-border rounded-xl p-4 flex flex-col items-center justify-center">
+              <div class="text-xs text-[#A7AE9E] mb-2">Превью главной обложки:</div>
+              <img id="adm-hero-preview" src="/assets/aitym_hero.jpg" alt="Preview" class="h-52 w-40 object-cover rounded-xl border border-[#A8F218]" />
             </div>
           </div>
-        </div>
+        </section>
 
-      </section>
+        <!-- ===================================================================
+             СЕКЦИЯ 5: РАССЫЛКИ В TELEGRAM-БОТ
+             =================================================================== -->
+        <section id="adm-sec-broadcast" class="hidden bg-[#151813] jf-border rounded-2xl p-6 space-y-5">
+          <div>
+            <h2 class="text-lg font-extrabold text-[#F3F5EE]">Модуль рассылок в Telegram-бот</h2>
+            <p class="text-xs text-[#A7AE9E]">Отправка уведомлений всем участникам, только бесплатным (дожим на оплату) или оплатившим</p>
+          </div>
 
+          <div class="grid grid-cols-3 gap-3">
+            <label class="flex items-center space-x-2 p-3 rounded-xl bg-[#1E221B] jf-border cursor-pointer">
+              <input type="radio" name="b-target" value="all" checked class="accent-[#A8F218]">
+              <span class="text-xs font-bold">Все пользователи</span>
+            </label>
+            <label class="flex items-center space-x-2 p-3 rounded-xl bg-[#1E221B] jf-border cursor-pointer">
+              <input type="radio" name="b-target" value="free" class="accent-[#A8F218]">
+              <span class="text-xs font-bold">Не оплатившие (дожим)</span>
+            </label>
+            <label class="flex items-center space-x-2 p-3 rounded-xl bg-[#1E221B] jf-border cursor-pointer">
+              <input type="radio" name="b-target" value="paid" class="accent-[#A8F218]">
+              <span class="text-xs font-bold">Оплатившие (VIP)</span>
+            </label>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#A8F218] uppercase mb-1.5">Текст сообщения (поддерживается HTML):</label>
+            <textarea id="broadcast-text" rows="5" placeholder="🔥 Новый день марафона открыт! Заходи в приложение и включай тренировку." class="adm-input"></textarea>
+          </div>
+
+          <div id="broadcast-result" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+          <button onclick="sendBroadcast()" id="b-send-btn" class="px-6 py-3 rounded-xl bg-[#A8F218] text-[#0B0D0A] font-extrabold text-xs cursor-pointer">
+            <i class="fa-solid fa-paper-plane mr-2"></i>Отправить рассылку
+          </button>
+        </section>
+
+      </main>
     </div>
-
-  </main>
+  </div>
 
   <script>
+    const DEFAULT_WORKOUTS = [
+      { key: 'free-1', label: 'Бесплатная тренировка 1', title: 'Видео 1: Жиросжигающий старт и постановка техники с Айтымом', video: '/assets/workout_video.mp4' },
+      { key: 'free-2', label: 'Бесплатная тренировка 2', title: 'Видео 2: Взрывное кардио и кор без инвентаря (Тест-драйв)', video: '/assets/tabata_video.mp4' },
+      { key: 'day-1', label: 'День 1', title: 'День 1 · Фундамент силы: Ноги, ягодицы и стабилизаторы кора', video: '/assets/workout_video.mp4' },
+      { key: 'day-2', label: 'День 2', title: 'День 2 · Верх тела: Грудь, плечи, трицепс и королевская осанка', video: '/assets/tabata_video.mp4' },
+      { key: 'day-3', label: 'День 3', title: 'День 3 · Метаболический HIIT-шторм: Максимальное сжигание жира', video: '/assets/workout_video.mp4' },
+      { key: 'day-4', label: 'День 4', title: 'День 4 · Активное восстановление: МФР, лимфодренаж и гибкость', video: '/assets/tabata_video.mp4' },
+      { key: 'day-5', label: 'День 5', title: 'День 5 · Железный пресс: 3D-проработка кора и плоский живот', video: '/assets/workout_video.mp4' },
+      { key: 'day-6', label: 'День 6', title: 'День 6 · Бойцовский функционал с Айтымом: Выносливость и координация', video: '/assets/tabata_video.mp4' },
+      { key: 'day-7', label: 'День 7', title: 'День 7 · Контрольная точка экватора: Full-Body проверка выносливости', video: '/assets/workout_video.mp4' },
+      { key: 'day-8', label: 'День 8', title: 'День 8 · Силовой пампинг ног и ягодиц: Уровень Pro', video: '/assets/tabata_video.mp4' },
+      { key: 'day-9', label: 'День 9', title: 'День 9 · Рельефная спина и V-силуэт: Анти-сутулость', video: '/assets/workout_video.mp4' },
+      { key: 'day-10', label: 'День 10', title: 'День 10 · Кардио-печь: Удар по проблемным зонам (бока и живот)', video: '/assets/tabata_video.mp4' },
+      { key: 'day-11', label: 'День 11', title: 'День 11 · Глубокая растяжка, здоровая поясница и антистресс', video: '/assets/workout_video.mp4' },
+      { key: 'day-12', label: 'День 12', title: 'День 12 · Силовая выносливость всего тела: Суперсеты Айтыма', video: '/assets/tabata_video.mp4' },
+      { key: 'day-13', label: 'День 13', title: 'День 13 · Пиковая сушка: Высокоинтенсивный метаболический комплекс', video: '/assets/workout_video.mp4' },
+      { key: 'day-14', label: 'День 14', title: 'День 14 · Гранд-финал марафона: Проверка новой формы (Точка Б)', video: '/assets/tabata_video.mp4' }
+    ];
+
+    const DEFAULT_LESSONS = [
+      { id: 'free-intro', title: 'Вводный урок: Система 14 дней', img: '/assets/dir_aitym.jpg', video: '/assets/workout_video.mp4' },
+      { id: 'exp-aitym', title: 'Уроки Айтыма: Дисциплина и мышление', img: '/assets/dir_aitym.jpg', video: '/assets/workout_video.mp4' },
+      { id: 'exp-nutri', title: 'Нутрициолог: Сборка тарелки и КБЖУ', img: '/assets/dir_nutritionist.jpg', video: '/assets/workout_video.mp4' },
+      { id: 'exp-psy', title: 'Психолог: Заедание стресса и срывы', img: '/assets/dir_psychologist.jpg', video: '/assets/workout_video.mp4' },
+      { id: 'exp-endo', title: 'Эндокринолог: Гормоны, инсулин и вес', img: '/assets/dir_endocrinologist.jpg', video: '/assets/workout_video.mp4' },
+      { id: 'exp-rehab', title: 'Реабилитолог: Здоровые колени и спина', img: '/assets/dir_stretching.jpg', video: '/assets/workout_video.mp4' },
+      { id: 'exp-inna', title: 'Инна: Женское и мужское восстановление', img: '/assets/lesson_psychologist.jpg', video: '/assets/workout_video.mp4' },
+      { id: 'spec-tech', title: 'Техника базовых упражнений от А до Я', img: '/assets/dir_workouts.jpg', video: '/assets/workout_video.mp4' },
+      { id: 'spec-cardio', title: 'Интенсивные жиросжигающие связки', img: '/assets/workout_poster.jpg', video: '/assets/tabata_video.mp4' },
+      { id: 'spec-warm', title: 'Предтренировка: Суставная разминка', img: '/assets/dir_stretching.jpg', video: '/assets/workout_video.mp4' },
+      { id: 'spec-posture', title: 'Королевская осанка и плоский живот', img: '/assets/lesson_nutritionist.jpg', video: '/assets/workout_video.mp4' }
+    ];
+
     let allUsersCache = [];
+    let currentFilter = 'all';
+    let cmsConfig = { titles: {}, videos: {}, lessons: {} };
 
     function escapeHtml(str) {
       return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
-    // Авторизация админки: токен (ADMIN_TOKEN на сервере) хранится только в этом браузере.
     function getAdminToken() {
-      try { return localStorage.getItem('janafit_admin_token') || ''; } catch (e) { return ''; }
+      return localStorage.getItem('janafit_admin_session_token') || '';
     }
+
     function setAdminToken(token) {
-      try {
-        if (token) localStorage.setItem('janafit_admin_token', token);
-        else localStorage.removeItem('janafit_admin_token');
-      } catch (e) {}
+      if (token) localStorage.setItem('janafit_admin_session_token', token);
+      else localStorage.removeItem('janafit_admin_session_token');
     }
-    async function adminFetch(url, options = {}, retried = false) {
-      const headers = Object.assign({}, options.headers || {}, { 'X-Admin-Token': getAdminToken() });
-      const tgInit = window.Telegram?.WebApp?.initData;
-      if (tgInit) headers['X-Telegram-Init-Data'] = tgInit;
-      const resp = await fetch(url, Object.assign({}, options, { headers }));
-      if (resp.status === 401 && !retried) {
-        const token = prompt('Введите токен администратора (ADMIN_TOKEN):');
-        if (token) {
-          setAdminToken(token.trim());
-          return adminFetch(url, options, true);
+
+    async function handleAdminLogin(e) {
+      e.preventDefault();
+      const login = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      const errBox = document.getElementById('login-error-box');
+      errBox.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ login, password })
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'ok' && data.token) {
+          setAdminToken(data.token);
+          showAuthenticatedLayout();
+        } else {
+          errBox.textContent = data.detail || 'Неверный логин или пароль администратора';
+          errBox.classList.remove('hidden');
         }
+      } catch (err) {
+        errBox.textContent = 'Ошибка соединения с сервером';
+        errBox.classList.remove('hidden');
       }
-      if (resp.status === 401) setAdminToken('');
+    }
+
+    function logoutAdmin() {
+      setAdminToken('');
+      document.getElementById('admin-app-layout').classList.add('hidden');
+      document.getElementById('admin-login-screen').classList.remove('hidden');
+    }
+
+    async function adminFetch(url, options = {}) {
+      const headers = Object.assign({}, options.headers || {}, { 'X-Admin-Token': getAdminToken() });
+      const resp = await fetch(url, Object.assign({}, options, { headers }));
+      if (resp.status === 401) {
+        logoutAdmin();
+      }
       return resp;
     }
-    let currentFilter = 'all';
 
-    async function loadAdminData() {
+    function switchAdminSection(sec) {
+      ['crm', 'workouts', 'lessons', 'covers', 'broadcast'].forEach(s => {
+        const el = document.getElementById('adm-sec-' + s);
+        const btn = document.getElementById('nav-btn-' + s);
+        if (el) el.classList.toggle('hidden', s !== sec);
+        if (btn) btn.classList.toggle('active', s === sec);
+      });
+    }
+
+    async function showAuthenticatedLayout() {
+      document.getElementById('admin-login-screen').classList.add('hidden');
+      document.getElementById('admin-app-layout').classList.remove('hidden');
+      await loadAdminAll();
+    }
+
+    async function loadAdminAll() {
       const refreshIcon = document.getElementById('refresh-icon');
       if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
@@ -418,47 +494,162 @@
           document.getElementById('stat-new-today').innerText = `+${s.new_today || 0}`;
           document.getElementById('stat-new-week').innerText = `за неделю: +${s.new_week || 0}`;
           document.getElementById('stat-revenue').innerText = `${(s.total_revenue || 0).toLocaleString('ru-RU')} ₸`;
-          document.getElementById('stat-paid-count').innerText = `${s.successful_payments || 0} оплат`;
+          document.getElementById('stat-paid-count').innerText = `${s.successful_payments || 0} успешных оплат`;
           document.getElementById('stat-conversion').innerText = `${s.conversion_rate || 0}%`;
         }
+
+        const cfgResp = await fetch('/api/config');
+        if (cfgResp.ok) {
+          const cData = await cfgResp.json();
+          if (cData.config) cmsConfig = Object.assign({ titles: {}, videos: {}, lessons: {} }, cData.config);
+        }
+
+        renderWorkoutsCMSEditor();
+        renderLessonsCMSEditor();
+        populateCoversEditor();
         await loadUsers();
-      } catch (err) {
-        console.error("Admin data load error:", err);
+      } catch (e) {
+        console.error(e);
       } finally {
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
       }
     }
 
+    function renderWorkoutsCMSEditor() {
+      const container = document.getElementById('cms-workouts-editor-list');
+      if (!container) return;
+
+      container.innerHTML = DEFAULT_WORKOUTS.map(w => {
+        const curTitle = (cmsConfig.titles && cmsConfig.titles[w.key]) ? cmsConfig.titles[w.key] : w.title;
+        const curVideo = (cmsConfig.videos && cmsConfig.videos[w.key]) ? cmsConfig.videos[w.key] : w.video;
+        return `
+          <div class="bg-[#1E221B] jf-border rounded-xl p-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+            <div class="md:col-span-2">
+              <span class="px-2.5 py-1 rounded-lg bg-[#171D11] border border-[#A8F218] text-[#A8F218] text-xs font-extrabold uppercase">${w.label}</span>
+            </div>
+            <div class="md:col-span-5">
+              <label class="block text-[10px] uppercase text-[#A7AE9E] mb-1">Название видео тренировки</label>
+              <input type="text" data-w-title="${w.key}" value="${escapeHtml(curTitle)}" class="adm-input" />
+            </div>
+            <div class="md:col-span-5">
+              <label class="block text-[10px] uppercase text-[#A7AE9E] mb-1">Ссылка на видео (MP4 / R2 / tg:FILE_ID)</label>
+              <input type="text" data-w-video="${w.key}" value="${escapeHtml(curVideo)}" class="adm-input font-mono text-xs" />
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderLessonsCMSEditor() {
+      const container = document.getElementById('cms-lessons-editor-list');
+      if (!container) return;
+
+      container.innerHTML = DEFAULT_LESSONS.map(l => {
+        const saved = (cmsConfig.lessons && cmsConfig.lessons[l.id]) ? cmsConfig.lessons[l.id] : {};
+        const curTitle = saved.title || l.title;
+        const curImg = saved.img || l.img;
+        const curVideo = saved.video || l.video;
+        return `
+          <div class="bg-[#1E221B] jf-border rounded-xl p-4 space-y-2.5">
+            <div class="flex items-center space-x-3">
+              <img src="${escapeHtml(curImg)}" alt="" class="w-12 h-12 rounded-lg object-cover border border-[#A8F218]" />
+              <div class="flex-1">
+                <div class="text-[10px] uppercase font-bold text-[#A8F218]">Раздел урока: ${l.id}</div>
+                <input type="text" data-l-title="${l.id}" value="${escapeHtml(curTitle)}" class="adm-input mt-1" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase text-[#A7AE9E] mb-1">Обложка раздела (URL фото)</label>
+              <input type="text" data-l-img="${l.id}" value="${escapeHtml(curImg)}" class="adm-input font-mono text-xs" />
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase text-[#A7AE9E] mb-1">Ссылка на видео урока (MP4 / R2 / tg:FILE_ID)</label>
+              <input type="text" data-l-video="${l.id}" value="${escapeHtml(curVideo)}" class="adm-input font-mono text-xs" />
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function populateCoversEditor() {
+      if (cmsConfig.heroImg) {
+        document.getElementById('adm-cms-hero').value = cmsConfig.heroImg;
+        document.getElementById('adm-hero-preview').src = cmsConfig.heroImg;
+      }
+      if (cmsConfig.price) document.getElementById('adm-cms-price').value = cmsConfig.price;
+      if (cmsConfig.oldPrice) document.getElementById('adm-cms-old-price').value = cmsConfig.oldPrice;
+    }
+
+    async function saveAllCMSChanges() {
+      const titles = {};
+      const videos = {};
+      const lessons = {};
+
+      document.querySelectorAll('[data-w-title]').forEach(inp => {
+        titles[inp.getAttribute('data-w-title')] = inp.value.trim();
+      });
+      document.querySelectorAll('[data-w-video]').forEach(inp => {
+        videos[inp.getAttribute('data-w-video')] = inp.value.trim();
+      });
+
+      DEFAULT_LESSONS.forEach(l => {
+        const tEl = document.querySelector(`[data-l-title="${l.id}"]`);
+        const iEl = document.querySelector(`[data-l-img="${l.id}"]`);
+        const vEl = document.querySelector(`[data-l-video="${l.id}"]`);
+        lessons[l.id] = {
+          title: tEl ? tEl.value.trim() : l.title,
+          img: iEl ? iEl.value.trim() : l.img,
+          video: vEl ? vEl.value.trim() : l.video
+        };
+      });
+
+      const newCfg = {
+        heroImg: document.getElementById('adm-cms-hero').value.trim() || '/assets/aitym_hero.jpg',
+        posterImg: document.getElementById('adm-cms-poster').value.trim() || '/assets/workout_poster.jpg',
+        price: document.getElementById('adm-cms-price').value.trim() || '7 990 ₸',
+        oldPrice: document.getElementById('adm-cms-old-price').value.trim() || '14 900 ₸',
+        titles,
+        videos,
+        lessons
+      };
+
+      try {
+        const resp = await adminFetch('/api/admin/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config: newCfg })
+        });
+        if (resp.ok) {
+          cmsConfig = newCfg;
+          document.getElementById('adm-hero-preview').src = newCfg.heroImg;
+          alert('✅ Все изменения (фото, обложки, видео тренировок, уроки и цены) успешно сохранены на сервере!');
+        } else {
+          alert('Ошибка сохранения настроек');
+        }
+      } catch (e) {
+        alert('Ошибка соединения с сервером');
+      }
+    }
+
     async function loadUsers() {
       const tbody = document.getElementById('users-tbody');
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6" class="py-10 text-center text-slate-400">
-            <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2 text-slate-400"></i>
-            <div>Загрузка списка пользователей...</div>
-          </td>
-        </tr>`;
-
       try {
         const resp = await adminFetch(`/api/admin/users?filter=${currentFilter}&limit=100`);
         if (resp.ok) {
           allUsersCache = await resp.json();
           renderUsersTable(allUsersCache);
-        } else {
-          tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-rose-500 font-semibold">Не удалось загрузить пользователей</td></tr>';
         }
       } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-rose-500 font-semibold">Ошибка связи с сервером</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-rose-400">Ошибка загрузки</td></tr>';
       }
     }
 
     function renderUsersTable(users) {
       const tbody = document.getElementById('users-tbody');
-      const countLabel = document.getElementById('users-count-label');
-      countLabel.innerText = `Показано пользователей: ${users.length}`;
+      document.getElementById('users-count-label').innerText = `Показано участников: ${users.length}`;
 
-      if (users.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">Пользователи по выбранному фильтру не найдены</td></tr>';
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-[#A7AE9E]">Участники не найдены</td></tr>';
         return;
       }
 
@@ -466,38 +657,37 @@
         const isPaid = Boolean(u.has_access);
         const uid = Number(u.user_id) || 0;
         const uname = escapeHtml(u.username || '');
-        const phone = escapeHtml(u.phone || '—');
-        const tgLink = u.username ? `<a href="https://t.me/${encodeURIComponent(u.username)}" target="_blank" class="text-sky-600 hover:underline flex items-center space-x-1"><i class="fa-brands fa-telegram"></i><span>@${uname}</span></a>` : '<span class="text-slate-400">—</span>';
-        const goalLbl = u.goal === 'weight_loss' ? 'Похудение' : (u.goal === 'muscle_gain' ? 'Набор' : 'Рельеф');
-        const wInfo = u.current_weight ? `${u.start_weight || u.current_weight} → <b>${u.current_weight} кг</b> (${goalLbl})` : 'Не заполнена анкета';
-        const progInfo = `Трен: <b>${u.completed_workouts || 0}/16</b> · 🏆 <b>${u.rating_points || 0}</b> очк.`;
+        const phone = escapeHtml(u.phone || 'Не указан');
+        const tgLink = u.username ? `<a href="https://t.me/${encodeURIComponent(u.username)}" target="_blank" class="text-[#A8F218] hover:underline">@${uname}</a>` : '<span class="text-[#A7AE9E]">—</span>';
+        const genderStr = u.gender === 'male' ? 'Муж' : (u.gender === 'female' ? 'Жен' : '—');
+        const goalStr = u.goal === 'weight_loss' ? 'Похудение' : (u.goal === 'muscle_gain' ? 'Набор' : 'Рельеф');
+        const profileMeta = u.age ? `${genderStr} · ${u.age} лет · ${u.height || 175} см<br><span class="text-[#A8F218] font-bold">${goalStr}</span>` : 'Анкета не заполнена';
+        const weightStr = u.current_weight ? `Вес: <b>${u.start_weight || u.current_weight} → ${u.current_weight} кг</b><br><span class="text-[#A7AE9E]">Талия: ${u.waist || '—'} см</span>` : '—';
+        const progStr = `Трен: <b>${u.completed_workouts || 0}/16</b> · Тарелки: <b>${u.meals_count || 0}</b><br><span class="text-[#FFB627] font-bold">🏆 ${u.rating_points || 0} очк. · 🔥 ${u.burned_calories || 0} ккал</span>`;
 
         return `
-          <tr class="hover:bg-slate-50/80 transition-colors">
-            <td class="py-3 px-5">
-              <div class="font-bold text-slate-800">${escapeHtml(u.first_name || 'Атлет')}</div>
-              <div class="font-mono text-[11px] text-slate-400">ID: ${uid}</div>
+          <tr class="hover:bg-[#1E221B]/60 transition-colors">
+            <td class="py-3.5 px-4">
+              <div class="font-bold text-[#F3F5EE]">${escapeHtml(u.first_name || 'Атлет')}</div>
+              <div class="font-mono text-[11px] text-[#A7AE9E]">ID: ${uid}</div>
             </td>
-            <td class="py-3 px-5">
-              <div class="font-semibold text-slate-800">📱 ${phone}</div>
+            <td class="py-3.5 px-4">
+              <div class="font-bold text-[#F3F5EE]">📱 ${phone}</div>
               <div>${tgLink}</div>
             </td>
-            <td class="py-3 px-5 text-slate-700">${wInfo}</td>
-            <td class="py-3 px-5 text-slate-700">${progInfo}</td>
-            <td class="py-3 px-5">
-              ${isPaid 
-                ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800"><i class="fa-solid fa-circle-check text-[10px] mr-1"></i>Оплачен (Полный доступ)</span>'
-                : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600"><i class="fa-solid fa-clock text-[10px] mr-1"></i>Тест-драйв (2 видео)</span>'
+            <td class="py-3.5 px-4">${profileMeta}</td>
+            <td class="py-3.5 px-4">${weightStr}</td>
+            <td class="py-3.5 px-4">${progStr}</td>
+            <td class="py-3.5 px-4">
+              ${isPaid
+                ? '<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#171D11] text-[#A8F218] border border-[#A8F218]">Полный доступ</span>'
+                : '<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#1E221B] text-[#A7AE9E]">Тест-драйв (2 видео)</span>'
               }
             </td>
-            <td class="py-3 px-5 text-right">
-              ${isPaid 
-                ? `<button onclick="toggleAccess(${uid}, false)" class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] border border-rose-200 transition-all">
-                     Забрать доступ
-                   </button>`
-                : `<button onclick="toggleAccess(${uid}, true)" class="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] border border-emerald-200 transition-all">
-                     Выдать доступ
-                   </button>`
+            <td class="py-3.5 px-4 text-right">
+              ${isPaid
+                ? `<button onclick="toggleAccess(${uid}, false)" class="px-3 py-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/40 font-bold text-[11px] cursor-pointer">Забрать доступ</button>`
+                : `<button onclick="toggleAccess(${uid}, true)" class="px-3 py-1.5 rounded-lg bg-[#A8F218] hover:opacity-90 text-[#0B0D0A] font-extrabold text-[11px] cursor-pointer">Выдать доступ</button>`
               }
             </td>
           </tr>
@@ -505,41 +695,15 @@
       }).join('');
     }
 
-    async function saveDesktopCMS() {
-      const cfg = {
-        heroImg: document.getElementById('adm-cms-hero').value.trim(),
-        price: document.getElementById('adm-cms-price').value.trim(),
-        oldPrice: document.getElementById('adm-cms-old-price').value.trim(),
-        videos: {
-          'free-1': document.getElementById('adm-cms-free1').value.trim(),
-          'free-2': document.getElementById('adm-cms-free2').value.trim()
-        }
-      };
-      try {
-        const res = await fetch('/api/admin/config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ config: cfg })
-        });
-        if (res.ok) alert('✅ Настройки обложек, ссылок и цен сохранены!');
-      } catch (e) {
-        alert('Ошибка сохранения CMS');
-      }
-    }
-
     function filterUsersList() {
       const q = document.getElementById('user-search').value.toLowerCase().trim();
-      if (!q) {
-        renderUsersTable(allUsersCache);
-        return;
-      }
-      const filtered = allUsersCache.filter(u => {
-        const uid = String(u.user_id || '');
-        const uname = (u.username || '').toLowerCase();
-        const fname = (u.first_name || '').toLowerCase();
-        return uid.includes(q) || uname.includes(q) || fname.includes(q);
-      });
-      renderUsersTable(filtered);
+      if (!q) { renderUsersTable(allUsersCache); return; }
+      renderUsersTable(allUsersCache.filter(u =>
+        String(u.user_id || '').includes(q) ||
+        (u.username || '').toLowerCase().includes(q) ||
+        (u.first_name || '').toLowerCase().includes(q) ||
+        (u.phone || '').toLowerCase().includes(q)
+      ));
     }
 
     function setFilter(flt) {
@@ -547,84 +711,51 @@
       ['all', 'paid', 'free'].forEach(f => {
         const btn = document.getElementById(`flt-${f}`);
         if (!btn) return;
-        if (f === flt) {
-          btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-sm transition-all";
-        } else {
-          btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all";
-        }
+        btn.className = f === flt
+          ? "px-3 py-1.5 rounded-lg font-bold bg-[#A8F218] text-[#0B0D0A] cursor-pointer"
+          : "px-3 py-1.5 rounded-lg font-semibold text-[#C9D0BF] cursor-pointer";
       });
       loadUsers();
     }
 
     async function toggleAccess(userId, grant) {
-      const actionText = grant ? "выдать полный доступ" : "отозвать доступ";
-      if (!confirm(`Вы действительно хотите ${actionText} пользователю ${userId}?`)) {
-        return;
-      }
-
-      try {
-        const resp = await adminFetch('/api/admin/toggle-access', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: userId, grant: grant })
-        });
-        const res = await resp.json();
-        if (resp.ok && res.status === 'ok') {
-          await loadAdminData();
-        } else {
-          alert('Ошибка обновления доступа: ' + (res.detail || 'Неизвестная ошибка'));
-        }
-      } catch (err) {
-        alert('Ошибка связи с сервером');
-      }
+      if (!confirm(`Вы действительно хотите ${grant ? 'выдать' : 'отозвать'} полный доступ для ID ${userId}?`)) return;
+      const resp = await adminFetch('/api/admin/toggle-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, grant })
+      });
+      if (resp.ok) await loadAdminAll();
     }
 
     async function sendBroadcast() {
       const text = document.getElementById('broadcast-text').value.trim();
-      if (!text) {
-        alert('Введите текст рассылки!');
-        return;
-      }
+      if (!text) { alert('Введите текст рассылки'); return; }
+      const target = document.querySelector('input[name="b-target"]:checked')?.value || 'all';
+      if (!confirm(`Отправить рассылку по сегменту "${target}"?`)) return;
 
-      const targetRadio = document.querySelector('input[name="b-target"]:checked');
-      const target = targetRadio ? targetRadio.value : 'all';
-
-      if (!confirm(`Запустить рассылку в Telegram для сегмента "${target}"?`)) {
-        return;
-      }
-
-      const btn = document.getElementById('b-send-btn');
       const resBox = document.getElementById('broadcast-result');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i>Отправка...';
-      resBox.className = 'hidden';
-
-      try {
-        const resp = await adminFetch('/api/admin/broadcast', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: text, target: target })
-        });
-        const res = await resp.json();
-        if (resp.ok && res.status === 'ok') {
-          resBox.className = 'p-3 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 block';
-          resBox.innerHTML = `✅ Рассылка успешно завершена! Доставлено: <b>${res.sent}</b>, ошибок: <b>${res.failed}</b>`;
-          document.getElementById('broadcast-text').value = '';
-        } else {
-          resBox.className = 'p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200 block';
-          resBox.innerHTML = `⚠️ Ошибка рассылки: ${res.detail || 'Попробуйте позже'}`;
-        }
-      } catch (e) {
-        resBox.className = 'p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200 block';
-        resBox.innerHTML = '⚠️ Сетевая ошибка при отправке рассылки';
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-1.5"></i><span>Отправить рассылку</span>';
+      const resp = await adminFetch('/api/admin/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, target })
+      });
+      const res = await resp.json();
+      resBox.classList.remove('hidden');
+      if (resp.ok && res.status === 'ok') {
+        resBox.className = 'p-3 rounded-xl text-xs font-semibold bg-[#171D11] text-[#A8F218] border border-[#A8F218] block';
+        resBox.innerHTML = `✅ Рассылка отправлена! Доставлено: <b>${res.sent}</b>, ошибок: <b>${res.failed}</b>`;
+      } else {
+        resBox.className = 'p-3 rounded-xl text-xs font-semibold bg-rose-950 text-rose-300 border border-rose-500 block';
+        resBox.innerHTML = `⚠️ Ошибка рассылки`;
       }
     }
 
-    // Auto-load on page ready
-    document.addEventListener('DOMContentLoaded', loadAdminData);
+    document.addEventListener('DOMContentLoaded', () => {
+      if (getAdminToken()) {
+        showAuthenticatedLayout();
+      }
+    });
   </script>
 </body>
 </html>

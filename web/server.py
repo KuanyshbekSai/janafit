@@ -191,14 +191,28 @@ def get_verified_user_id(init_data: Optional[str], fallback_user_id: Optional[in
     raise HTTPException(status_code=401, detail="Откройте приложение через Telegram")
 
 
+def compute_admin_session_token() -> str:
+    import hashlib
+    secret_key = (settings.BOT_TOKEN or "janafit_secret") + ":" + settings.ADMIN_PASSWORD
+    msg = f"janafit_admin:{settings.ADMIN_LOGIN}".encode("utf-8")
+    return hmac.new(secret_key.encode("utf-8"), msg, hashlib.sha256).hexdigest()
+
+
 def require_admin(
     x_admin_token: Optional[str] = Header(None),
     x_telegram_init_data: Optional[str] = Header(None),
 ) -> None:
     """
-    Доступ к админ-API: либо заголовок X-Admin-Token == ADMIN_TOKEN,
-    либо подписанный initData Telegram от пользователя из ADMIN_IDS.
+    Доступ к админ-API:
+    1) Сессионный токен после входа по логину и паролю (/api/admin/login),
+    2) Заголовок X-Admin-Token == ADMIN_TOKEN,
+    3) Подписанный initData Telegram от пользователя из ADMIN_IDS.
     """
+    expected_session = compute_admin_session_token()
+    if x_admin_token and hmac.compare_digest(
+        x_admin_token.encode("utf-8"), expected_session.encode("utf-8")
+    ):
+        return
     if settings.ADMIN_TOKEN and x_admin_token and hmac.compare_digest(
         x_admin_token.encode("utf-8"), settings.ADMIN_TOKEN.encode("utf-8")
     ):
@@ -208,7 +222,7 @@ def require_admin(
         if verified and isinstance(verified.get("user"), dict):
             if int(verified["user"].get("id", 0)) in settings.admin_id_list:
                 return
-    raise HTTPException(status_code=401, detail="Нужен токен администратора")
+    raise HTTPException(status_code=401, detail="Неверный логин или пароль администратора")
 
 @app.get("/health")
 @app.get("/api/health")
@@ -321,10 +335,27 @@ async def mini_app_view(request: Request, day: int = 1):
 
 # -------------------- ADMIN PANEL (По ТЗ) --------------------
 
+class AdminLoginRequest(BaseModel):
+    login: str
+    password: str
+
+@app.post("/api/admin/login")
+async def api_admin_login(payload: AdminLoginRequest):
+    """Авторизация в десктопную админ-панель по логину и паролю."""
+    valid_login = hmac.compare_digest(payload.login.strip(), settings.ADMIN_LOGIN.strip())
+    valid_pass = hmac.compare_digest(payload.password.strip(), settings.ADMIN_PASSWORD.strip())
+    if not (valid_login and valid_pass):
+        raise HTTPException(status_code=401, detail="Неверный логин или пароль")
+    return {
+        "status": "ok",
+        "token": compute_admin_session_token(),
+        "login": settings.ADMIN_LOGIN
+    }
+
 @app.get("/admin", response_class=HTMLResponse)
 @app.get("/api/admin", response_class=HTMLResponse)
 async def admin_panel_view(request: Request):
-    """Панель Администратора Janafit (Дашборд, CRM, Рассылки)."""
+    """Панель Администратора Janafit (Дашборд, CRM, CMS, Рассылки)."""
     return templates.TemplateResponse(request=request, name="admin.html", context={})
 
 @app.get("/api/admin/stats", dependencies=[Depends(require_admin)])
@@ -379,7 +410,7 @@ async def api_get_cms_config():
 class AdminSaveConfigRequest(BaseModel):
     config: dict
 
-@app.post("/api/admin/config")
+@app.post("/api/admin/config", dependencies=[Depends(require_admin)])
 async def api_save_cms_config(payload: AdminSaveConfigRequest):
     await save_app_settings(payload.config, "cms_config")
     return {"status": "ok", "config": payload.config}
