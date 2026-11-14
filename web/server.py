@@ -28,7 +28,10 @@ from database import (
     revoke_user_access,
     get_admin_dashboard_stats,
     get_admin_users,
-    get_broadcast_user_ids
+    get_broadcast_user_ids,
+    get_app_settings,
+    save_app_settings,
+    get_leaderboard
 )
 import time
 from services.robokassa import verify_robokassa_webhook, generate_robokassa_link
@@ -133,9 +136,19 @@ class ProfileRequest(BaseModel):
     target_weight: float = 58.0
     waist: float = 72.0
     hips: float = 98.0
+    chest: float = 92.0
     goal: str = "weight_loss"
     activity_level: str = "medium"
     daily_calories_target: int = 1600
+    phone: Optional[str] = ""
+    is_registered: Optional[int] = 1
+    photo_before: Optional[str] = None
+    photo_after: Optional[str] = None
+    completed_lessons: Optional[str] = None
+    burned_calories: Optional[int] = None
+    rating_points: Optional[int] = None
+    username: Optional[str] = None
+    first_name: Optional[str] = None
     init_data: Optional[str] = None
     user_id: Optional[int] = None
 
@@ -356,7 +369,94 @@ async def api_admin_broadcast(payload: AdminBroadcastRequest):
         print(f"Broadcast error: {e}")
     return {"status": "ok", "target": payload.target, "total": len(user_ids), "sent": sent_count, "failed": len(user_ids) - sent_count}
 
-# API Endpoints для Mini App
+# API Endpoints для Mini App и CMS
+
+@app.get("/api/config")
+async def api_get_cms_config():
+    cfg = await get_app_settings("cms_config")
+    return {"status": "ok", "config": cfg}
+
+class AdminSaveConfigRequest(BaseModel):
+    config: dict
+
+@app.post("/api/admin/config")
+async def api_save_cms_config(payload: AdminSaveConfigRequest):
+    await save_app_settings(payload.config, "cms_config")
+    return {"status": "ok", "config": payload.config}
+
+@app.get("/api/rating")
+async def api_get_rating(user_id: int = 123456789):
+    rows = await get_leaderboard(limit=30)
+    return {"status": "ok", "leaderboard": rows}
+
+@app.get("/api/video/tg/{file_id}")
+async def stream_telegram_video(file_id: str):
+    """
+    Прокси-стриминг видео из закрытого Telegram-канала через Bot API getFile,
+    без раскрытия BOT_TOKEN и прямой ссылки на стороне клиента.
+    """
+    if not settings.BOT_TOKEN:
+        raise HTTPException(status_code=400, detail="BOT_TOKEN не настроен")
+    try:
+        import httpx
+        from fastapi.responses import StreamingResponse
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            r = await client.get(f"https://api.telegram.org/bot{settings.BOT_TOKEN}/getFile", params={"file_id": file_id})
+            data = r.json()
+            if not data.get("ok") or not data.get("result", {}).get("file_path"):
+                raise HTTPException(status_code=404, detail="Видео не найдено в Telegram или превышает 20 МБ лимит Bot API")
+            file_path = data["result"]["file_path"]
+            tg_url = f"https://api.telegram.org/file/bot{settings.BOT_TOKEN}/{file_path}"
+
+        async def video_streamer():
+            async with httpx.AsyncClient(timeout=60.0) as stream_client:
+                async with stream_client.stream("GET", tg_url) as resp:
+                    async for chunk in resp.aiter_bytes(chunk_size=65536):
+                        yield chunk
+
+        return StreamingResponse(video_streamer(), media_type="video/mp4", headers={
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff"
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка стриминга из Telegram: {e}")
+
+class SendProtectedVideoRequest(BaseModel):
+    user_id: Optional[int] = None
+    init_data: Optional[str] = None
+    title: str = "Тренировка JANAFIT"
+    file_id_or_url: str = ""
+
+@app.post("/api/video/send-protected")
+async def send_protected_video_to_chat(payload: SendProtectedVideoRequest):
+    """
+    Отправляет зашифрованное видео в личный чат с ботом с флагом protect_content=True
+    (запрет пересылки, сохранения в галерею и записи экрана в Telegram).
+    """
+    verified_id = get_verified_user_id(payload.init_data, payload.user_id)
+    try:
+        from bot_instance import bot
+        caption = f"🔒 <b>{payload.title}</b>\n\nВидео защищено системой шифрования Telegram (<code>protect_content=True</code>): пересылка и сохранение заблокированы."
+        if payload.file_id_or_url and not payload.file_id_or_url.startswith("http") and not payload.file_id_or_url.startswith("/"):
+            await bot.send_video(
+                chat_id=verified_id,
+                video=payload.file_id_or_url,
+                caption=caption,
+                parse_mode="HTML",
+                protect_content=True
+            )
+        else:
+            await bot.send_message(
+                chat_id=verified_id,
+                text=caption + "\n\n▶️ Откройте плеер в Mini App для просмотра с персональным водяным знаком.",
+                parse_mode="HTML",
+                protect_content=True
+            )
+        return {"status": "ok", "message": "Защищённое видео отправлено в чат с ботом"}
+    except Exception as e:
+        return {"status": "error", "message": f"Не удалось отправить в чат: {e}"}
 
 @app.get("/api/user/data")
 async def get_user_data(user_id: int = 123456789, init_data: Optional[str] = None):
@@ -365,13 +465,15 @@ async def get_user_data(user_id: int = 123456789, init_data: Optional[str] = Non
     measurements = await get_user_measurements(verified_id)
     has_access = await check_user_access(verified_id)
     profile = await get_user_profile(verified_id)
+    cms_config = await get_app_settings("cms_config")
 
     return {
         "user_id": verified_id,
         "has_access": has_access,
         "completed_days": progress,
         "measurements": measurements,
-        "profile": profile
+        "profile": profile,
+        "cms_config": cms_config
     }
 
 @app.post("/api/user/profile")
@@ -386,9 +488,19 @@ async def save_profile_endpoint(payload: ProfileRequest):
         target_weight=payload.target_weight,
         waist=payload.waist,
         hips=payload.hips,
+        chest=payload.chest,
         goal=payload.goal,
         activity_level=payload.activity_level,
-        daily_calories_target=payload.daily_calories_target
+        daily_calories_target=payload.daily_calories_target,
+        phone=payload.phone or "",
+        is_registered=payload.is_registered if payload.is_registered is not None else 1,
+        photo_before=payload.photo_before,
+        photo_after=payload.photo_after,
+        completed_lessons=payload.completed_lessons,
+        burned_calories=payload.burned_calories,
+        rating_points=payload.rating_points,
+        username=payload.username,
+        first_name=payload.first_name
     )
     # Также сохраняем замер в дневник замеров
     await save_user_measurement(verified_id, payload.current_weight, payload.waist, payload.hips)

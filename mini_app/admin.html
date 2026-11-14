@@ -218,10 +218,10 @@
         <table class="w-full text-left text-xs border-collapse">
           <thead>
             <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
-              <th class="py-3.5 px-5">ID пользователя</th>
-              <th class="py-3.5 px-5">Username</th>
-              <th class="py-3.5 px-5">Имя / Профиль</th>
-              <th class="py-3.5 px-5">Дата регистрации</th>
+              <th class="py-3.5 px-5">ID / Профиль</th>
+              <th class="py-3.5 px-5">Телефон и TG</th>
+              <th class="py-3.5 px-5">Точка А → Б (Цель)</th>
+              <th class="py-3.5 px-5">Прогресс и Рейтинг</th>
               <th class="py-3.5 px-5">Статус доступа</th>
               <th class="py-3.5 px-5 text-right">Управление доступом</th>
             </tr>
@@ -302,36 +302,41 @@
 
       </section>
 
-      <!-- Right Column: Settings & Anti-Piracy -->
+      <!-- Right Column: CMS Content Manager & Anti-Piracy -->
       <section class="lg:col-span-5 space-y-4">
         
-        <!-- Marathon Config Card -->
+        <!-- CMS Editor Card (п. 13) -->
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-3">
           <h3 class="text-sm font-extrabold text-slate-900 flex items-center space-x-2">
-            <i class="fa-solid fa-sliders text-emerald-600"></i>
-            <span>Параметры и Эквайринг</span>
+            <i class="fa-solid fa-pen-to-square text-emerald-600"></i>
+            <span>4. CMS: Управление фото, обложками, видео и ценами</span>
           </h3>
-          <div class="divide-y divide-slate-100 text-xs text-slate-700">
-            <div class="flex justify-between py-2">
-              <span class="text-slate-500">Тариф марафона:</span>
-              <span class="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">7 990 ₸</span>
+          <div class="space-y-2.5 text-xs">
+            <div>
+              <label class="font-bold text-slate-600 block mb-1">Главное фото (Hero обложка):</label>
+              <input id="adm-cms-hero" type="text" value="/assets/aitym_hero.jpg" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
             </div>
-            <div class="flex justify-between py-2">
-              <span class="text-slate-500">Длительность:</span>
-              <span class="font-bold text-slate-900">14 дней (Drip-feed)</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="font-bold text-slate-600 block mb-1">Цена курса:</label>
+                <input id="adm-cms-price" type="text" value="7 990 ₸" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
+              </div>
+              <div>
+                <label class="font-bold text-slate-600 block mb-1">Старая цена:</label>
+                <input id="adm-cms-old-price" type="text" value="14 900 ₸" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
+              </div>
             </div>
-            <div class="flex justify-between py-2">
-              <span class="text-slate-500">Трипвайер:</span>
-              <span class="font-bold text-slate-900">2 дня бесплатно (Тест-драйв)</span>
+            <div>
+              <label class="font-bold text-slate-600 block mb-1">Бесплатная тренировка 1 (MP4 / R2 / tg:FILE_ID):</label>
+              <input id="adm-cms-free1" type="text" value="/assets/workout_video.mp4" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
             </div>
-            <div class="flex justify-between py-2">
-              <span class="text-slate-500">Платежный шлюз:</span>
-              <span class="font-bold text-slate-900">Robokassa (Казахстан)</span>
+            <div>
+              <label class="font-bold text-slate-600 block mb-1">Бесплатная тренировка 2 (MP4 / R2 / tg:FILE_ID):</label>
+              <input id="adm-cms-free2" type="text" value="/assets/tabata_video.mp4" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" />
             </div>
-            <div class="flex justify-between py-2">
-              <span class="text-slate-500">Идентификатор магазина:</span>
-              <span class="font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">janafit / test</span>
-            </div>
+            <button onclick="saveDesktopCMS()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all">
+              💾 Сохранить обложки, ссылки и цены
+            </button>
           </div>
         </div>
 
@@ -461,19 +466,28 @@
         const isPaid = Boolean(u.has_access);
         const uid = Number(u.user_id) || 0;
         const uname = escapeHtml(u.username || '');
-        const regDate = u.created_at ? new Date(u.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+        const phone = escapeHtml(u.phone || '—');
         const tgLink = u.username ? `<a href="https://t.me/${encodeURIComponent(u.username)}" target="_blank" class="text-sky-600 hover:underline flex items-center space-x-1"><i class="fa-brands fa-telegram"></i><span>@${uname}</span></a>` : '<span class="text-slate-400">—</span>';
+        const goalLbl = u.goal === 'weight_loss' ? 'Похудение' : (u.goal === 'muscle_gain' ? 'Набор' : 'Рельеф');
+        const wInfo = u.current_weight ? `${u.start_weight || u.current_weight} → <b>${u.current_weight} кг</b> (${goalLbl})` : 'Не заполнена анкета';
+        const progInfo = `Трен: <b>${u.completed_workouts || 0}/16</b> · 🏆 <b>${u.rating_points || 0}</b> очк.`;
 
         return `
           <tr class="hover:bg-slate-50/80 transition-colors">
-            <td class="py-3 px-5 font-mono text-slate-600 font-semibold">${uid}</td>
-            <td class="py-3 px-5">${tgLink}</td>
-            <td class="py-3 px-5 font-medium text-slate-800">${escapeHtml(u.first_name || '—')}</td>
-            <td class="py-3 px-5 text-slate-500">${regDate}</td>
+            <td class="py-3 px-5">
+              <div class="font-bold text-slate-800">${escapeHtml(u.first_name || 'Атлет')}</div>
+              <div class="font-mono text-[11px] text-slate-400">ID: ${uid}</div>
+            </td>
+            <td class="py-3 px-5">
+              <div class="font-semibold text-slate-800">📱 ${phone}</div>
+              <div>${tgLink}</div>
+            </td>
+            <td class="py-3 px-5 text-slate-700">${wInfo}</td>
+            <td class="py-3 px-5 text-slate-700">${progInfo}</td>
             <td class="py-3 px-5">
               ${isPaid 
                 ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800"><i class="fa-solid fa-circle-check text-[10px] mr-1"></i>Оплачен (Полный доступ)</span>'
-                : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600"><i class="fa-solid fa-clock text-[10px] mr-1"></i>Трипвайер (2 дня)</span>'
+                : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600"><i class="fa-solid fa-clock text-[10px] mr-1"></i>Тест-драйв (2 видео)</span>'
               }
             </td>
             <td class="py-3 px-5 text-right">
@@ -489,6 +503,28 @@
           </tr>
         `;
       }).join('');
+    }
+
+    async function saveDesktopCMS() {
+      const cfg = {
+        heroImg: document.getElementById('adm-cms-hero').value.trim(),
+        price: document.getElementById('adm-cms-price').value.trim(),
+        oldPrice: document.getElementById('adm-cms-old-price').value.trim(),
+        videos: {
+          'free-1': document.getElementById('adm-cms-free1').value.trim(),
+          'free-2': document.getElementById('adm-cms-free2').value.trim()
+        }
+      };
+      try {
+        const res = await fetch('/api/admin/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config: cfg })
+        });
+        if (res.ok) alert('✅ Настройки обложек, ссылок и цен сохранены!');
+      } catch (e) {
+        alert('Ошибка сохранения CMS');
+      }
     }
 
     function filterUsersList() {
