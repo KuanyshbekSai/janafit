@@ -64,10 +64,7 @@ class Settings(BaseSettings):
     SPREADSHEET_ID: str = os.getenv("SPREADSHEET_ID", "1SZcSpC5n59SI5Ei7TMy2KPpAHo4Y_xuQQ4lhU941_BA")
 
     # Безопасность
-    # Логин и пароль для входа в десктопную веб-админку /admin
-    ADMIN_LOGIN: str = os.getenv("ADMIN_LOGIN", "admin")
-    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "janafit2026")
-    # Токен для входа в веб-админку /admin (длинная случайная строка).
+    # Токен для входа в веб-админку /admin (длинная случайная строка). Пусто = админка закрыта.
     ADMIN_TOKEN: str = os.getenv("ADMIN_TOKEN", "")
     # Общий секрет с Google Apps Script (тот же, что в Script Properties → GAS_SECRET)
     GAS_SECRET: str = os.getenv("GAS_SECRET", "")

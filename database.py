@@ -125,32 +125,12 @@ async def init_db():
             "ALTER TABLE user_meals ADD COLUMN omega3_score INTEGER DEFAULT 25",
             "ALTER TABLE user_meals ADD COLUMN aojiru_score INTEGER DEFAULT 30",
             "ALTER TABLE user_meals ADD COLUMN vitamins_score INTEGER DEFAULT 50",
-            "ALTER TABLE user_meals ADD COLUMN recommendation_json TEXT",
-            "ALTER TABLE user_profiles ADD COLUMN phone TEXT DEFAULT ''",
-            "ALTER TABLE user_profiles ADD COLUMN chest REAL DEFAULT 92.0",
-            "ALTER TABLE user_profiles ADD COLUMN start_weight REAL DEFAULT 0.0",
-            "ALTER TABLE user_profiles ADD COLUMN start_waist REAL DEFAULT 0.0",
-            "ALTER TABLE user_profiles ADD COLUMN start_hips REAL DEFAULT 0.0",
-            "ALTER TABLE user_profiles ADD COLUMN start_chest REAL DEFAULT 0.0",
-            "ALTER TABLE user_profiles ADD COLUMN is_registered INTEGER DEFAULT 0",
-            "ALTER TABLE user_profiles ADD COLUMN photo_before TEXT DEFAULT ''",
-            "ALTER TABLE user_profiles ADD COLUMN photo_after TEXT DEFAULT ''",
-            "ALTER TABLE user_profiles ADD COLUMN completed_lessons TEXT DEFAULT '[]'",
-            "ALTER TABLE user_profiles ADD COLUMN burned_calories INTEGER DEFAULT 0",
-            "ALTER TABLE user_profiles ADD COLUMN rating_points INTEGER DEFAULT 0"
+            "ALTER TABLE user_meals ADD COLUMN recommendation_json TEXT"
         ]:
             try:
                 await db.execute(col)
             except Exception:
                 pass
-
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS app_settings (
-                key TEXT PRIMARY KEY,
-                value_json TEXT,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
 
         await db.commit()
     _db_initialized = True
@@ -238,30 +218,17 @@ async def get_admin_dashboard_stats() -> Dict[str, Any]:
         }
 
 async def get_admin_users(filter_type: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
-    """Список пользователей для модуля CRM с профилем, телефоном и статистикой."""
+    """Список пользователей для модуля CRM."""
     await ensure_db_ready()
     async with aiosqlite.connect(settings.DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        query = """
-            SELECT
-                u.user_id, u.username, u.first_name, u.last_name,
-                COALESCE(p.phone, u.phone, '') AS phone,
-                u.has_access, u.access_granted_at, u.created_at,
-                p.gender, p.age, p.height, p.current_weight, p.target_weight,
-                p.start_weight, p.waist, p.hips, p.goal, p.daily_calories_target,
-                p.is_registered, p.burned_calories, p.rating_points,
-                p.completed_lessons,
-                (SELECT COUNT(*) FROM user_progress up WHERE up.user_id = u.user_id AND up.completed = 1) AS completed_workouts,
-                (SELECT COUNT(*) FROM user_meals um WHERE um.user_id = u.user_id) AS meals_count
-            FROM users u
-            LEFT JOIN user_profiles p ON u.user_id = p.user_id
-        """
+        query = "SELECT user_id, username, first_name, last_name, has_access, access_granted_at, created_at FROM users"
         params = []
         if filter_type == "paid":
-            query += " WHERE u.has_access = 1"
+            query += " WHERE has_access = 1"
         elif filter_type == "free":
-            query += " WHERE u.has_access = 0"
-        query += " ORDER BY u.created_at DESC LIMIT ?"
+            query += " WHERE has_access = 0"
+        query += " ORDER BY created_at DESC LIMIT ?"
         params.append(limit)
 
         async with db.execute(query, tuple(params)) as cur:
@@ -451,75 +418,16 @@ async def save_user_profile(
     hips: float = 98.0,
     goal: str = "weight_loss",
     activity_level: str = "medium",
-    daily_calories_target: int = 1600,
-    phone: str = "",
-    chest: float = 92.0,
-    is_registered: int = 1,
-    photo_before: Optional[str] = None,
-    photo_after: Optional[str] = None,
-    completed_lessons: Optional[str] = None,
-    burned_calories: Optional[int] = None,
-    rating_points: Optional[int] = None,
-    username: Optional[str] = None,
-    first_name: Optional[str] = None
+    daily_calories_target: int = 1600
 ):
     await ensure_db_ready()
     now = datetime.utcnow().isoformat()
     async with aiosqlite.connect(settings.DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        # Убедимся, что запись в users существует и обновим телефон/имя
-        await db.execute(
-            """INSERT INTO users (user_id, username, first_name, phone)
-               VALUES (?, ?, ?, ?)
-               ON CONFLICT(user_id) DO UPDATE SET
-                 phone = CASE WHEN excluded.phone != '' THEN excluded.phone ELSE users.phone END,
-                 username = COALESCE(excluded.username, users.username),
-                 first_name = COALESCE(excluded.first_name, users.first_name)""",
-            (user_id, username, first_name, phone or "")
-        )
-
-        # Проверим, был ли пользователь уже зарегистрирован (чтобы не менять зафиксированные пол, цель и стартовые замеры)
-        async with db.execute("SELECT * FROM user_profiles WHERE user_id = ?", (user_id,)) as cur:
-            existing = await cur.fetchone()
-
-        if existing and existing["is_registered"]:
-            locked_gender = existing["gender"] or gender
-            locked_age = existing["age"] or age
-            locked_height = existing["height"] or height
-            locked_goal = existing["goal"] or goal
-            locked_phone = existing["phone"] if existing["phone"] else phone
-            start_w = existing["start_weight"] if existing["start_weight"] else current_weight
-            start_waist = existing["start_waist"] if existing["start_waist"] else waist
-            start_hips = existing["start_hips"] if existing["start_hips"] else hips
-            start_chest = existing["start_chest"] if existing["start_chest"] else chest
-            p_before = photo_before if photo_before is not None else (existing["photo_before"] or "")
-            p_after = photo_after if photo_after is not None else (existing["photo_after"] or "")
-            c_lessons = completed_lessons if completed_lessons is not None else (existing["completed_lessons"] or "[]")
-            b_cal = burned_calories if burned_calories is not None else (existing["burned_calories"] or 0)
-            r_pts = rating_points if rating_points is not None else (existing["rating_points"] or 0)
-        else:
-            locked_gender = gender
-            locked_age = age
-            locked_height = height
-            locked_goal = goal
-            locked_phone = phone
-            start_w = current_weight
-            start_waist = waist
-            start_hips = hips
-            start_chest = chest
-            p_before = photo_before or ""
-            p_after = photo_after or ""
-            c_lessons = completed_lessons or "[]"
-            b_cal = burned_calories or 0
-            r_pts = rating_points or 150
-
         await db.execute("""
             INSERT INTO user_profiles (
                 user_id, gender, age, height, current_weight, target_weight,
-                waist, hips, chest, start_weight, start_waist, start_hips, start_chest,
-                goal, activity_level, daily_calories_target, phone, is_registered,
-                photo_before, photo_after, completed_lessons, burned_calories, rating_points, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                waist, hips, goal, activity_level, daily_calories_target, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(user_id) DO UPDATE SET
                 gender=excluded.gender,
                 age=excluded.age,
@@ -528,28 +436,11 @@ async def save_user_profile(
                 target_weight=excluded.target_weight,
                 waist=excluded.waist,
                 hips=excluded.hips,
-                chest=excluded.chest,
-                start_weight=excluded.start_weight,
-                start_waist=excluded.start_waist,
-                start_hips=excluded.start_hips,
-                start_chest=excluded.start_chest,
                 goal=excluded.goal,
                 activity_level=excluded.activity_level,
                 daily_calories_target=excluded.daily_calories_target,
-                phone=excluded.phone,
-                is_registered=excluded.is_registered,
-                photo_before=excluded.photo_before,
-                photo_after=excluded.photo_after,
-                completed_lessons=excluded.completed_lessons,
-                burned_calories=excluded.burned_calories,
-                rating_points=excluded.rating_points,
                 updated_at=excluded.updated_at
-        """, (
-            user_id, locked_gender, locked_age, locked_height, current_weight, target_weight,
-            waist, hips, chest, start_w, start_waist, start_hips, start_chest,
-            locked_goal, activity_level, daily_calories_target, locked_phone, is_registered,
-            p_before, p_after, c_lessons, b_cal, r_pts, now
-        ))
+        """, (user_id, gender, age, height, current_weight, target_weight, waist, hips, goal, activity_level, daily_calories_target, now))
         await db.commit()
 
 async def get_user_profile(user_id: int) -> Optional[Dict[str, Any]]:
@@ -559,53 +450,6 @@ async def get_user_profile(user_id: int) -> Optional[Dict[str, Any]]:
         async with db.execute("SELECT * FROM user_profiles WHERE user_id = ?", (user_id,)) as cursor:
             row = await cursor.fetchone()
             return dict(row) if row else None
-
-async def get_app_settings(key: str = "cms_config") -> Dict[str, Any]:
-    import json
-    await ensure_db_ready()
-    async with aiosqlite.connect(settings.DB_PATH) as db:
-        async with db.execute("SELECT value_json FROM app_settings WHERE key = ?", (key,)) as cur:
-            row = await cur.fetchone()
-            if row and row[0]:
-                try:
-                    return json.loads(row[0])
-                except Exception:
-                    return {}
-            return {}
-
-async def save_app_settings(value: Dict[str, Any], key: str = "cms_config"):
-    import json
-    await ensure_db_ready()
-    now = datetime.utcnow().isoformat()
-    async with aiosqlite.connect(settings.DB_PATH) as db:
-        await db.execute(
-            """INSERT INTO app_settings (key, value_json, updated_at)
-               VALUES (?, ?, ?)
-               ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_at = excluded.updated_at""",
-            (key, json.dumps(value, ensure_ascii=False), now)
-        )
-        await db.commit()
-
-async def get_leaderboard(limit: int = 30) -> List[Dict[str, Any]]:
-    await ensure_db_ready()
-    async with aiosqlite.connect(settings.DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        query = """
-            SELECT
-                u.user_id,
-                COALESCE(NULLIF(u.first_name, ''), NULLIF(u.username, ''), 'Атлет #' || substr(cast(u.user_id as text), -4)) AS display_name,
-                COALESCE(p.rating_points, 0) AS rating_points,
-                COALESCE(p.burned_calories, 0) AS burned_calories,
-                (SELECT COUNT(*) FROM user_progress up WHERE up.user_id = u.user_id AND up.completed = 1) AS workouts_done
-            FROM users u
-            LEFT JOIN user_profiles p ON u.user_id = p.user_id
-            ORDER BY rating_points DESC, workouts_done DESC
-            LIMIT ?
-        """
-        async with db.execute(query, (limit,)) as cur:
-            rows = await cur.fetchall()
-            return [dict(r) for r in rows]
-
 
 
 
